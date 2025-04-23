@@ -12,43 +12,35 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 @Configuration
-@Profile("prod")
+@Profile(value = {"prod", "staging"})
 @Slf4j
 public class DataBaseConfiguration {
 
     @Value("${maxPoolSize:25}")
     private int maxPoolSize;
 
-    @Value("${minimumIdle:5}")
+    @Value("${minimumIdle:25}")
     private int minimumIdle;
 
     @Bean
     public HikariDataSource getDataSource() throws URISyntaxException {
-        String rawDbUrl = System.getenv("DATABASE_URL");
-        log.info("Using DATABASE_URL: {}", rawDbUrl);
 
-        URI dbUri = new URI(rawDbUrl);
-
+        URI dbUri = new URI(System.getenv("DATABASE_URL"));
+        log.info("Configuration added in bo-config task");
         String username = dbUri.getUserInfo().split(":")[0];
         String password = dbUri.getUserInfo().split(":")[1];
-        String host = dbUri.getHost();
-        int port = dbUri.getPort();
-        String dbName = dbUri.getPath().replaceFirst("/", "");
+        String dbUrl = "jdbc:mysql://" + dbUri.getHost() + dbUri.getPath();
 
-        // Build full JDBC URL with port and params
-        String dbUrl = String.format("jdbc:mysql://%s:%d/%s?useSSL=false&serverTimezone=UTC", host, port, dbName);
-
-        HikariDataSource dataSource = DataSourceBuilder.create()
-                .type(HikariDataSource.class)
-                .driverClassName("com.mysql.cj.jdbc.Driver")
-                .url(dbUrl)
-                .username(username)
-                .password(password)
-                .build();
-
-        dataSource.setMaximumPoolSize(maxPoolSize);
-        dataSource.setMinimumIdle(minimumIdle);
-
-        return dataSource;
+        DataSourceBuilder dataSourceBuilder = DataSourceBuilder.create();
+        dataSourceBuilder.driverClassName("com.mysql.cj.jdbc.Driver");
+        dataSourceBuilder.url(dbUrl+"?autoReconnect=true");
+        dataSourceBuilder.username(username);
+        dataSourceBuilder.password(password);
+        dataSourceBuilder.type(HikariDataSource.class);
+        HikariDataSource hikariDataSource = (HikariDataSource) dataSourceBuilder.build();
+        hikariDataSource.setMaximumPoolSize(maxPoolSize);
+        hikariDataSource.setMinimumIdle(minimumIdle);
+        return hikariDataSource;
     }
+
 }
