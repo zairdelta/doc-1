@@ -22,24 +22,32 @@ public class DataBaseConfiguration {
     @Value("${minimumIdle:25}")
     private int minimumIdle;
 
-    @Bean
     public HikariDataSource getDataSource() throws URISyntaxException {
 
         URI dbUri = new URI(System.getenv("APP_DATABASE_URL"));
         log.info("Configuration added in bo-config task");
+
         String username = dbUri.getUserInfo().split(":")[0];
         String password = dbUri.getUserInfo().split(":")[1];
-        String dbUrl = "jdbc:mysql://" + dbUri.getHost() + dbUri.getPath();
+        String host = dbUri.getHost();
+        int port = dbUri.getPort(); // <-- Get the port
+        String path = dbUri.getPath(); // includes the slash + db name
 
-        DataSourceBuilder dataSourceBuilder = DataSourceBuilder.create();
+        // Now include the port in the JDBC URL
+        String dbUrl = String.format("jdbc:mysql://%s:%d%s?autoReconnect=true", host, port, path);
+
+        DataSourceBuilder<?> dataSourceBuilder = DataSourceBuilder.create();
         dataSourceBuilder.driverClassName("com.mysql.cj.jdbc.Driver");
-        dataSourceBuilder.url(dbUrl+"?autoReconnect=true");
+        dataSourceBuilder.url(dbUrl);
         dataSourceBuilder.username(username);
         dataSourceBuilder.password(password);
         dataSourceBuilder.type(HikariDataSource.class);
+
         HikariDataSource hikariDataSource = (HikariDataSource) dataSourceBuilder.build();
         hikariDataSource.setMaximumPoolSize(maxPoolSize);
         hikariDataSource.setMinimumIdle(minimumIdle);
+
         return hikariDataSource;
     }
+
 }
