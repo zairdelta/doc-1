@@ -22,6 +22,7 @@ public class DataBaseConfiguration {
     @Value("${minimumIdle:25}")
     private int minimumIdle;
 
+    @Bean
     public HikariDataSource getDataSource() throws URISyntaxException {
 
         URI dbUri = new URI(System.getenv("APP_DATABASE_URL"));
