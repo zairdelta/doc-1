@@ -26,10 +26,11 @@
         <module>woow-core/services</module>
         <module>woow-core/data</module>
         <module>woow-core/controller</module>
-        <module>axsalud-it</module>
         <module>axsalud-service-provider-client</module>
         <module>axsalud-common-config</module>
         <module>axsalud-migrations</module>
+        <module>axsalud-it</module>
+        <module>axsalud-exec</module>
     </modules>
 
     <properties>
