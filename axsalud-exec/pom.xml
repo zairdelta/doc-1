@@ -19,6 +19,58 @@
     </properties>
     <dependencies>
         <dependency>
+            <groupId>com.woow.axsalud</groupId>
+            <artifactId>axsalud-controller</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.woow.axsalud</groupId>
+            <artifactId>axsalud-services</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.woow.axsalud</groupId>
+            <artifactId>axsalud-web-app</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.woow.axsalud</groupId>
+            <artifactId>axsalud-data</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.woow</groupId>
+            <artifactId>axsalud-service-provider-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.woow.axsalud</groupId>
+            <artifactId>axsalud-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.woow</groupId>
+            <artifactId>controller</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.woow</groupId>
+            <artifactId>data</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.woow</groupId>
+            <artifactId>services</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.woow.axsalud</groupId>
+            <artifactId>axsalud-web-app</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.woow</groupId>
+            <artifactId>axsalud-common-config</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.woow.axsalud</groupId>
+            <artifactId>woow-security-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.woow.axsalud</groupId>
+            <artifactId>woow-security-impl</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
@@ -35,30 +87,12 @@
             <artifactId>sockjs-client</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.woow.axsalud</groupId>
-            <artifactId>axsalud-web-app</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.webjars</groupId>
             <artifactId>stomp-websocket</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.woow.axsalud</groupId>
-            <artifactId>axsalud-services</artifactId>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.woow.axsalud</groupId>
-            <artifactId>woow-security-impl</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.woow.axsalud</groupId>
-            <artifactId>axsalud-controller</artifactId>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

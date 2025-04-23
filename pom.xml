@@ -67,8 +67,28 @@
                 <version>${axsalud.version}</version>
             </dependency>
             <dependency>
+                <groupId>com.woow</groupId>
+                <artifactId>axsalud-service-provider-client</artifactId>
+                <version>${axsalud.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.woow.axsalud</groupId>
                 <artifactId>axsalud-common</artifactId>
+                <version>${axsalud.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.woow</groupId>
+                <artifactId>controller</artifactId>
+                <version>${axsalud.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.woow</groupId>
+                <artifactId>data</artifactId>
+                <version>${axsalud.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.woow</groupId>
+                <artifactId>services</artifactId>
                 <version>${axsalud.version}</version>
             </dependency>
             <dependency>
@@ -76,7 +96,11 @@
                 <artifactId>axsalud-web-app</artifactId>
                 <version>${axsalud.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>com.woow</groupId>
+                <artifactId>axsalud-common-config</artifactId>
+                <version>${axsalud.version}</version>
+            </dependency>
             <dependency>
                 <groupId>com.woow.axsalud</groupId>
                 <artifactId>woow-security-api</artifactId>
