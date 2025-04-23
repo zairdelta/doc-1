@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
 
 @Slf4j
 @Service
-@Profile({"dev", "integration", "prod"})
+@Profile({"dev", "integration", "prod", "staging"})
 public class ICaptchaServiceImpl implements ICaptchaService {
     @Autowired
     private CaptchaSettings captchaSettings;

@@ -21,7 +21,7 @@ import static java.util.Collections.emptyList;
 
 @Configuration
 @EnableSwagger2
-@Profile({"dev", "test"})
+@Profile({"dev", "test", "staging"})
 public class SwaggerConfig {
 
     private static final String API_TITLE = "WOOW Products";
