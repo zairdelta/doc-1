@@ -73,7 +73,7 @@
             </dependency>
             <dependency>
                 <groupId>com.woow.axsalud</groupId>
-                <artifactId>axsalud-app</artifactId>
+                <artifactId>axsalud-web-app</artifactId>
                 <version>${axsalud.version}</version>
             </dependency>
 
