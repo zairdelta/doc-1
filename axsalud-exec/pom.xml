@@ -35,6 +35,10 @@
             <artifactId>sockjs-client</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.woow.axsalud</groupId>
+            <artifactId>axsalud-app</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.webjars</groupId>
             <artifactId>stomp-websocket</artifactId>
         </dependency>

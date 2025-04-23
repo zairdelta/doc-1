@@ -71,6 +71,11 @@
                 <artifactId>axsalud-common</artifactId>
                 <version>${axsalud.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.woow.axsalud</groupId>
+                <artifactId>axsalud-app</artifactId>
+                <version>${axsalud.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>com.woow.axsalud</groupId>
