@@ -29,6 +29,7 @@
         <module>axsalud-it</module>
         <module>axsalud-service-provider-client</module>
         <module>axsalud-common-config</module>
+        <module>axsalud-migrations</module>
     </modules>
 
     <properties>
@@ -38,6 +39,8 @@
         <spring.boot.version>3.4.2</spring.boot.version>
         <spring.messaging.version>6.2.3</spring.messaging.version>
         <axsalud.version>1.0-SNAPSHOT</axsalud.version>
+        <flyway.locations>filesystem:axsalud-migrations/src/main/resources/migrations</flyway.locations>
+        <flyway.url>${env.DATABASE_URL}</flyway.url>
     </properties>
 
     <dependencyManagement>
@@ -195,5 +198,23 @@
             <artifactId>tomcat-embed-core</artifactId>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.0</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-maven-plugin</artifactId>
+                <version>8.5.5</version>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

@@ -22,11 +22,15 @@ public class ConsultationMessageEntity {
     @ManyToOne
     @JoinColumn(name = "sent_by_user_id", nullable = false)
     private AxSaludWooUser sentBy;
-    @Column(nullable = false)
+
+    @Column(nullable = false, columnDefinition = "TEXT")
     @Lob
     private String content;
 
     @Column(nullable = false)
     private LocalDateTime timestamp = LocalDateTime.now();
+
+    @Enumerated(EnumType.STRING)
+    private ConsultationMessageStatus status;
 
 }

@@ -13,6 +13,7 @@ public class HealthServiceProviderReview {
     private int id;
     private int totalStarts;
     @Lob
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String text;
     private int serviceType;
 }

@@ -15,6 +15,7 @@ public class Symptoms {
     @Id
     private long id;
     @Lob
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String symptom;
     private LocalDateTime createdAt = LocalDateTime.now();
 
