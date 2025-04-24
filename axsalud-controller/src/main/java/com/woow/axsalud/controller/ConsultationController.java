@@ -85,4 +85,19 @@ public class ConsultationController {
     }
 
 
+    @GetMapping("/{consultationId}/file/{fileId}")
+    public ResponseEntity<String> downloadFile(@PathVariable String consultationId,
+                                               @PathVariable long fileId,
+                                               @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            String signedUrl = consultationService.downloadDocument(userDetails.getUsername(), consultationId, fileId);
+            return ResponseEntity.ok(signedUrl);
+        } catch (ConsultationServiceException e) {
+            return WooBoHttpError.of(e).toResponseEntity();
+        }
+    }
+
+
+
+
 }

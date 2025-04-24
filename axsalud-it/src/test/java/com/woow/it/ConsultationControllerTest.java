@@ -288,6 +288,75 @@ public class ConsultationControllerTest extends WoowBaseTest {
     }
 
 
+    @Test
+    void shouldDownloadConsultationDocument() throws Exception {
+        // Paso 1: Crear usuario y consulta como ya lo haces
+        AxSaludUserDTO axSaludUserDTO = UserFactory.anyUser();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<AxSaludUserDTO> request = new HttpEntity<>(axSaludUserDTO, headers);
+        restTemplate.postForEntity(getBaseUrl() + "woo_user/new", request, Void.class);
+
+        String jwtToken = login(axSaludUserDTO.getUserDtoCreate().getUserName(),
+                axSaludUserDTO.getUserDtoCreate().getPassword());
+
+        SymptomsDTO symptomsDTO = new SymptomsDTO();
+        symptomsDTO.setText("Headache and fever");
+        addAuthorizationHeader(axSaludUserDTO.getUserDtoCreate(), headers);
+        HttpEntity<SymptomsDTO> consultationRequest = new HttpEntity<>(symptomsDTO, headers);
+        ResponseEntity<ConsultationDTO> consultationResponse = restTemplate.postForEntity(
+                getBaseUrl() + "consultation", consultationRequest, ConsultationDTO.class);
+        String consultationId = consultationResponse.getBody().getConsultationId().toString();
+
+
+        File file = new File(Objects.requireNonNull(getClass()
+                .getClassLoader().getResource("storageExample.txt")).getFile());
+        FileSystemResource fileResource = new FileSystemResource(file);
+
+        HttpHeaders uploadHeaders = new HttpHeaders();
+        uploadHeaders.setContentType(MediaType.MULTIPART_FORM_DATA);
+        uploadHeaders.setBearerAuth(jwtToken);
+
+        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+        body.add("file", fileResource);
+
+        HttpEntity<MultiValueMap<String, Object>> uploadRequest =
+                new HttpEntity<>(body, uploadHeaders);
+
+        ResponseEntity<String> uploadResponse = restTemplate.postForEntity(
+                getBaseUrl() + "consultation/" + consultationId + "/file",
+                uploadRequest, String.class);
+
+        Assertions.assertEquals(HttpStatus.OK, uploadResponse.getStatusCode());
+
+
+        ResponseEntity<ConsultationDTO> updatedConsultation = restTemplate.exchange(
+                getBaseUrl() + "consultation/" + consultationId,
+                HttpMethod.GET,
+                new HttpEntity<>(headers),
+                ConsultationDTO.class);
+
+        Assertions.assertNotNull(updatedConsultation.getBody());
+        Assertions.assertFalse(updatedConsultation.getBody().getDocuments().isEmpty());
+
+        long fileId = updatedConsultation.getBody().getDocuments().get(0).getId();
+
+        // Paso 5: Descargar el archivo
+        HttpHeaders downloadHeaders = new HttpHeaders();
+        downloadHeaders.setBearerAuth(jwtToken);
+
+        HttpEntity<Void> downloadRequest = new HttpEntity<>(downloadHeaders);
+
+        ResponseEntity<String> downloadResponse = restTemplate.exchange(
+                getBaseUrl() + "consultation/" + consultationId + "/file/" + fileId,
+                HttpMethod.GET,
+                downloadRequest,
+                String.class);
+
+        Assertions.assertEquals(HttpStatus.OK, downloadResponse.getStatusCode());
+        Assertions.assertTrue(downloadResponse.getBody().startsWith("https://")); // URL firmada
+    }
 
 
 }
