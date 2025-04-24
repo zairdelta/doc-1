@@ -66,6 +66,7 @@ CREATE TABLE `consultation` (
   `created_at` datetime(6) DEFAULT NULL,
   `finished_at` datetime(6) DEFAULT NULL,
   `status` enum('FINISHED','ON_GOING','SUSPENDED','WAITING_FOR_DOCTOR') DEFAULT NULL,
+  `symptoms` text NOT NULL,
   `doctor_id` bigint DEFAULT NULL,
   `patient_id` bigint DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -288,35 +289,8 @@ CREATE TABLE `service_provider` (
 
 LOCK TABLES `service_provider` WRITE;
 /*!40000 ALTER TABLE `service_provider` DISABLE KEYS */;
-INSERT INTO `service_provider` VALUES (1,'2025-04-23 19:37:00.000000','https://localhost:8080/external_provider','HealthConnect','2025-12-31');
+INSERT INTO `service_provider` VALUES (1,'2025-04-24 11:28:23.000000','https://localhost:8080/external_provider','HealthConnect','2025-12-31');
 /*!40000 ALTER TABLE `service_provider` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `symptoms`
---
-
-DROP TABLE IF EXISTS `symptoms`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `symptoms` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
-  `created_at` datetime(6) DEFAULT NULL,
-  `symptom` text NOT NULL,
-  `consultation_id` bigint DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `FKpjyr3i9wp0mnftkr424mtgf8a` (`consultation_id`),
-  CONSTRAINT `FKpjyr3i9wp0mnftkr424mtgf8a` FOREIGN KEY (`consultation_id`) REFERENCES `consultation` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `symptoms`
---
-
-LOCK TABLES `symptoms` WRITE;
-/*!40000 ALTER TABLE `symptoms` DISABLE KEYS */;
-/*!40000 ALTER TABLE `symptoms` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -386,7 +360,7 @@ CREATE TABLE `woow_user` (
 
 LOCK TABLES `woow_user` WRITE;
 /*!40000 ALTER TABLE `woow_user` DISABLE KEYS */;
-INSERT INTO `woow_user` VALUES (1,'yes','Av Reforma 123','Int 5','1995-06-15','CDMX','MX','01234','2025-04-23 19:37:00.000000','master@example.com',_binary '',NULL,0,'masterLastName',0,1,'5551234567','master',NULL,'$2a$10$nOyz3qX1lLYv9GOZcwBieeO1KSYDT6funrQx322uHIuX8LWY9XQQW',_binary '\0','CDMX',_binary '','master@example.com'),(2,'yes','Street 1','Street 2',NULL,'CDMX','MX','12345','2025-04-23 18:37:01.589411','realuser@woow.com',_binary '\0',NULL,0,'User',0,0,'1234567890','Real',NULL,'$2a$10$WCXqG4azV4zGfRdgImDKM.FwiMagVh44xc0Tcz2fKz2LunEGHhIfe',_binary '\0','CDMX',_binary '','realuser@woow.com');
+INSERT INTO `woow_user` VALUES (1,'yes','Av Reforma 123','Int 5','1995-06-15','CDMX','MX','01234','2025-04-24 11:28:23.000000','master@example.com',_binary '',NULL,0,'masterLastName',0,1,'5551234567','master',NULL,'$2a$10$nOyz3qX1lLYv9GOZcwBieeO1KSYDT6funrQx322uHIuX8LWY9XQQW',_binary '\0','CDMX',_binary '','master@example.com'),(2,'yes','Street 1','Street 2',NULL,'CDMX','MX','12345','2025-04-24 10:28:25.877698','realuser@woow.com',_binary '\0',NULL,0,'User',0,0,'1234567890','Real',NULL,'$2a$10$msTW226vtKQ.wTwxoeZcqu2GkAOrsC77FLug8CmkHKRpI/Igaewcy',_binary '\0','CDMX',_binary '','realuser@woow.com');
 /*!40000 ALTER TABLE `woow_user` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -399,4 +373,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-04-23 19:41:07
+-- Dump completed on 2025-04-24 11:40:52

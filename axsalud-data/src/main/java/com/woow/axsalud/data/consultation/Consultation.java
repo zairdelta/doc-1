@@ -1,7 +1,6 @@
 package com.woow.axsalud.data.consultation;
 
 import com.woow.axsalud.data.client.AxSaludWooUser;
-import com.woow.axsalud.data.client.Symptoms;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,8 +26,9 @@ public class Consultation {
     private AxSaludWooUser doctor;
     private LocalDateTime createdAt;
     private LocalDateTime finishedAt;
-    @OneToMany(mappedBy = "consultation")
-    private List<Symptoms> symptoms = new ArrayList<>();
+    @Lob
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String symptoms;
     @Enumerated(EnumType.STRING)
     private ConsultationStatus status;
 

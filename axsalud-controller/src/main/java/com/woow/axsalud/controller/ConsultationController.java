@@ -29,7 +29,7 @@ public class ConsultationController {
     }
 
     @PostMapping
-    public ResponseEntity<ConsultationDTO> create(final SymptomsDTO symptomsDTO,
+    public ResponseEntity<ConsultationDTO> create(@RequestBody final SymptomsDTO symptomsDTO,
                                                   @AuthenticationPrincipal UserDetails userDetails) {
 
         try {

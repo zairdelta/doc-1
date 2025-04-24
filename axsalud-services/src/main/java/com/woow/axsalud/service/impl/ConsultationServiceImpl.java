@@ -35,7 +35,6 @@ public class ConsultationServiceImpl implements ConsultationService {
     private ConsultationRepository consultationRepository;
     private WoowUserRepository woowUserRepository;
     private AxSaludUserRepository axSaludUserRepository;
-    private SymptomsRepository symptomsRepository;
     private ConsultationMessageRepository consultationMessageRepository;
     private ModelMapper modelMapper;
     private SimpMessagingTemplate messagingTemplate;
@@ -43,14 +42,12 @@ public class ConsultationServiceImpl implements ConsultationService {
     public ConsultationServiceImpl(ConsultationRepository consultationRepository,
                                    WoowUserRepository woowUserRepository,
                                    AxSaludUserRepository axSaludUserRepository,
-                                   SymptomsRepository symptomsRepository,
                                    ModelMapper modelMapper,
                                    SimpMessagingTemplate messagingTemplate,
                                    ConsultationMessageRepository consultationMessageRepository) {
         this.consultationRepository = consultationRepository;
         this.woowUserRepository = woowUserRepository;
         this.axSaludUserRepository = axSaludUserRepository;
-        this.symptomsRepository = symptomsRepository;
         this.modelMapper = modelMapper;
         this.consultationMessageRepository = consultationMessageRepository;
         this.messagingTemplate = messagingTemplate;
@@ -109,11 +106,7 @@ public class ConsultationServiceImpl implements ConsultationService {
         Consultation consultation = new Consultation();
         consultation.setPatient(axSaludPatient);
 
-        Symptoms symptoms = new Symptoms();
-        symptoms.setSymptom(symptomsDTO.getText());
-        symptoms.setConsultation(consultation);
-
-        consultation.getSymptoms().add(symptoms);
+        consultation.setSymptoms(symptomsDTO.getText());
         consultation.setStatus(ConsultationStatus.WAITING_FOR_DOCTOR);
 
 

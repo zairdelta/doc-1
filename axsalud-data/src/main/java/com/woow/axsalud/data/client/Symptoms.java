@@ -7,20 +7,19 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-@Entity
 @Getter
 @Setter
 public class Symptoms {
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Id
+  //  @GeneratedValue(strategy = GenerationType.IDENTITY)
+ //   @Id
     private long id;
-    @Lob
-    @Column(nullable = false, columnDefinition = "TEXT")
+  //  @Lob
+ //   @Column(nullable = false, columnDefinition = "TEXT")
     private String symptom;
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    @ManyToOne
-    @JoinColumn(name = "consultation_id")
-    private Consultation consultation;
+//    @ManyToOne
+ //   @JoinColumn(name = "consultation_id")
+  //  private Consultation consultation;
 
 }
