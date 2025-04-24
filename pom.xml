@@ -31,6 +31,7 @@
         <module>axsalud-migrations</module>
         <module>axsalud-it</module>
         <module>axsalud-exec</module>
+        <module>woow-core/storage</module>
     </modules>
 
     <properties>
@@ -110,6 +111,12 @@
                 <groupId>com.woow.axsalud</groupId>
                 <artifactId>woow-security-impl</artifactId>
                 <version>${axsalud.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.woow</groupId>
+                <artifactId>storage</artifactId>
+                <version>1.0-SNAPSHOT</version>
+                <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
@@ -229,6 +236,21 @@
                 <groupId>com.google.code.gson</groupId>
                 <artifactId>gson</artifactId>
                 <version>2.10.1</version>
+            </dependency>
+            <dependency>
+                <groupId>com.cloudinary</groupId>
+                <artifactId>cloudinary-http5</artifactId>
+                <version>2.0.0</version>
+            </dependency>
+            <dependency>
+                <groupId>com.cloudinary</groupId>
+                <artifactId>cloudinary-taglib</artifactId>
+                <version>2.0.0</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.cdimascio</groupId>
+                <artifactId>dotenv-java</artifactId>
+                <version>2.2.4</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

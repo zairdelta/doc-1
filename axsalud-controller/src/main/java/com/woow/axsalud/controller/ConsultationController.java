@@ -13,6 +13,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/consultation")
@@ -68,6 +69,19 @@ public class ConsultationController {
         } catch (ConsultationServiceException e) {
             return WooBoHttpError.of(e).toResponseEntity();
         }
+    }
+
+    @PostMapping("{consultationId}/file")
+    public ResponseEntity<String> upload(@PathVariable String consultationId,
+                                         @AuthenticationPrincipal UserDetails userDetails,
+                                    @RequestBody MultipartFile file) {
+        try {
+            return ResponseEntity
+                    .ok(consultationService.appendDocument(userDetails.getUsername(), consultationId, file));
+        } catch (ConsultationServiceException e) {
+            return WooBoHttpError.of(e).toResponseEntity();
+        }
+
     }
 
 

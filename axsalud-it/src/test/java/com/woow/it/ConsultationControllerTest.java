@@ -18,12 +18,18 @@ import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
 
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+
 import javax.net.ssl.*;
+import java.io.File;
 import java.lang.reflect.Type;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
@@ -233,4 +239,55 @@ public class ConsultationControllerTest extends WoowBaseTest {
                 .anyMatch(msg -> "Hello from patient".equalsIgnoreCase(msg.getContent()));
 
     }
+
+    @Test
+    void shouldUploadConsultationDocument() throws Exception {
+        AxSaludUserDTO axSaludUserDTO = UserFactory.anyUser();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<AxSaludUserDTO> request = new HttpEntity<>(axSaludUserDTO, headers);
+
+        // Create user
+        ResponseEntity<Void> response = restTemplate.postForEntity(getBaseUrl() + "woo_user/new", request, Void.class);
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+
+        // Login and get JWT
+        String JWT_TOKEN = login(axSaludUserDTO.getUserDtoCreate().getUserName(), axSaludUserDTO.getUserDtoCreate().getPassword());
+
+        // Create consultation
+        SymptomsDTO symptomsDTO = new SymptomsDTO();
+        symptomsDTO.setText("My Symtoms are headache, temperature");
+        addAuthorizationHeader(axSaludUserDTO.getUserDtoCreate(), headers);
+        HttpEntity<SymptomsDTO> consultationRequest = new HttpEntity<>(symptomsDTO, headers);
+        ResponseEntity<ConsultationDTO> consultationResponse =
+                restTemplate.postForEntity(getBaseUrl() + "consultation", consultationRequest, ConsultationDTO.class);
+
+        String consultationId = consultationResponse.getBody().getConsultationId().toString();
+
+        // Load file from resources (src/test/resources/sample.pdf for example)
+        File file = new File(Objects.requireNonNull(getClass()
+                .getClassLoader().getResource("storageExample.txt")).getFile());
+        FileSystemResource fileResource = new FileSystemResource(file);
+
+        // Create multipart request
+        HttpHeaders multipartHeaders = new HttpHeaders();
+        multipartHeaders.setContentType(MediaType.MULTIPART_FORM_DATA);
+        addAuthorizationHeader(axSaludUserDTO.getUserDtoCreate(), multipartHeaders);
+
+        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+        body.add("file", fileResource);
+
+        HttpEntity<MultiValueMap<String, Object>> multipartRequest = new HttpEntity<>(body, multipartHeaders);
+
+        ResponseEntity<String> uploadResponse = restTemplate.postForEntity(
+                getBaseUrl() + "consultation/" + consultationId + "/file", multipartRequest, String.class);
+
+        Assertions.assertEquals(HttpStatus.OK, uploadResponse.getStatusCode());
+        Assertions.assertNotNull(uploadResponse.getBody());
+    }
+
+
+
+
 }

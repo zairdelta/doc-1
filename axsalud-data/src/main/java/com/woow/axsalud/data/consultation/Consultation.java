@@ -31,6 +31,8 @@ public class Consultation {
     private String symptoms;
     @Enumerated(EnumType.STRING)
     private ConsultationStatus status;
+    @OneToMany(mappedBy = "consultation", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<ConsultationDocument> documents = new HashSet<>();
 
     @PrePersist
     protected void onCreate() {
