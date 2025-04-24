@@ -2,10 +2,13 @@ package com.woow.axsalud.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequestMapping("/api/websocket")
 @Tag(name = "WebSocket Documentation")
 public class WebSocketDocsController {
 
@@ -21,7 +24,7 @@ public class WebSocketDocsController {
             - Use a valid Bearer token in the STOMP `Authorization` header.
             """
     )
-    public void websocketDocs() {
-        // No implementation. Only for Swagger docs.
+    public ResponseEntity websocketDocs() {
+        return ResponseEntity.ok().build();
     }
 }
