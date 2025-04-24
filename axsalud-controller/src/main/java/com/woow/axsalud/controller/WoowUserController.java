@@ -6,10 +6,10 @@ import com.woow.axsalud.service.api.AxSaludService;
 import com.woow.axsalud.service.api.dto.AxSaludUserDTO;
 import com.woow.axsalud.service.api.dto.PatientViewDTO;
 import com.woow.core.service.api.exception.WooUserServiceException;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -21,17 +21,18 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-@Api(tags = "Patient User Endpoint")
 @RestController
 @RequestMapping("/api/woo_user")
 @Validated
 @Slf4j
 @CrossOrigin(origins = "*")
+@Tag(name = "Patient User Endpoint", description = "Operations related to patient users")
 public class WoowUserController {
+
     private static final String ROOT_PATH = "/api/woo_user/";
     private static final String LOCATION = "Location";
 
-    private AxSaludService axSaludService;
+    private final AxSaludService axSaludService;
 
     @Value("${email.group:noreply@axsalud.io}")
     private String emailGroup;
@@ -43,32 +44,30 @@ public class WoowUserController {
     private String appRoot;
 
     public WoowUserController(final AxSaludService axSaludService) {
-
         this.axSaludService = axSaludService;
     }
+
     @ResponseStatus(HttpStatus.CREATED)
-    @ApiOperation(value = "Creates a new Woow User which role will be user. Patientn")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK - Found User Created successfully, returns the http location header, indicating the url of the user"),
-            @ApiResponse(code = 301, message = "forbidden"),
-            @ApiResponse(code = 410, message = "password cannot be empty"),
-            @ApiResponse(code = 411, message = "User with username given already exist"),
-            @ApiResponse(code = 414, message = "Sponsor is not active or does not exist."),
-            @ApiResponse(code = 415, message = "User is not an active user"),
-    })
     @PostMapping("/new")
-    public ResponseEntity save(HttpServletRequest request,
-                               @Valid @RequestBody AxSaludUserDTO axSaludUserDTO) {
-        String userName = "";
+    @Operation(summary = "Create new Woow User",
+            description = "Creates a new Woow User which role will be 'user'. Patientn")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User Created successfully, returns location header"),
+            @ApiResponse(responseCode = "301", description = "Forbidden"),
+            @ApiResponse(responseCode = "410", description = "Password cannot be empty"),
+            @ApiResponse(responseCode = "411", description = "User with username given already exists"),
+            @ApiResponse(responseCode = "414", description = "Sponsor is not active or does not exist."),
+            @ApiResponse(responseCode = "415", description = "User is not an active user")
+    })
+    public ResponseEntity<Void> save(HttpServletRequest request,
+                                     @Valid @RequestBody AxSaludUserDTO axSaludUserDTO) {
+        String userName;
         try {
-            // captchaService.processResponse(request, gRecaptchaResponse);
             userName = axSaludService.save(axSaludUserDTO);
         } catch (final WooUserServiceException e) {
-            return WooBoHttpError
-                    .of(e)
-                    .toResponseEntity();
+            return WooBoHttpError.of(e).toResponseEntity();
         } catch (Exception e) {
-            log.error("Error while creating user: {}", e);
+            log.error("Error while creating user: {}", e.getMessage(), e);
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity
@@ -78,37 +77,37 @@ public class WoowUserController {
     }
 
     @GetMapping
-    @ApiOperation(value = "Gets patient Information")
+    @Operation(summary = "Get patient information")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK - Patinent Found", response = PatientViewDTO.class),
-            @ApiResponse(code = 301, message = "forbidden"),
-            @ApiResponse(code = 410, message = "password cannot be empty"),
-            @ApiResponse(code = 411, message = "User with username given already exist"),
-            @ApiResponse(code = 414, message = "Sponsor is not active or does not exist."),
-            @ApiResponse(code = 415, message = "User is not an active user"),
+            @ApiResponse(responseCode = "200", description = "Patient found"),
+            @ApiResponse(responseCode = "301", description = "Forbidden"),
+            @ApiResponse(responseCode = "410", description = "Password cannot be empty"),
+            @ApiResponse(responseCode = "411", description = "User with username given already exists"),
+            @ApiResponse(responseCode = "414", description = "Sponsor is not active or does not exist."),
+            @ApiResponse(responseCode = "415", description = "User is not an active user")
     })
     public ResponseEntity<PatientViewDTO> getPatientData(@AuthenticationPrincipal UserDetails userDetails) {
         try {
             return ResponseEntity.ok(axSaludService.get(userDetails.getUsername()));
         } catch (WooUserServiceException e) {
-            log.error("Error while getting user Data user: {}", e);
+            log.error("Error while getting user data: {}", e.getMessage(), e);
             return ResponseEntity.notFound().build();
         }
     }
 
     @PutMapping("/patientData")
-    @ApiOperation(value = "Add Patient Data Information")
+    @Operation(summary = "Add patient data")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK - Patinent Found"),
-            @ApiResponse(code = 301, message = "forbidden")
+            @ApiResponse(responseCode = "200", description = "Patient data updated"),
+            @ApiResponse(responseCode = "301", description = "Forbidden")
     })
-    public ResponseEntity addPatientData(@AuthenticationPrincipal UserDetails userDetails,
-                                         @RequestBody PatientData patientData) {
+    public ResponseEntity<Void> addPatientData(@AuthenticationPrincipal UserDetails userDetails,
+                                               @RequestBody PatientData patientData) {
         try {
             axSaludService.updatePatientData(userDetails.getUsername(), patientData);
             return ResponseEntity.ok().build();
         } catch (WooUserServiceException e) {
-            log.error("Error while getting user Data user: {}", e);
+            log.error("Error while updating patient data: {}", e.getMessage(), e);
             return ResponseEntity.notFound().build();
         }
     }

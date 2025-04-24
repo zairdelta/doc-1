@@ -20,8 +20,6 @@
         <dependency>
             <groupId>com.woow.axsalud</groupId>
             <artifactId>woow-security-api</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
