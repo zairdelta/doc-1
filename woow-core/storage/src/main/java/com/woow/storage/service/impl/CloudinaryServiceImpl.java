@@ -43,9 +43,14 @@ public class CloudinaryServiceImpl implements StorageService {
             result.setFormat((String) uploadResult.get("format"));
             result.setResourceType((String) uploadResult.get("resource_type"));
             result.setFileType(result.getResourceType() + "/" + result.getFormat());
-            result.setBytes((long) uploadResult.get("bytes"));
-            result.setCreatedAt((String) uploadResult.get("created_at"));
 
+            Object bytesValue = uploadResult.get("bytes");
+            if (bytesValue instanceof Number) {
+                result.setBytes(((Number) bytesValue).longValue());
+            }
+
+            result.setCreatedAt((String) uploadResult.get("created_at"));
+            log.info("Result storage: {}", result);
             return result;
 
         } catch (IOException e) {
