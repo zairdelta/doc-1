@@ -35,6 +35,7 @@ public class ConsultationController {
         return ResponseEntity.ok().build();
     }
 
+
     @PostMapping
     public ResponseEntity<ConsultationDTO> create(@RequestBody final SymptomsDTO symptomsDTO,
                                                   @AuthenticationPrincipal UserDetails userDetails) {
@@ -93,8 +94,5 @@ public class ConsultationController {
             return WooBoHttpError.of(e).toResponseEntity();
         }
     }
-
-
-
 
 }

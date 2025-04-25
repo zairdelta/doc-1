@@ -17,7 +17,7 @@ public class ConsultationDTO {
     private String doctor;
     private LocalDateTime createdAt;
     private LocalDateTime finishedAt;
-    private List<SymptomsDTO> symptoms = new ArrayList<>();
+    private String symptoms = "";
     private ConsultationStatus status;
     private String welcomeMessage;
 }

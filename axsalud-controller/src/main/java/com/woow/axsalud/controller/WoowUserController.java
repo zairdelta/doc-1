@@ -4,6 +4,7 @@ import com.woow.axsalud.controller.exception.WooBoHttpError;
 import com.woow.axsalud.data.client.PatientData;
 import com.woow.axsalud.service.api.AxSaludService;
 import com.woow.axsalud.service.api.dto.AxSaludUserDTO;
+import com.woow.axsalud.service.api.dto.ConsultationDTO;
 import com.woow.axsalud.service.api.dto.PatientViewDTO;
 import com.woow.core.service.api.exception.WooUserServiceException;
 import io.swagger.v3.oas.annotations.Operation;
@@ -20,6 +21,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/woo_user")
@@ -75,6 +78,17 @@ public class WoowUserController {
                 .header(LOCATION, appRoot + ROOT_PATH + userName)
                 .build();
     }
+
+    @GetMapping("/consultations")
+    public ResponseEntity<List<ConsultationDTO>> getUserConsultations(@AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            return ResponseEntity.ok(axSaludService.getConsultation(userDetails.getUsername()));
+        } catch (WooUserServiceException e) {
+            log.error("Error while getting user data: {}", e.getMessage(), e);
+            return ResponseEntity.notFound().build();
+        }
+    }
+
 
     @GetMapping
     @Operation(summary = "Get patient information")

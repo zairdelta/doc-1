@@ -4,12 +4,14 @@ import com.woow.axsalud.common.AXSaludUserRoles;
 import com.woow.axsalud.data.client.AxSaludWooUser;
 import com.woow.axsalud.data.client.PatientData;
 import com.woow.axsalud.data.client.WoowUserType;
+import com.woow.axsalud.data.consultation.Consultation;
 import com.woow.axsalud.data.repository.AxSaludUserRepository;
 import com.woow.axsalud.data.repository.PatientDataRepository;
 import com.woow.axsalud.data.serviceprovider.ServiceProvider;
 import com.woow.axsalud.service.api.AxSaludService;
 import com.woow.axsalud.service.api.ServiceProviderService;
 import com.woow.axsalud.service.api.dto.AxSaludUserDTO;
+import com.woow.axsalud.service.api.dto.ConsultationDTO;
 import com.woow.axsalud.service.api.dto.PatientViewDTO;
 import com.woow.core.data.repository.WoowUserRepository;
 import com.woow.core.data.user.WoowUser;
@@ -22,6 +24,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -103,6 +107,44 @@ public class AxSaludServiceImpl implements AxSaludService {
         patientViewDTO.setPatientData(axSaludWooUser.getPatientData());
 
         return patientViewDTO;
+    }
+
+    @Override
+    public List<ConsultationDTO> getConsultation(String userName) throws WooUserServiceException {
+
+        WoowUser woowUser =
+                woowUserRepository.findByUserName(userName);
+
+        if(woowUser == null) {
+            throw new WooUserServiceException("User Not found: " + userName, 404);
+        }
+
+        Optional<AxSaludWooUser> axSaludWooUserOptional =
+                axSaludUserRepository.findByCoreUser_UserId(woowUser.getUserId());
+
+        if(axSaludWooUserOptional.isEmpty()) {
+            throw new WooUserServiceException("User Not found, HID: " + userName, 404);
+        }
+
+        AxSaludWooUser axSaludWooUser = axSaludWooUserOptional.get();
+        List<Consultation> consultations =
+                axSaludWooUser.getPatientConsultations();
+
+        List<ConsultationDTO> consultationDTOS = new ArrayList<>();
+
+        for(Consultation consultation:consultations) {
+            ConsultationDTO consultationDTO = new ConsultationDTO();
+            consultationDTO.setConsultationId(consultation.getConsultationId().toString());
+            consultationDTO.setDoctor(consultation.getDoctor().getCoreUser().getUserName());
+            consultationDTO.setId(consultation.getId());
+            consultationDTO.setCreatedAt(consultation.getCreatedAt());
+            consultationDTO.setFinishedAt(consultation.getFinishedAt());
+            consultationDTO.setSymptoms(consultation.getSymptoms());
+            consultationDTOS.add(consultationDTO);
+        }
+
+        return consultationDTOS;
+
     }
 
     @Override
