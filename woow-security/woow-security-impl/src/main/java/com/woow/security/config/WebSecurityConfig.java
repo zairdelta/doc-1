@@ -53,6 +53,7 @@ public class WebSecurityConfig {
                                 "/api/woo_user/authenticate/user_login",
                                 "/api/woo_user/authenticate/ms_login",
                                 "/api/woo_user/new",
+                                "/ws",
                                 //"/api/health_provider/new",
                                 "/payment-engine-mock",
                                 "/v1/api/v1/users/assign",

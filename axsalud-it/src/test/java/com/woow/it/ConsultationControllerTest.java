@@ -1,5 +1,6 @@
 package com.woow.it;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.woow.WoowBaseTest;
 import com.woow.axsalud.common.WoowConstants;
@@ -29,6 +30,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -112,7 +114,7 @@ public class ConsultationControllerTest extends WoowBaseTest {
         connectHeaders.add(WoowConstants.AUTHORIZATION_HEADER, JWT_TOKEN_PATIENT);
 
         WebSocketHttpHeaders httpHeaders = new WebSocketHttpHeaders();
-        httpHeaders.add(WoowConstants.AUTHORIZATION_HEADER, JWT_TOKEN_PATIENT);
+      //  httpHeaders.add(WoowConstants.AUTHORIZATION_HEADER, JWT_TOKEN_PATIENT);
 
         StompSessionHandler sessionHandler = new StompSessionHandlerAdapter() {};
         System.out.println("HTTP Headers: " + httpHeaders.toSingleValueMap());
@@ -316,7 +318,7 @@ public class ConsultationControllerTest extends WoowBaseTest {
 
         HttpHeaders uploadHeaders = new HttpHeaders();
         uploadHeaders.setContentType(MediaType.MULTIPART_FORM_DATA);
-        uploadHeaders.setBearerAuth(jwtToken);
+        addAuthorizationHeader(axSaludUserDTO.getUserDtoCreate(), uploadHeaders);
 
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
         body.add("file", fileResource);
@@ -330,21 +332,11 @@ public class ConsultationControllerTest extends WoowBaseTest {
 
         Assertions.assertEquals(HttpStatus.OK, uploadResponse.getStatusCode());
 
+        Map<String, Long> result = objectMapper.readValue(uploadResponse.getBody(), new TypeReference<>() {});
+        Long fileId = result.get("fileId");
 
-        ResponseEntity<ConsultationDTO> updatedConsultation = restTemplate.exchange(
-                getBaseUrl() + "consultation/" + consultationId,
-                HttpMethod.GET,
-                new HttpEntity<>(headers),
-                ConsultationDTO.class);
-
-        Assertions.assertNotNull(updatedConsultation.getBody());
-        //Assertions.assertFalse(updatedConsultation.getBody().getDocuments().isEmpty());
-
-      //  long fileId = updatedConsultation.getBody().getDocuments().get(0).getId();
-long fileId = 1l;
-        // Paso 5: Descargar el archivo
         HttpHeaders downloadHeaders = new HttpHeaders();
-        downloadHeaders.setBearerAuth(jwtToken);
+        addAuthorizationHeader(axSaludUserDTO.getUserDtoCreate(), downloadHeaders);
 
         HttpEntity<Void> downloadRequest = new HttpEntity<>(downloadHeaders);
 

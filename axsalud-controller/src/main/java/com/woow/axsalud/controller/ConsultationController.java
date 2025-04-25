@@ -15,6 +15,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/consultation")
 @Slf4j
@@ -72,12 +75,16 @@ public class ConsultationController {
     }
 
     @PostMapping("{consultationId}/file")
-    public ResponseEntity<String> upload(@PathVariable String consultationId,
+    public ResponseEntity<Map> upload(@PathVariable String consultationId,
                                          @AuthenticationPrincipal UserDetails userDetails,
                                     @RequestBody MultipartFile file) {
         try {
+            Map<String, Long> docIdMap = new HashMap<>();
+            Long docId = consultationService.appendDocument(userDetails.getUsername(),
+                    consultationId, file);
+            docIdMap.put("fileId", docId);
             return ResponseEntity
-                    .ok(consultationService.appendDocument(userDetails.getUsername(), consultationId, file));
+                    .ok(docIdMap);
         } catch (ConsultationServiceException e) {
             return WooBoHttpError.of(e).toResponseEntity();
         }

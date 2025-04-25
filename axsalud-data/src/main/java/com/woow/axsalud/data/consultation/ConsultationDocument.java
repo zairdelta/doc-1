@@ -27,7 +27,7 @@ public class ConsultationDocument {
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime lastAccessedAt;
     private LocalDateTime lastModifiedAt;
-
+    private String version;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "uploaded_by_id")
     private AxSaludWooUser uploadedBy;

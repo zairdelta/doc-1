@@ -1,6 +1,8 @@
 package com.woow.storage.service.impl;
 
+import com.cloudinary.AuthToken;
 import com.cloudinary.Cloudinary;
+import com.cloudinary.Transformation;
 import com.cloudinary.utils.ObjectUtils;
 import com.woow.storage.api.StorageService;
 import com.woow.storage.api.StorageServiceException;
@@ -10,7 +12,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -26,13 +30,30 @@ public class CloudinaryServiceImpl implements StorageService {
     @Override
     public StorageServiceUploadResponseDTO uploadFile(MultipartFile file) throws StorageServiceException {
         try {
+
+            String originalFilename = file.getOriginalFilename();
+            String fallbackFormat = null;
+
+            if (originalFilename != null && originalFilename.contains(".")) {
+                fallbackFormat = originalFilename.substring(originalFilename.lastIndexOf('.') + 1);
+            }
+
+            Map<String, Object> tokenAccess = new HashMap<>();
+            tokenAccess.put("access_type", "token");
+
+            List<Map<String, Object>> accessControlList = new ArrayList<>();
+            accessControlList.add(tokenAccess);
+
             Map uploadResult = cloudinary.uploader().upload(
                     file.getBytes(),
                     ObjectUtils.asMap(
-                            "resource_type", "auto",
+                            "resource_type", "raw",
                             "use_filename", true,
                             "unique_filename", true,
-                            "secure", true
+                            "secure", true,
+                            "access_mode", "authenticated",
+                            "access_control", accessControlList,
+                            "format", fallbackFormat
                     )
             );
 
@@ -40,7 +61,12 @@ public class CloudinaryServiceImpl implements StorageService {
             result.setPublicId((String) uploadResult.get("public_id"));
             result.setOriginalFilename((String) uploadResult.get("original_filename"));
             result.setSecureUrl((String) uploadResult.get("secure_url"));
-            result.setFormat((String) uploadResult.get("format"));
+            result.setFormat(fallbackFormat);
+            Object versionObj = uploadResult.get("version");
+            if (versionObj != null) {
+                result.setVersion(versionObj.toString()); // assuming your DTO has a 'version' field as String
+            }
+
             result.setResourceType((String) uploadResult.get("resource_type"));
             result.setFileType(result.getResourceType() + "/" + result.getFormat());
 
@@ -60,32 +86,22 @@ public class CloudinaryServiceImpl implements StorageService {
     }
 
     @Override
-    public String generateSignedUrl(String publicId, int expirationInSeconds)
+    public String generateSignedUrl(String publicId, String format,
+                                    String version, int expirationInSeconds)
             throws StorageServiceException {
         try {
-            long expirationTimestamp = System.currentTimeMillis() / 1000 + expirationInSeconds;
 
-            Map<String, Object> params = ObjectUtils.asMap(
-                    "public_id", publicId,
-                    "resource_type", "auto",
-                    "type", "authenticated",
-                    "timestamp", expirationTimestamp
-            );
 
-            String signature = cloudinary.apiSignRequest(params, cloudinary.config.apiSecret);
 
-            String url = String.format(
-                    "https://res.cloudinary.com/%s/%s/%s/v1/%s?timestamp=%s&signature=%s&api_key=%s",
-                    cloudinary.config.cloudName,
-                    "auto",
-                    "authenticated",
-                    publicId,
-                    expirationTimestamp,
-                    signature,
-                    cloudinary.config.apiKey
-            );
+            String signedUrl = cloudinary.url().transformation(new Transformation())
+                    .type("authenticated")
+                    .authToken(new AuthToken(cloudinary.config.apiKey)
+                    .duration(300))
+                    .signed(true)
+                    .publicId(publicId)
+                    .generate();
 
-            return url;
+            return signedUrl;
 
         } catch (Exception e) {
             log.error("Error generating secureURL: " + e.getMessage());

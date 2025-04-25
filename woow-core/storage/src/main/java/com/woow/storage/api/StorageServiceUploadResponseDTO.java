@@ -12,4 +12,5 @@ public class StorageServiceUploadResponseDTO {
     private String fileType;
     private long bytes;
     private String createdAt;
+    private String version;
 }

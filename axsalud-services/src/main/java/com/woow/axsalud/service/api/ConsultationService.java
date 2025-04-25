@@ -16,6 +16,6 @@ public interface ConsultationService {
     void addMessage(ConsultationMessage consultationMessage)
             throws ConsultationServiceException;
 
-    String appendDocument(String userName, String consultationId, MultipartFile file) throws ConsultationServiceException;
+    long appendDocument(String userName, String consultationId, MultipartFile file) throws ConsultationServiceException;
     String downloadDocument(String userName, String consultationId, long fileId) throws ConsultationServiceException;
 }

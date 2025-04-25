@@ -229,7 +229,7 @@ public class ConsultationServiceImpl implements ConsultationService {
     }
 
     @Override
-    public String appendDocument(String userName, String consultationId,
+    public long appendDocument(String userName, String consultationId,
                                  MultipartFile file) throws ConsultationServiceException {
         try {
             WoowUser woowUser = woowUserRepository.findByUserName(userName);
@@ -249,6 +249,7 @@ public class ConsultationServiceImpl implements ConsultationService {
             doc.setElementPublicId(storageServiceUploadResponseDTO.getPublicId());
             doc.setSecureUrl(storageServiceUploadResponseDTO.getSecureUrl());
             doc.setFormat(storageServiceUploadResponseDTO.getFormat());
+            doc.setVersion(storageServiceUploadResponseDTO.getVersion());
 
             if (storageServiceUploadResponseDTO.getCreatedAt() != null) {
                 doc.setCreatedAt(LocalDateTime.parse(storageServiceUploadResponseDTO.getCreatedAt(),
@@ -261,10 +262,12 @@ public class ConsultationServiceImpl implements ConsultationService {
             doc.setUploaderRole(axSaludWooUser.getUserType());
             doc.setConsultation(consultation);
 
+            doc = consultationDocumentRepository.save(doc);
+
             consultation.getDocuments().add(doc);
             consultationRepository.save(consultation);
 
-            return storageServiceUploadResponseDTO.getSecureUrl();
+            return doc.getId();
         } catch (StorageServiceException e) {
             throw new ConsultationServiceException(e.getMessage(), 301);
         }
@@ -279,7 +282,8 @@ public class ConsultationServiceImpl implements ConsultationService {
         ConsultationDocument consultationDocument = consultationDocumentOptional.get();
         try {
             return storageService.generateSignedUrl(consultationDocument.getElementPublicId(),
-                    95000);
+                    consultationDocument.getVersion(),
+                    consultationDocument.getFormat(), 95000);
         } catch (StorageServiceException e) {
             throw new ConsultationServiceException(e.getMessage(), 301);
         }
