@@ -24,7 +24,7 @@ public class JwtWebSocketInterceptor implements ChannelInterceptor {
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
 
-        // Only process CONNECT frames
+
         if (StompCommand.CONNECT.equals(accessor.getCommand())) {
             String authHeader = accessor.getFirstNativeHeader("Authorization");
 
@@ -37,7 +37,6 @@ public class JwtWebSocketInterceptor implements ChannelInterceptor {
 
                 if (username != null && jwtTokenUtil.validateToken(jwtToken, userDetails)) {
 
-                    // Attach authenticated user to the session
                     accessor.setUser(new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
                             userDetails, null, userDetails.getAuthorities()));
                 }

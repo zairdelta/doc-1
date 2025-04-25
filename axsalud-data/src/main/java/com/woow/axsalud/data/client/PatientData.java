@@ -22,4 +22,7 @@ public class PatientData {
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "patient_data_id")
     Set<PatientAdditional> patientAdditionalSet = new HashSet<>();
+    @Lob
+    @Column(nullable = false, columnDefinition = "TEXT")
+    String preexistences;
 }

@@ -24,12 +24,15 @@ import java.util.Map;
 public class ConsultationController {
 
     private ConsultationService consultationService;
-    private final SimpMessagingTemplate messagingTemplate;
 
-    public ConsultationController(ConsultationService consultationService,
-                                  SimpMessagingTemplate messagingTemplate) {
+    public ConsultationController(ConsultationService consultationService) {
         this.consultationService = consultationService;
-        this.messagingTemplate = messagingTemplate;
+    }
+
+    @GetMapping("/{consultationId}")
+    public ResponseEntity<ConsultationDTO> get(@PathVariable String consultationId,
+                                               @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping
@@ -53,19 +56,6 @@ public class ConsultationController {
             String userName = userDetails.getUsername();
             ConsultationDTO consultationDTO =
                     consultationService.assign(userName, consultationId);
-            ConsultationMessage welcomeMessage = new ConsultationMessage();
-            welcomeMessage.setSender(userName);
-            welcomeMessage.setReceiver(consultationDTO.getPatient());
-            welcomeMessage.setConsultationId(consultationId);
-            welcomeMessage.setContent("👋 " + consultationDTO.getWelcomeMessage());
-            welcomeMessage.setMessageType("WELCOME");
-            consultationService.addMessage(welcomeMessage);
-
-            messagingTemplate.convertAndSendToUser(
-                    consultationDTO.getPatient(),
-                    "/queue/messages",
-                    welcomeMessage
-            );
 
             return ResponseEntity.ok(consultationDTO);
 

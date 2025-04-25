@@ -129,6 +129,7 @@ public class ConsultationServiceImpl implements ConsultationService {
         consultationDTO.setPatient(patient.getUserName());
         consultationDTO.getSymptoms().add(symptomsDTO);
 
+        messagingTemplate.convertAndSend("/topic/new-patient", consultationDTO);
 
         return consultationDTO;
     }
@@ -141,12 +142,6 @@ public class ConsultationServiceImpl implements ConsultationService {
 
         if(consultation == null) {
             throw new ConsultationServiceException("Invalid Consultation, ", 402);
-        }
-
-        if(!ConsultationStatus.ON_GOING.getStatus()
-                .equalsIgnoreCase(consultation.getStatus().getStatus())) {
-            throw new ConsultationServiceException("Invalid Consultation Status, it is not ON_GOING, status:  "
-                    + consultation.getStatus(), 402);
         }
 
         if(Strings.EMPTY.equalsIgnoreCase(receiver)) {
@@ -204,6 +199,22 @@ public class ConsultationServiceImpl implements ConsultationService {
         consultationDTO.setPatient(consultation.getPatient().getCoreUser().getUserName());
         consultationDTO.setDoctor(doctor);
         consultationDTO.setConsultationId(consultation.getConsultationId().toString());
+
+        ConsultationMessage welcomeMessage = new ConsultationMessage();
+        welcomeMessage.setSender(doctor);
+        welcomeMessage.setReceiver(consultationDTO.getPatient());
+        welcomeMessage.setConsultationId(consultationId);
+        welcomeMessage.setContent("👋 " + consultationDTO.getWelcomeMessage());
+        welcomeMessage.setMessageType("WELCOME");
+
+        addMessage(welcomeMessage);
+
+        messagingTemplate.convertAndSendToUser(
+                consultationDTO.getPatient(),
+                "/queue/messages",
+                welcomeMessage
+        );
+
         return consultationDTO;
 
     }
