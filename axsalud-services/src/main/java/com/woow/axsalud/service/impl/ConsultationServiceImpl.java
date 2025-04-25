@@ -127,7 +127,7 @@ public class ConsultationServiceImpl implements ConsultationService {
         ConsultationDTO consultationDTO = modelMapper.map(consultation, ConsultationDTO.class);
         consultationDTO.setDoctor("");
         consultationDTO.setPatient(patient.getUserName());
-        consultationDTO.getSymptoms().add(symptomsDTO);
+        consultationDTO.setSymptoms(symptomsDTO.getText());
 
         messagingTemplate.convertAndSend("/topic/new-patient", consultationDTO);
 
