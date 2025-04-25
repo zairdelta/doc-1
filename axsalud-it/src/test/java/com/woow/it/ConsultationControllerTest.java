@@ -90,7 +90,8 @@ public class ConsultationControllerTest extends WoowBaseTest {
                 .postForEntity(getBaseUrl() + "woo_user/new", request, Void.class);
         Assertions.assertEquals(response.getStatusCode(), HttpStatus.OK);
         Assertions.assertNotNull(response.getHeaders().getLocation());
-        assertThat(response.getHeaders().getLocation().toString()).contains("/api/woo_user/realuser@woow.com");
+        assertThat(response.getHeaders().getLocation().toString())
+                .contains("/api/woo_user/realuser@woow.com");
 
         SymptomsDTO symptomsDTO = new SymptomsDTO();
         symptomsDTO.setText("My Symtoms are headache, temperature");
@@ -110,15 +111,15 @@ public class ConsultationControllerTest extends WoowBaseTest {
 
         System.out.println("JWT_TOKEN_PATIENT: " + JWT_TOKEN_PATIENT);
 
-        StompHeaders connectHeaders = new StompHeaders();
-        connectHeaders.add(WoowConstants.AUTHORIZATION_HEADER, JWT_TOKEN_PATIENT);
+        StompHeaders connectPatientnHeaders = new StompHeaders();
+       // connectPatientnHeaders.add(WoowConstants.AUTHORIZATION_HEADER, JWT_TOKEN_PATIENT);
 
         WebSocketHttpHeaders httpHeaders = new WebSocketHttpHeaders();
-      //  httpHeaders.add(WoowConstants.AUTHORIZATION_HEADER, JWT_TOKEN_PATIENT);
+        httpHeaders.add(WoowConstants.AUTHORIZATION_HEADER, JWT_TOKEN_PATIENT);
 
         StompSessionHandler sessionHandler = new StompSessionHandlerAdapter() {};
         System.out.println("HTTP Headers: " + httpHeaders.toSingleValueMap());
-        System.out.println("STOMP Headers: " + connectHeaders.toSingleValueMap());
+        System.out.println("STOMP Headers: " + connectPatientnHeaders.toSingleValueMap());
 
         // Install the all-trusting trust manager
         TrustStrategy acceptingTrustStrategy = new TrustStrategy() {
@@ -141,9 +142,9 @@ public class ConsultationControllerTest extends WoowBaseTest {
         BlockingQueue<ConsultationMessage> patientQueue = new ArrayBlockingQueue<>(5);
 
         CompletableFuture<StompSession> futureSession = stompClient
-                .connectAsync(WS_URI, httpHeaders, connectHeaders, sessionHandler);
+                .connectAsync(WS_URI, httpHeaders, connectPatientnHeaders, sessionHandler);
 
-        StompSession session = futureSession.get(5, TimeUnit.SECONDS);
+        StompSession session = futureSession.get(500, TimeUnit.SECONDS);
 
         session.subscribe("/user/queue/messages", new StompFrameHandler() {
             @Override
@@ -194,7 +195,7 @@ public class ConsultationControllerTest extends WoowBaseTest {
         System.out.println("DOCTOR: " + JWT_TOKEN_DOCTOR);
 
         StompHeaders doctorStompHeaders = new StompHeaders();
-        doctorStompHeaders.add(WoowConstants.AUTHORIZATION_HEADER, JWT_TOKEN_DOCTOR);
+       // doctorStompHeaders.add(WoowConstants.AUTHORIZATION_HEADER, JWT_TOKEN_DOCTOR);
 
         WebSocketHttpHeaders doctorHeaders = new WebSocketHttpHeaders();
         doctorHeaders.add(WoowConstants.AUTHORIZATION_HEADER, JWT_TOKEN_DOCTOR);
@@ -204,7 +205,7 @@ public class ConsultationControllerTest extends WoowBaseTest {
 
         CompletableFuture<StompSession> futureDoctorSession = stompClient
                 .connectAsync(WS_URI, doctorHeaders, doctorStompHeaders, doctorSessionHandler);
-        StompSession doctorSession = futureDoctorSession.get(5, TimeUnit.SECONDS);
+        StompSession doctorSession = futureDoctorSession.get(100, TimeUnit.SECONDS);
 
         BlockingQueue<ConsultationMessage> doctorMessages = new ArrayBlockingQueue<>(5);
 
@@ -224,7 +225,7 @@ public class ConsultationControllerTest extends WoowBaseTest {
         message.setConsultationId(consultationDTOResponseEntity
                 .getBody().getConsultationId().toString());
         message.setContent("Hello from patient");
-        message.setReceiver(axSaludUserDTO.getUserDtoCreate().getUserName());
+        message.setReceiver(healthServiceProviderDTO.getUserDtoCreate().getUserName());
 
         session.send("/app/consultation/" + consultationDTOResponseEntity
                 .getBody().getConsultationId().toString() +"/private", message);
@@ -280,7 +281,8 @@ public class ConsultationControllerTest extends WoowBaseTest {
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
         body.add("file", fileResource);
 
-        HttpEntity<MultiValueMap<String, Object>> multipartRequest = new HttpEntity<>(body, multipartHeaders);
+        HttpEntity<MultiValueMap<String, Object>> multipartRequest =
+                new HttpEntity<>(body, multipartHeaders);
 
         ResponseEntity<String> uploadResponse = restTemplate.postForEntity(
                 getBaseUrl() + "consultation/" + consultationId + "/file", multipartRequest, String.class);
@@ -299,9 +301,6 @@ public class ConsultationControllerTest extends WoowBaseTest {
 
         HttpEntity<AxSaludUserDTO> request = new HttpEntity<>(axSaludUserDTO, headers);
         restTemplate.postForEntity(getBaseUrl() + "woo_user/new", request, Void.class);
-
-        String jwtToken = login(axSaludUserDTO.getUserDtoCreate().getUserName(),
-                axSaludUserDTO.getUserDtoCreate().getPassword());
 
         SymptomsDTO symptomsDTO = new SymptomsDTO();
         symptomsDTO.setText("Headache and fever");

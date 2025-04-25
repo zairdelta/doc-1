@@ -2,6 +2,7 @@ package com.woow.security.config.interceptor;
 
 import com.woow.security.api.JwtTokenUtil;
 import com.woow.security.api.JwtUserDetailsService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
@@ -12,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 @Component
+@Slf4j
 public class JwtWebSocketInterceptor implements ChannelInterceptor {
 
     @Autowired
@@ -24,10 +26,12 @@ public class JwtWebSocketInterceptor implements ChannelInterceptor {
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
 
+        log.info("Getting stomp message: {}", message.getPayload());
+
 
         if (StompCommand.CONNECT.equals(accessor.getCommand())) {
             String authHeader = accessor.getFirstNativeHeader("Authorization");
-
+            log.info("Getting STOMP CONNECT");
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 String jwtToken = authHeader.substring(7);
                 String username = jwtTokenUtil.getUsernameFromToken(jwtToken);

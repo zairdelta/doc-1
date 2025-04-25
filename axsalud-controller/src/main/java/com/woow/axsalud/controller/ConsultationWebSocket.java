@@ -24,10 +24,9 @@ public class ConsultationWebSocket {
     @MessageMapping("/consultation/{consultationId}/private")
     public void sendPrivateMessage(@DestinationVariable String consultationId,
                                    @Payload ConsultationMessage consultationMessage,
-                                   Principal sender) {
-
+                                   Principal principal) {
         consultationMessage.setConsultationId(consultationId);
-        consultationMessage.setSender(sender.getName());
+        consultationMessage.setSender(principal.getName());
         consultationService.handledConsultationMessage(consultationMessage);
     }
 }
