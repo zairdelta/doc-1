@@ -65,7 +65,34 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         String username = null;
         int userId = 0;
+
         String jwtToken = null;
+        if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
+            jwtToken = requestTokenHeader.substring(7);
+        } else {
+
+            String query = request.getQueryString();
+            if (query != null) {
+                for (String param : query.split("&")) {
+                    if (param.startsWith("token=")) {
+                        jwtToken = param.substring("token=".length());
+                        break;
+                    }
+                    if (param.startsWith("tokenBearer=")) {
+                        jwtToken = param.substring("tokenBearer=".length());
+                        break;
+                    }
+                }
+            }
+
+            if (jwtToken != null) {
+                log.info("JWT Token extracted from URL query string: {}", jwtToken);
+            } else {
+                log.warn("JWT Token not found in Authorization header or URL, ip: {}", getClientIP(request));
+            }
+        }
+
+
         UserInformation userInformation = new UserInformation();
 
         String requestUri = request.getRequestURI();
@@ -77,9 +104,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
             // JWT Token is in the form "Bearer token". Remove Bearer word and get
             // only the Token
-            if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
+          //  if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
 
-                jwtToken = requestTokenHeader.substring(7);
+                //jwtToken = requestTokenHeader.substring(7);
                 try {
                     username = jwtTokenUtil.getUsernameFromToken(jwtToken);
                     //TenantContext.setCurrentTenant(jwtTokenUtil.getTenantId(jwtToken));
@@ -93,10 +120,10 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 } catch (final ExpiredJwtException e) {
                     log.error("JWT Token has expired");
                 }
-            } else {
-                log.warn("JWT Token does not begin with Bearer String, ip: {}",
-                    getClientIP(request));
-            }
+           // } else {
+           //     log.warn("JWT Token does not begin with Bearer String, ip: {}",
+          //          getClientIP(request));
+          //  }
 
             // Once we get the token validate it.
             if (username != null
