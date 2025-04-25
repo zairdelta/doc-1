@@ -87,6 +87,44 @@ LOCK TABLES `consultation` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `consultation_document`
+--
+
+DROP TABLE IF EXISTS `consultation_document`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `consultation_document` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `created_at` datetime(6) DEFAULT NULL,
+  `element_public_id` varchar(255) DEFAULT NULL,
+  `file_name` varchar(255) DEFAULT NULL,
+  `file_type` varchar(255) DEFAULT NULL,
+  `format` varchar(255) DEFAULT NULL,
+  `last_accessed_at` datetime(6) DEFAULT NULL,
+  `last_modified_at` datetime(6) DEFAULT NULL,
+  `secure_url` varchar(255) DEFAULT NULL,
+  `uploader_role` enum('DOCTOR','HEALTH_SERVICE_PROVIDER','PATIENT','PSYCHOLOGIST') DEFAULT NULL,
+  `version` varchar(255) DEFAULT NULL,
+  `consultation_id` bigint DEFAULT NULL,
+  `uploaded_by_id` bigint DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `FKtfoojkegmq0gupxl6solmdf8p` (`consultation_id`),
+  KEY `FKkpgdwcltpcdm9rmwcpoj7nppp` (`uploaded_by_id`),
+  CONSTRAINT `FKkpgdwcltpcdm9rmwcpoj7nppp` FOREIGN KEY (`uploaded_by_id`) REFERENCES `ax_salud_woo_user` (`id`),
+  CONSTRAINT `FKtfoojkegmq0gupxl6solmdf8p` FOREIGN KEY (`consultation_id`) REFERENCES `consultation` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `consultation_document`
+--
+
+LOCK TABLES `consultation_document` WRITE;
+/*!40000 ALTER TABLE `consultation_document` DISABLE KEYS */;
+/*!40000 ALTER TABLE `consultation_document` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `consultation_message_entity`
 --
 
@@ -252,6 +290,7 @@ CREATE TABLE `patient_data` (
   `emergency_contact_name` varchar(255) DEFAULT NULL,
   `emergency_contact_number` varchar(255) DEFAULT NULL,
   `height` float NOT NULL,
+  `preexistences` text NOT NULL,
   `weight` float NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -289,7 +328,7 @@ CREATE TABLE `service_provider` (
 
 LOCK TABLES `service_provider` WRITE;
 /*!40000 ALTER TABLE `service_provider` DISABLE KEYS */;
-INSERT INTO `service_provider` VALUES (1,'2025-04-24 11:28:23.000000','https://localhost:8080/external_provider','HealthConnect','2025-12-31');
+INSERT INTO `service_provider` VALUES (1,'2025-04-25 19:20:29.000000','https://localhost:8080/external_provider','HealthConnect','2025-12-31');
 /*!40000 ALTER TABLE `service_provider` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -360,7 +399,7 @@ CREATE TABLE `woow_user` (
 
 LOCK TABLES `woow_user` WRITE;
 /*!40000 ALTER TABLE `woow_user` DISABLE KEYS */;
-INSERT INTO `woow_user` VALUES (1,'yes','Av Reforma 123','Int 5','1995-06-15','CDMX','MX','01234','2025-04-24 11:28:23.000000','master@example.com',_binary '',NULL,0,'masterLastName',0,1,'5551234567','master',NULL,'$2a$10$nOyz3qX1lLYv9GOZcwBieeO1KSYDT6funrQx322uHIuX8LWY9XQQW',_binary '\0','CDMX',_binary '','master@example.com'),(2,'yes','Street 1','Street 2',NULL,'CDMX','MX','12345','2025-04-24 10:28:25.877698','realuser@woow.com',_binary '\0',NULL,0,'User',0,0,'1234567890','Real',NULL,'$2a$10$msTW226vtKQ.wTwxoeZcqu2GkAOrsC77FLug8CmkHKRpI/Igaewcy',_binary '\0','CDMX',_binary '','realuser@woow.com');
+INSERT INTO `woow_user` VALUES (1,'yes','Av Reforma 123','Int 5','1995-06-15','CDMX','MX','01234','2025-04-25 19:20:29.000000','master@example.com',_binary '',NULL,0,'masterLastName',0,1,'5551234567','master',NULL,'$2a$10$nOyz3qX1lLYv9GOZcwBieeO1KSYDT6funrQx322uHIuX8LWY9XQQW',_binary '\0','CDMX',_binary '','master@example.com'),(2,'yes','Street 1','Street 2',NULL,'CDMX','MX','12345','2025-04-25 18:20:30.678356','realuser@woow.com',_binary '\0',NULL,0,'User',0,0,'1234567890','Real',NULL,'$2a$10$f6JhUnPQNDh2GFWuoXtZ/uTh2hG1d1Hm7pJ8IORttwd/owabg4ff2',_binary '\0','CDMX',_binary '','realuser@woow.com');
 /*!40000 ALTER TABLE `woow_user` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -373,4 +412,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-04-24 11:40:52
+-- Dump completed on 2025-04-25 19:26:54
