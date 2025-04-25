@@ -66,9 +66,11 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         String username = null;
         int userId = 0;
 
+        log.info("Validating token");
         String jwtToken = null;
         if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
             jwtToken = requestTokenHeader.substring(7);
+            log.info("Token created, Bearer Format");
         } else {
 
             String query = request.getQueryString();
@@ -76,10 +78,12 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 for (String param : query.split("&")) {
                     if (param.startsWith("token=")) {
                         jwtToken = param.substring("token=".length());
+                        log.info("Token created from uri as token");
                         break;
                     }
                     if (param.startsWith("tokenBearer=")) {
                         jwtToken = param.substring("tokenBearer=".length());
+                        log.info("Token created from uri as tokenBearer");
                         break;
                     }
                 }
