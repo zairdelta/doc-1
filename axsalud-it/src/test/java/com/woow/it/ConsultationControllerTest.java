@@ -241,6 +241,27 @@ public class ConsultationControllerTest extends WoowBaseTest {
         doctorMessagesList.stream()
                 .anyMatch(msg -> "Hello from patient".equalsIgnoreCase(msg.getContent()));
 
+        HttpHeaders consultationFetchHeaders = new HttpHeaders();
+        consultationFetchHeaders.setContentType(MediaType.APPLICATION_JSON);
+        addAuthorizationHeader(axSaludUserDTO.getUserDtoCreate(), consultationFetchHeaders);// <-- Aquí usas el token en Bearer Auth
+
+        HttpEntity<Void> fetchConsultationsRequest = new HttpEntity<>(consultationFetchHeaders);
+
+        ResponseEntity<ConsultationDTO[]> consultationsResponse = restTemplate.exchange(
+                getBaseUrl() + "woo_user/consultations",
+                HttpMethod.GET,
+                fetchConsultationsRequest,
+                ConsultationDTO[].class
+        );
+
+        Assertions.assertEquals(HttpStatus.OK, consultationsResponse.getStatusCode());
+        Assertions.assertNotNull(consultationsResponse.getBody());
+        Assertions.assertTrue(consultationsResponse.getBody().length > 0);
+
+        for (ConsultationDTO consultation : consultationsResponse.getBody()) {
+            System.out.println("Consultation ID: " + consultation.getConsultationId());
+        }
+
     }
 
     @Test
