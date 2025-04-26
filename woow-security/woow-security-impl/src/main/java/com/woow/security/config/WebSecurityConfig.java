@@ -67,6 +67,7 @@ public class WebSecurityConfig {
                                 "/v3/api-docs/**",
                                 "/swagger-resources/**",
                                 "/webjars/**",
+                             "/api/serviceprovider",
                              //   "/webjars/**",
                              //   "/api/woo_user/**/credentials/**",
                              //   "/api/woo_user/**/validate/**",
