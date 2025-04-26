@@ -61,6 +61,7 @@ public class AxSaludServiceImpl implements AxSaludService {
             throws WooUserServiceException {
         UserDtoCreate userDtoCreate = new UserDtoCreate();
         modelMapper.map(axSaludUserDTO.getUserDtoCreate(), userDtoCreate);
+        userDtoCreate.setUserName(axSaludUserDTO.getUserDtoCreate().getEmail());
         wooWUserService.save(userDtoCreate);
 
         WoowUser woowUser = woowUserRepository

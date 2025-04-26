@@ -52,6 +52,7 @@ public class HealthServiceProviderImpl implements HealthServiceProvider {
         healthServiceProviderDTO.getDoctorData().setId(0);
         UserDtoCreate userDtoCreate = new UserDtoCreate();
         modelMapper.map(healthServiceProviderDTO.getUserDtoCreate(), userDtoCreate);
+        userDtoCreate.setUserName(healthServiceProviderDTO.getUserDtoCreate().getEmail());
         wooWUserService.save(userDtoCreate);
 
         WoowUser woowUser = woowUserRepository.findByUserName(userDtoCreate.getUserName());
