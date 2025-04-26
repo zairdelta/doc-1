@@ -16,13 +16,13 @@ import java.util.List;
 
 public class MySockJSClient {
 
-    public static void mains(String[] args) throws Exception {
+    public static void main(String[] args) throws Exception {
         // WebSocket client
         StandardWebSocketClient standardWebSocketClient = new StandardWebSocketClient();
 
         // WebSocket HTTP headers
         WebSocketHttpHeaders handshakeHeaders = new WebSocketHttpHeaders();
-        handshakeHeaders.add("Authorization", "Bearer eyJhbGciOiJIUzUxMiJ9.eyJyb2xlcyI6WyJBRE1JTiJdLCJ1c2VySWQiOjEsInN1YiI6Im1hc3RlckBleGFtcGxlLmNvbSIsImlhdCI6MTc0NTU5MjYxMSwiZXhwIjoxNzQ1NjEwNjExfQ.UFSl7O2hcNuYg6l1T-SvpUNsa4YPECWRubglSt2v9FKQwv5PCh5ZH8X9VIMd83o4_dKQpno7ShiM73T67EjQ4Q");
+       // handshakeHeaders.add("Authorization", "Bearer eyJhbGciOiJIUzUxMiJ9.eyJyb2xlcyI6WyJBRE1JTiJdLCJ1c2VySWQiOjEsInN1YiI6Im1hc3RlckBleGFtcGxlLmNvbSIsImlhdCI6MTc0NTU5MjYxMSwiZXhwIjoxNzQ1NjEwNjExfQ.UFSl7O2hcNuYg6l1T-SvpUNsa4YPECWRubglSt2v9FKQwv5PCh5ZH8X9VIMd83o4_dKQpno7ShiM73T67EjQ4Q");
 
         List<Transport> transports = new ArrayList<>();
         transports.add(new WebSocketTransport(standardWebSocketClient));
@@ -32,7 +32,7 @@ public class MySockJSClient {
         stompClient.setMessageConverter(new MappingJackson2MessageConverter());
 
 
-        String url = "https://telemedicine-backend-dev-652309c07146.herokuapp.com/ws";
+        String url = "https://telemedicine-backend-dev-652309c07146.herokuapp.com:443/ws?token=eyJhbGciOiJIUzUxMiJ9.eyJyb2xlcyI6WyJBRE1JTiJdLCJ1c2VySWQiOjEsInN1YiI6Im1hc3RlckBleGFtcGxlLmNvbSIsImlhdCI6MTc0NTY1NjExNCwiZXhwIjoxNzQ1Njc0MTE0fQ.BwSNLqbuDZJOg9AHiXUQML7Npjzpg0QTeMoTSh431XVYbBPERoeDHqo3thCDS_DDt1-HjD1YNz4rRiLH8OyBiQ";
         StompHeaders stompHeaders = new StompHeaders();
 
         StompSession session = stompClient.connectAsync(url,
