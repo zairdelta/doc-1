@@ -4,15 +4,15 @@ import com.woow.security.api.JwtTokenUtil;
 import com.woow.security.config.interceptor.JwtWebSocketInterceptor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
-import org.springframework.security.config.annotation.web.socket.EnableWebSocketSecurity;
 import org.springframework.web.socket.WebSocketHandler;
-import org.springframework.web.socket.config.annotation.*;
+import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
+import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
+import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
 
 import java.security.Principal;
@@ -56,6 +56,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                                 String jwtToken = authHeader.substring(7);
                                 String username = jwtTokenUtil.getUsernameFromToken(jwtToken);
+                                log.info("UserName ConnectedTo Socket from token: {}", username);
                                 return () -> username;
                             }
 
