@@ -90,7 +90,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             }
 
             if (jwtToken != null) {
-                log.info("JWT Token extracted from URL query string: {}", jwtToken);
+                log.info("JWT Token extracted from URL query string or header");
             } else {
                 log.warn("JWT Token not found in Authorization header or URL, ip: {}", getClientIP(request));
             }
