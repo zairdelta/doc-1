@@ -26,6 +26,7 @@ public class Consultation {
     private AxSaludWooUser doctor;
     private LocalDateTime createdAt;
     private LocalDateTime finishedAt;
+    private LocalDateTime startedAt;
     @Lob
     @Column(nullable = false, columnDefinition = "TEXT")
     private String symptoms;

@@ -2,9 +2,9 @@ package com.woow.axsalud.service.impl;
 
 import com.woow.axsalud.data.client.AxSaludWooUser;
 import com.woow.axsalud.data.consultation.Consultation;
+import com.woow.axsalud.data.consultation.ConsultationDocument;
 import com.woow.axsalud.data.consultation.ConsultationMessageEntity;
 import com.woow.axsalud.data.consultation.ConsultationStatus;
-import com.woow.axsalud.data.consultation.ConsultationDocument;
 import com.woow.axsalud.data.repository.AxSaludUserRepository;
 import com.woow.axsalud.data.repository.ConsultationDocumentRepository;
 import com.woow.axsalud.data.repository.ConsultationMessageRepository;
@@ -20,9 +20,9 @@ import com.woow.core.service.api.exception.WooUserServiceException;
 import com.woow.storage.api.StorageService;
 import com.woow.storage.api.StorageServiceException;
 import com.woow.storage.api.StorageServiceUploadResponseDTO;
-import io.jsonwebtoken.lang.Strings;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +40,8 @@ import java.util.UUID;
 @Transactional
 public class ConsultationServiceImpl implements ConsultationService {
 
+    @Value("${woow.system.user:master@example.com}")
+    private String SYSTEM_USER;
     private ConsultationRepository consultationRepository;
     private WoowUserRepository woowUserRepository;
     private AxSaludUserRepository axSaludUserRepository;
@@ -71,17 +73,22 @@ public class ConsultationServiceImpl implements ConsultationService {
     @Transactional
     public void handledConsultationMessage(ConsultationMessage consultationMessage) {
         try {
+            log.debug("Validating Message: {}", consultationMessage);
             validate(consultationMessage.getConsultationId(),
                     consultationMessage.getReceiver(), consultationMessage.getSender());
             addMessage(consultationMessage);
         } catch (ConsultationServiceException e) {
 
+
             ConsultationMessage errorMessage = new ConsultationMessage();
             errorMessage.setConsultationId(consultationMessage.getConsultationId());
-            errorMessage.setSender("system");
+            errorMessage.setSender(SYSTEM_USER);
             errorMessage.setReceiver(consultationMessage.getSender());
             errorMessage.setContent("❌ Failed to send message: " + e.getMessage());
             errorMessage.setMessageType("ERROR");
+
+            log.error("Error validating or adding message for consultationMessage: {}, errorMessage:{}, reporting to system user: {}",
+                    consultationMessage, errorMessage, SYSTEM_USER);
 
             try {
                 addMessage(errorMessage);
@@ -145,6 +152,7 @@ public class ConsultationServiceImpl implements ConsultationService {
     @Override
     public void validate(String consultationId, String receiver, String sender)
             throws ConsultationServiceException {
+        log.info("Validating consultationId: {}, receiver: {}, sender: {}", consultationId, receiver, sender);
         Consultation consultation =
                 consultationRepository.findByConsultationId(UUID.fromString(consultationId));
 
@@ -169,7 +177,7 @@ public class ConsultationServiceImpl implements ConsultationService {
         }
 
         if(!(sender.equalsIgnoreCase(consultation.getPatient().getCoreUser().getUserName()) ||
-                receiver.equalsIgnoreCase(consultation.getDoctor().getCoreUser().getUserName()))) {
+                sender.equalsIgnoreCase(consultation.getDoctor().getCoreUser().getUserName()))) {
             throw new ConsultationServiceException("Sender cannot access consultation:  " + consultation.getConsultationId()
                     + consultation.getStatus(), 405);
         }
@@ -201,6 +209,7 @@ public class ConsultationServiceImpl implements ConsultationService {
         AxSaludWooUser axSaludWooUser = axSaludWooUserOptional.get();
         consultation.setDoctor(axSaludWooUser);
         consultation.setStatus(ConsultationStatus.ON_GOING);
+        consultation.setStartedAt(LocalDateTime.now());
 
         ConsultationDTO consultationDTO = new ConsultationDTO();
         consultationDTO.setWelcomeMessage(axSaludWooUser.getDoctorWelcomeMessage());
@@ -236,10 +245,10 @@ public class ConsultationServiceImpl implements ConsultationService {
         consultationMessageEntity.setConsultation(consultation);
         consultationMessageEntity.setContent(consultationMessage.getContent());
 
-        log.info("Adding message to DB, sender: {}", consultationMessage.getSender());
+        log.info("Adding message to DB, sentBy: {}", consultationMessage.getSender());
 
         WoowUser woowUser = woowUserRepository.findByUserName(consultationMessage.getSender());
-        log.debug("WoowUSer: {}", woowUser);
+        log.debug("sender from DB: {}", woowUser);
         if(woowUser == null) {
             throw new ConsultationServiceException("User not found: " + consultationMessage.getSender(), 404);
         }
@@ -247,7 +256,8 @@ public class ConsultationServiceImpl implements ConsultationService {
         Optional<AxSaludWooUser> axSaludWooUserOptional =
                 axSaludUserRepository.findByCoreUser_UserId(woowUser.getUserId());
 
-        consultationMessageEntity.setSentBy(axSaludWooUserOptional.get());
+        axSaludWooUserOptional.ifPresent(consultationMessageEntity::setSentBy);
+
         consultationMessageRepository.save(consultationMessageEntity);
         consultation.getMessages().add(consultationMessageEntity);
         consultationRepository.save(consultation);

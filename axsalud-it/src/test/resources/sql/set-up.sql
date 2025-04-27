@@ -15,7 +15,7 @@ INSERT INTO woow_user (
 )
 VALUES (
     1,
-    '1995-06-15', 'master', 'master@example.com', 'masterLastName', 'MX',
+    '1995-06-15', 'master@example.com', 'master@example.com', 'masterLastName', 'MX',
      '$2a$10$nOyz3qX1lLYv9GOZcwBieeO1KSYDT6funrQx322uHIuX8LWY9XQQW',
       'master@example.com',
     'yes', '5551234567', 'CDMX', 'CDMX', '01234',
@@ -23,7 +23,8 @@ VALUES (
     true, NOW(), 0, 0, 1
 );
 
-
+INSERT INTO ax_salud_woo_user
+VALUES('1', NULL, 'HID-123', NULL, '21', 'OFFLINE', 'PATIENT', 1, NULL, NULL);
 
 INSERT INTO user_roles (user_id, role)
 VALUES

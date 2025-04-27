@@ -227,23 +227,25 @@ public class ConsultationControllerTest extends WoowBaseTest {
         message.setContent("Hello from patient");
         message.setReceiver(healthServiceProviderDTO.getUserDtoCreate().getUserName());
 
+        System.out.println("Patient Message Content");
         session.send("/app/consultation/" + consultationDTOResponseEntity
                 .getBody().getConsultationId().toString() +"/private", message);
 
-        List<ConsultationMessage> patientMessagesList = new ArrayList<>();
-        patientQueue.drainTo(patientMessagesList, 10);
+        message = new ConsultationMessage();
+        message.setConsultationId(consultationDTOResponseEntity
+                .getBody().getConsultationId().toString());
+        message.setContent("Doctor MEssage Content");
+        message.setReceiver(axSaludUserDTO.getUserDtoCreate().getUserName());
+        System.out.println("Doctor Message");
+        doctorSession.send("/app/consultation/" + consultationDTOResponseEntity
+                .getBody().getConsultationId().toString() +"/private", message);
 
-        List<ConsultationMessage> doctorMessagesList = new ArrayList<>();
-        doctorMessages.drainTo(doctorMessagesList, 10);
 
-        patientMessagesList.stream()
-                        .anyMatch(msg -> "WELCOME".equalsIgnoreCase(msg.getContent()));
-        doctorMessagesList.stream()
-                .anyMatch(msg -> "Hello from patient".equalsIgnoreCase(msg.getContent()));
+
 
         HttpHeaders consultationFetchHeaders = new HttpHeaders();
         consultationFetchHeaders.setContentType(MediaType.APPLICATION_JSON);
-        addAuthorizationHeader(axSaludUserDTO.getUserDtoCreate(), consultationFetchHeaders);// <-- Aquí usas el token en Bearer Auth
+        addAuthorizationHeader(axSaludUserDTO.getUserDtoCreate(), consultationFetchHeaders);
 
         HttpEntity<Void> fetchConsultationsRequest = new HttpEntity<>(consultationFetchHeaders);
 
@@ -261,6 +263,22 @@ public class ConsultationControllerTest extends WoowBaseTest {
         for (ConsultationDTO consultation : consultationsResponse.getBody()) {
             System.out.println("Consultation ID: " + consultation.getConsultationId());
         }
+
+        Thread.sleep(5000);
+
+        List<ConsultationMessage> patientMessagesList = new ArrayList<>();
+        patientQueue.drainTo(patientMessagesList, 10);
+
+        List<ConsultationMessage> doctorMessagesList = new ArrayList<>();
+        doctorMessages.drainTo(doctorMessagesList, 10);
+
+        patientMessagesList.stream()
+                .anyMatch(msg -> "WELCOME".equalsIgnoreCase(msg.getContent()));
+        doctorMessagesList.stream()
+                .anyMatch(msg -> "Hello from patient".equalsIgnoreCase(msg.getContent()));
+
+
+        patientMessagesList.forEach(consultationMessage -> System.out.println("PatientMessages: " + consultationMessage.getContent()));
 
     }
 
