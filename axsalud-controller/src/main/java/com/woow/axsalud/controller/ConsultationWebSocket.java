@@ -27,6 +27,7 @@ public class ConsultationWebSocket {
                                    Principal principal) {
         consultationMessage.setConsultationId(consultationId);
         consultationMessage.setSender(principal.getName());
+        log.info("consultationMessage Received: {}", consultationMessage);
         consultationService.handledConsultationMessage(consultationMessage);
     }
 }

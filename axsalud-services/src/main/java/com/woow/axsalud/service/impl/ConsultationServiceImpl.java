@@ -26,6 +26,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
@@ -144,13 +145,13 @@ public class ConsultationServiceImpl implements ConsultationService {
             throw new ConsultationServiceException("Invalid Consultation, ", 402);
         }
 
-        if(Strings.EMPTY.equalsIgnoreCase(receiver)) {
-            throw new ConsultationServiceException("Sender cannot be empty  "
+        if(ObjectUtils.isEmpty(receiver)) {
+            throw new ConsultationServiceException("Receiver cannot be empty  "
                     + consultation.getStatus(), 402);
         }
 
-        if(Strings.EMPTY.equalsIgnoreCase(sender)) {
-            throw new ConsultationServiceException("Receiver cannot be empty  "
+        if(ObjectUtils.isEmpty(sender)) {
+            throw new ConsultationServiceException("Sender cannot be empty  "
                     + consultation.getStatus(), 402);
         }
 
