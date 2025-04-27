@@ -35,8 +35,8 @@ public class ConsultationDocument {
     @Enumerated(EnumType.STRING)
     private WoowUserType uploaderRole;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "consultation_id")
-    private Consultation consultation;
+    @ManyToOne
+    @JoinColumn(name = "consultation_session_id")
+    private ConsultationSession consultationSession;
 }
 

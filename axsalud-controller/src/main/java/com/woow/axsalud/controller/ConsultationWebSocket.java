@@ -1,7 +1,7 @@
 package com.woow.axsalud.controller;
 
 import com.woow.axsalud.service.api.ConsultationService;
-import com.woow.axsalud.service.api.dto.ConsultationMessage;
+import com.woow.axsalud.service.api.dto.ConsultationMessageDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -21,11 +21,15 @@ public class ConsultationWebSocket {
         this.consultationService = consultationService;
     }
 
-    @MessageMapping("/consultation/{consultationId}/private")
-    public void sendPrivateMessage(@DestinationVariable String consultationId,
-                                   @Payload ConsultationMessage consultationMessage,
-                                   Principal principal) {
+    @MessageMapping("/consultation/{consultationId}/session/{consultationSessionId}/private")
+    public void sendPrivateMessage(
+            @DestinationVariable String consultationId,
+            @DestinationVariable String consultationSessionId,
+            @Payload ConsultationMessageDTO consultationMessage,
+            Principal principal
+    ) {
         consultationMessage.setConsultationId(consultationId);
+        consultationMessage.setConsultationSessionId(consultationSessionId);
         consultationMessage.setSender(principal.getName());
         log.info("consultationMessage Received: {}", consultationMessage);
         consultationService.handledConsultationMessage(consultationMessage);

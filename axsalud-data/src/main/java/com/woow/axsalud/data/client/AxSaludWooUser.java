@@ -20,8 +20,6 @@ public class AxSaludWooUser {
     private WoowUserType userType;
     @Enumerated(EnumType.STRING)
     private CountryLocationOffices locationOffices;
-    @OneToMany(mappedBy = "doctor")
-    private List<Consultation> doctorConsultations = new ArrayList<>();
     @OneToMany(mappedBy = "patient")
     private List<Consultation> patientConsultations = new ArrayList<>();
     @OneToOne

@@ -17,8 +17,8 @@ public class ConsultationMessageEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     @ManyToOne
-    @JoinColumn(name = "consultation_id")
-    private Consultation consultation;
+    @JoinColumn(name = "consultation_session_id")
+    private ConsultationSession consultationSession;
     @ManyToOne
     @JoinColumn(name = "sent_by_user_id", nullable = false)
     private AxSaludWooUser sentBy;

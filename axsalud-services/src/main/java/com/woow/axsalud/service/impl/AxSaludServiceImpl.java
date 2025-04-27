@@ -5,14 +5,13 @@ import com.woow.axsalud.data.client.AxSaludWooUser;
 import com.woow.axsalud.data.client.PatientData;
 import com.woow.axsalud.data.client.WoowUserType;
 import com.woow.axsalud.data.consultation.Consultation;
+import com.woow.axsalud.data.consultation.ConsultationSession;
 import com.woow.axsalud.data.repository.AxSaludUserRepository;
 import com.woow.axsalud.data.repository.PatientDataRepository;
 import com.woow.axsalud.data.serviceprovider.ServiceProvider;
 import com.woow.axsalud.service.api.AxSaludService;
 import com.woow.axsalud.service.api.ServiceProviderService;
-import com.woow.axsalud.service.api.dto.AxSaludUserDTO;
-import com.woow.axsalud.service.api.dto.ConsultationDTO;
-import com.woow.axsalud.service.api.dto.PatientViewDTO;
+import com.woow.axsalud.service.api.dto.*;
 import com.woow.core.data.repository.WoowUserRepository;
 import com.woow.core.data.user.WoowUser;
 import com.woow.core.service.api.UserDtoCreate;
@@ -136,11 +135,30 @@ public class AxSaludServiceImpl implements AxSaludService {
         for(Consultation consultation:consultations) {
             ConsultationDTO consultationDTO = new ConsultationDTO();
             consultationDTO.setConsultationId(consultation.getConsultationId().toString());
-            consultationDTO.setDoctor(consultation.getDoctor().getCoreUser().getUserName());
             consultationDTO.setId(consultation.getId());
             consultationDTO.setCreatedAt(consultation.getCreatedAt());
             consultationDTO.setFinishedAt(consultation.getFinishedAt());
             consultationDTO.setSymptoms(consultation.getSymptoms());
+
+            List<ConsultationSessionIdDTO> consultationSessionIdDTOList = new ArrayList<>();
+
+            for(ConsultationSession consultationSession:consultation.getSessions()) {
+                ConsultationSessionIdDTO consultationSessionIdDTO = new ConsultationSessionIdDTO();
+                consultationSessionIdDTO.setStartAt(consultationSession.getStartAt());
+                consultationSessionIdDTO
+                        .setConsultationSessionId(consultationSession.getConsultationSessionId().toString());
+                consultationSessionIdDTO.setFinishedAt(consultationSession.getFinishedAt());
+
+                DoctorViewDTO doctorViewDTO = new DoctorViewDTO();
+                modelMapper.map(consultationSession.getDoctor(), doctorViewDTO);
+                //doctorViewDTO.setWelcomeMessage(consultationSession.getDoctor().getDoctorWelcomeMessage());
+               // doctorViewDTO.setCp();
+             //   doctorViewDTO.setDoctorData(consultationSession.getDoctor().getDoctorData());
+                consultationSessionIdDTO.setDoctorViewDTO(doctorViewDTO);
+                consultationSessionIdDTOList.add(consultationSessionIdDTO);
+            }
+            consultationDTO.setConsultationSessionIdDTOList(consultationSessionIdDTOList);
+
             consultationDTOS.add(consultationDTO);
         }
 

@@ -139,7 +139,7 @@ public class ConsultationControllerTest extends WoowBaseTest {
         WebSocketStompClient stompClient = new WebSocketStompClient(standardWebSocketClient);
         stompClient.setMessageConverter(new MappingJackson2MessageConverter());
 
-        BlockingQueue<ConsultationMessage> patientQueue = new ArrayBlockingQueue<>(5);
+        BlockingQueue<ConsultationMessageDTO> patientQueue = new ArrayBlockingQueue<>(5);
 
         CompletableFuture<StompSession> futureSession = stompClient
                 .connectAsync(WS_URI, httpHeaders, connectPatientnHeaders, sessionHandler);
@@ -149,12 +149,12 @@ public class ConsultationControllerTest extends WoowBaseTest {
         session.subscribe("/user/queue/messages", new StompFrameHandler() {
             @Override
             public Type getPayloadType(StompHeaders headers) {
-                return ConsultationMessage.class;
+                return ConsultationMessageDTO.class;
             }
 
             @Override
             public void handleFrame(StompHeaders headers, Object payload) {
-                patientQueue.offer((ConsultationMessage) payload);
+                patientQueue.offer((ConsultationMessageDTO) payload);
             }
         });
 
@@ -182,7 +182,9 @@ public class ConsultationControllerTest extends WoowBaseTest {
 
         ResponseEntity<ConsultationDTO> consultationDoctorDTOResponseEntity =
                 restTemplate.exchange(getBaseUrl() + "consultation/" +
-                                consultationDTOResponseEntity.getBody().getConsultationId() + "/doctor",
+                                consultationDTOResponseEntity.getBody().getConsultationId() +
+                                "/sessionId/" +
+                                consultationDTOResponseEntity.getBody().getCurrentSessionIdIfExists() + "/doctor",
                         HttpMethod.PUT,
                         acceptPatientDoctorRequest,
                         ConsultationDTO.class);
@@ -207,21 +209,21 @@ public class ConsultationControllerTest extends WoowBaseTest {
                 .connectAsync(WS_URI, doctorHeaders, doctorStompHeaders, doctorSessionHandler);
         StompSession doctorSession = futureDoctorSession.get(100, TimeUnit.SECONDS);
 
-        BlockingQueue<ConsultationMessage> doctorMessages = new ArrayBlockingQueue<>(5);
+        BlockingQueue<ConsultationMessageDTO> doctorMessages = new ArrayBlockingQueue<>(5);
 
         doctorSession.subscribe("/user/queue/messages", new StompFrameHandler() {
             @Override
             public Type getPayloadType(StompHeaders headers) {
-                return ConsultationMessage.class;
+                return ConsultationMessageDTO.class;
             }
 
             @Override
             public void handleFrame(StompHeaders headers, Object payload) {
-                doctorMessages.offer((ConsultationMessage) payload);
+                doctorMessages.offer((ConsultationMessageDTO) payload);
             }
         });
 
-        ConsultationMessage message = new ConsultationMessage();
+        ConsultationMessageDTO message = new ConsultationMessageDTO();
         message.setConsultationId(consultationDTOResponseEntity
                 .getBody().getConsultationId().toString());
         message.setContent("Hello from patient");
@@ -229,18 +231,18 @@ public class ConsultationControllerTest extends WoowBaseTest {
 
         System.out.println("Patient Message Content");
         session.send("/app/consultation/" + consultationDTOResponseEntity
-                .getBody().getConsultationId().toString() +"/private", message);
+                .getBody().getConsultationId().toString() + "/session/" + consultationDTOResponseEntity.getBody().getCurrentSessionIdIfExists() + "/private", message);
 
-        message = new ConsultationMessage();
-        message.setConsultationId(consultationDTOResponseEntity
+        message = new ConsultationMessageDTO();
+        message.setConsultationId(consultationDoctorDTOResponseEntity
                 .getBody().getConsultationId().toString());
-        message.setContent("Doctor MEssage Content");
+        message.setConsultationSessionId(consultationDoctorDTOResponseEntity.getBody().getCurrentSessionIdIfExists());
+        message.setContent("Hello from Doctor");
         message.setReceiver(axSaludUserDTO.getUserDtoCreate().getUserName());
         System.out.println("Doctor Message");
-        doctorSession.send("/app/consultation/" + consultationDTOResponseEntity
-                .getBody().getConsultationId().toString() +"/private", message);
-
-
+        doctorSession.send("/app/consultation/" + consultationDoctorDTOResponseEntity
+                .getBody().getConsultationId().toString() + "/session/" + consultationDoctorDTOResponseEntity
+                .getBody().getCurrentSessionIdIfExists() + "/private", message);
 
 
         HttpHeaders consultationFetchHeaders = new HttpHeaders();
@@ -266,10 +268,10 @@ public class ConsultationControllerTest extends WoowBaseTest {
 
         Thread.sleep(5000);
 
-        List<ConsultationMessage> patientMessagesList = new ArrayList<>();
+        List<ConsultationMessageDTO> patientMessagesList = new ArrayList<>();
         patientQueue.drainTo(patientMessagesList, 10);
 
-        List<ConsultationMessage> doctorMessagesList = new ArrayList<>();
+        List<ConsultationMessageDTO> doctorMessagesList = new ArrayList<>();
         doctorMessages.drainTo(doctorMessagesList, 10);
 
         patientMessagesList.stream()
@@ -279,6 +281,7 @@ public class ConsultationControllerTest extends WoowBaseTest {
 
 
         patientMessagesList.forEach(consultationMessage -> System.out.println("PatientMessages: " + consultationMessage.getContent()));
+        doctorMessagesList.forEach(consultationMessage -> System.out.println("Doctor Messages: " + consultationMessage.getContent()));
 
     }
 

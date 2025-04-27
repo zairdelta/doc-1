@@ -68,13 +68,10 @@ CREATE TABLE `consultation` (
   `started_at` datetime(6) DEFAULT NULL,
   `status` enum('FINISHED','ON_GOING','SUSPENDED','WAITING_FOR_DOCTOR') DEFAULT NULL,
   `symptoms` text NOT NULL,
-  `doctor_id` bigint DEFAULT NULL,
   `patient_id` bigint DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `FKqogcfg575nrr0yi44m289sna2` (`doctor_id`),
   KEY `FKio232y6wlf8nty9cxyrv7tver` (`patient_id`),
-  CONSTRAINT `FKio232y6wlf8nty9cxyrv7tver` FOREIGN KEY (`patient_id`) REFERENCES `ax_salud_woo_user` (`id`),
-  CONSTRAINT `FKqogcfg575nrr0yi44m289sna2` FOREIGN KEY (`doctor_id`) REFERENCES `ax_salud_woo_user` (`id`)
+  CONSTRAINT `FKio232y6wlf8nty9cxyrv7tver` FOREIGN KEY (`patient_id`) REFERENCES `ax_salud_woo_user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -106,13 +103,13 @@ CREATE TABLE `consultation_document` (
   `secure_url` varchar(255) DEFAULT NULL,
   `uploader_role` enum('DOCTOR','HEALTH_SERVICE_PROVIDER','PATIENT','PSYCHOLOGIST') DEFAULT NULL,
   `version` varchar(255) DEFAULT NULL,
-  `consultation_id` bigint DEFAULT NULL,
+  `consultation_session_id` bigint DEFAULT NULL,
   `uploaded_by_id` bigint DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `FKtfoojkegmq0gupxl6solmdf8p` (`consultation_id`),
+  KEY `FKgey5u8v6y61e1dosdiyaisp87` (`consultation_session_id`),
   KEY `FKkpgdwcltpcdm9rmwcpoj7nppp` (`uploaded_by_id`),
-  CONSTRAINT `FKkpgdwcltpcdm9rmwcpoj7nppp` FOREIGN KEY (`uploaded_by_id`) REFERENCES `ax_salud_woo_user` (`id`),
-  CONSTRAINT `FKtfoojkegmq0gupxl6solmdf8p` FOREIGN KEY (`consultation_id`) REFERENCES `consultation` (`id`)
+  CONSTRAINT `FKgey5u8v6y61e1dosdiyaisp87` FOREIGN KEY (`consultation_session_id`) REFERENCES `consultation_session` (`id`),
+  CONSTRAINT `FKkpgdwcltpcdm9rmwcpoj7nppp` FOREIGN KEY (`uploaded_by_id`) REFERENCES `ax_salud_woo_user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -137,12 +134,12 @@ CREATE TABLE `consultation_message_entity` (
   `content` text NOT NULL,
   `status` enum('DELIVERED','SENT_TO_RECEIVER','SERVER_RECEIVED') DEFAULT NULL,
   `timestamp` datetime(6) NOT NULL,
-  `consultation_id` bigint DEFAULT NULL,
+  `consultation_session_id` bigint DEFAULT NULL,
   `sent_by_user_id` bigint NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `FKjmk0xy6j4axxm7erirf2uh0ex` (`consultation_id`),
+  KEY `FK4t0cgxlofpujqldaqkx14ecjp` (`consultation_session_id`),
   KEY `FKt5rq9pd9k4oc99y7nrc72s0jm` (`sent_by_user_id`),
-  CONSTRAINT `FKjmk0xy6j4axxm7erirf2uh0ex` FOREIGN KEY (`consultation_id`) REFERENCES `consultation` (`id`),
+  CONSTRAINT `FK4t0cgxlofpujqldaqkx14ecjp` FOREIGN KEY (`consultation_session_id`) REFERENCES `consultation_session` (`id`),
   CONSTRAINT `FKt5rq9pd9k4oc99y7nrc72s0jm` FOREIGN KEY (`sent_by_user_id`) REFERENCES `ax_salud_woo_user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -154,6 +151,40 @@ CREATE TABLE `consultation_message_entity` (
 LOCK TABLES `consultation_message_entity` WRITE;
 /*!40000 ALTER TABLE `consultation_message_entity` DISABLE KEYS */;
 /*!40000 ALTER TABLE `consultation_message_entity` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `consultation_session`
+--
+
+DROP TABLE IF EXISTS `consultation_session`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `consultation_session` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `consultation_session_id` binary(16) DEFAULT NULL,
+  `created_at` datetime(6) DEFAULT NULL,
+  `diagnosis` text,
+  `finished_at` datetime(6) DEFAULT NULL,
+  `start_at` datetime(6) DEFAULT NULL,
+  `status` enum('FINISHED','ON_GOING','SUSPENDED','WAITING_FOR_DOCTOR') DEFAULT NULL,
+  `consultation_id` bigint DEFAULT NULL,
+  `doctor_id` bigint DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `FKk4fq5hpgjjmq1wjpjtty0dwxg` (`consultation_id`),
+  KEY `FKdiwihht1jeq8i3sgugtybr782` (`doctor_id`),
+  CONSTRAINT `FKdiwihht1jeq8i3sgugtybr782` FOREIGN KEY (`doctor_id`) REFERENCES `ax_salud_woo_user` (`id`),
+  CONSTRAINT `FKk4fq5hpgjjmq1wjpjtty0dwxg` FOREIGN KEY (`consultation_id`) REFERENCES `consultation` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `consultation_session`
+--
+
+LOCK TABLES `consultation_session` WRITE;
+/*!40000 ALTER TABLE `consultation_session` DISABLE KEYS */;
+/*!40000 ALTER TABLE `consultation_session` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -329,7 +360,7 @@ CREATE TABLE `service_provider` (
 
 LOCK TABLES `service_provider` WRITE;
 /*!40000 ALTER TABLE `service_provider` DISABLE KEYS */;
-INSERT INTO `service_provider` VALUES (1,'2025-04-27 08:11:13.000000','https://localhost:8080/external_provider','HealthConnect','2025-12-31');
+INSERT INTO `service_provider` VALUES (1,'2025-04-27 23:47:24.000000','https://localhost:8080/external_provider','HealthConnect','2025-12-31');
 /*!40000 ALTER TABLE `service_provider` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -400,7 +431,7 @@ CREATE TABLE `woow_user` (
 
 LOCK TABLES `woow_user` WRITE;
 /*!40000 ALTER TABLE `woow_user` DISABLE KEYS */;
-INSERT INTO `woow_user` VALUES (1,'yes','Av Reforma 123','Int 5','1995-06-15','CDMX','MX','01234','2025-04-27 08:11:13.000000','master@example.com',_binary '',NULL,0,'masterLastName',0,1,'5551234567','master@example.com',NULL,'$2a$10$nOyz3qX1lLYv9GOZcwBieeO1KSYDT6funrQx322uHIuX8LWY9XQQW',_binary '\0','CDMX',_binary '','master@example.com'),(2,'yes','Street 1','Street 2',NULL,'CDMX','MX','12345','2025-04-27 07:11:15.393416','realuser@woow.com',_binary '\0',NULL,0,'User',0,0,'1234567890','Real',NULL,'$2a$10$z8fKMJVSxarxu9Vd7Jm.l.b5uIx2bHdgIkhRri8mEnhO.4CNTyrPq',_binary '\0','CDMX',_binary '','realuser@woow.com');
+INSERT INTO `woow_user` VALUES (1,'yes','Av Reforma 123','Int 5','1995-06-15','CDMX','MX','01234','2025-04-27 23:47:24.000000','master@example.com',_binary '',NULL,0,'masterLastName',0,1,'5551234567','master@example.com',NULL,'$2a$10$nOyz3qX1lLYv9GOZcwBieeO1KSYDT6funrQx322uHIuX8LWY9XQQW',_binary '\0','CDMX',_binary '','master@example.com'),(2,'yes','Street 1','Street 2',NULL,'CDMX','MX','12345','2025-04-27 22:47:26.671305','realuser@woow.com',_binary '\0',NULL,0,'User',0,0,'1234567890','Real',NULL,'$2a$10$AtspY4PKY0mnYhz7g294/OajPuWXwpA42Rd2SDgrZvg.y354.Izbm',_binary '\0','CDMX',_binary '','realuser@woow.com');
 /*!40000 ALTER TABLE `woow_user` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -413,4 +444,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-04-27  8:12:24
+-- Dump completed on 2025-04-27 23:54:10

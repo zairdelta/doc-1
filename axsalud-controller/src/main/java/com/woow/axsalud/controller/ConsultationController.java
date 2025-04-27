@@ -2,14 +2,12 @@ package com.woow.axsalud.controller;
 
 import com.woow.axsalud.controller.exception.WooBoHttpError;
 import com.woow.axsalud.service.api.ConsultationService;
-import com.woow.axsalud.service.api.dto.ConsultationMessage;
 import com.woow.axsalud.service.api.dto.ConsultationDTO;
 import com.woow.axsalud.service.api.dto.SymptomsDTO;
 import com.woow.axsalud.service.api.exception.ConsultationServiceException;
 import com.woow.core.service.api.exception.WooUserServiceException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -48,15 +46,16 @@ public class ConsultationController {
         }
     }
 
-    @PutMapping("/{consultationId}/doctor")
+    @PutMapping("/{consultationId}/sessionId/{consultationSessionId}/doctor")
     public ResponseEntity<ConsultationDTO>
     assignDoctor(@PathVariable String consultationId,
+                 @PathVariable String consultationSessionId,
                  @AuthenticationPrincipal UserDetails userDetails) {
         try {
 
             String userName = userDetails.getUsername();
             ConsultationDTO consultationDTO =
-                    consultationService.assign(userName, consultationId);
+                    consultationService.assign(userName, consultationId, consultationSessionId);
 
             return ResponseEntity.ok(consultationDTO);
 

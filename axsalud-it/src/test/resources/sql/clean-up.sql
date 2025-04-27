@@ -1,8 +1,10 @@
+SET FOREIGN_KEY_CHECKS = 0;
 DELETE FROM user_roles;
 DELETE FROM health_service_provider_review;
 DELETE FROM service_provider;
 DELETE FROM consultation_document;
 DELETE FROM consultation_message_entity;
+DELETE FROM consultation_session;
 DELETE FROM consultation;
 DELETE FROM ax_salud_woo_user;
 DELETE FROM woow_user;

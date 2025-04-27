@@ -16,14 +16,11 @@ public class Consultation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     private UUID consultationId = UUID.randomUUID();
-    @OneToMany(mappedBy = "consultation")
-    private Set<ConsultationMessageEntity> messages = new HashSet<>();
+
     @ManyToOne
     @JoinColumn(name = "patient_id")
     private AxSaludWooUser patient;
-    @ManyToOne
-    @JoinColumn(name = "doctor_id")
-    private AxSaludWooUser doctor;
+
     private LocalDateTime createdAt;
     private LocalDateTime finishedAt;
     private LocalDateTime startedAt;
@@ -32,8 +29,10 @@ public class Consultation {
     private String symptoms;
     @Enumerated(EnumType.STRING)
     private ConsultationStatus status;
-    @OneToMany(mappedBy = "consultation", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<ConsultationDocument> documents = new HashSet<>();
+
+    @OneToMany(mappedBy = "consultation",
+            cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ConsultationSession> sessions = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {

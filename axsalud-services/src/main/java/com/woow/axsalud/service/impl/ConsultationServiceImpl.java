@@ -1,18 +1,10 @@
 package com.woow.axsalud.service.impl;
 
 import com.woow.axsalud.data.client.AxSaludWooUser;
-import com.woow.axsalud.data.consultation.Consultation;
-import com.woow.axsalud.data.consultation.ConsultationDocument;
-import com.woow.axsalud.data.consultation.ConsultationMessageEntity;
-import com.woow.axsalud.data.consultation.ConsultationStatus;
-import com.woow.axsalud.data.repository.AxSaludUserRepository;
-import com.woow.axsalud.data.repository.ConsultationDocumentRepository;
-import com.woow.axsalud.data.repository.ConsultationMessageRepository;
-import com.woow.axsalud.data.repository.ConsultationRepository;
+import com.woow.axsalud.data.consultation.*;
+import com.woow.axsalud.data.repository.*;
 import com.woow.axsalud.service.api.ConsultationService;
-import com.woow.axsalud.service.api.dto.ConsultationDTO;
-import com.woow.axsalud.service.api.dto.ConsultationMessage;
-import com.woow.axsalud.service.api.dto.SymptomsDTO;
+import com.woow.axsalud.service.api.dto.*;
 import com.woow.axsalud.service.api.exception.ConsultationServiceException;
 import com.woow.core.data.repository.WoowUserRepository;
 import com.woow.core.data.user.WoowUser;
@@ -50,6 +42,7 @@ public class ConsultationServiceImpl implements ConsultationService {
     private SimpMessagingTemplate messagingTemplate;
     private StorageService storageService;
     private ConsultationDocumentRepository consultationDocumentRepository;
+    private ConsultationSessionRepository consultationSessionRepository;
 
     public ConsultationServiceImpl(ConsultationRepository consultationRepository,
                                    WoowUserRepository woowUserRepository,
@@ -58,7 +51,8 @@ public class ConsultationServiceImpl implements ConsultationService {
                                    SimpMessagingTemplate messagingTemplate,
                                    ConsultationMessageRepository consultationMessageRepository,
                                    final ConsultationDocumentRepository consultationDocumentRepository,
-                                   final StorageService storageService) {
+                                   final StorageService storageService,
+                                   final ConsultationSessionRepository consultationSessionRepository) {
         this.consultationRepository = consultationRepository;
         this.woowUserRepository = woowUserRepository;
         this.axSaludUserRepository = axSaludUserRepository;
@@ -67,20 +61,22 @@ public class ConsultationServiceImpl implements ConsultationService {
         this.messagingTemplate = messagingTemplate;
         this.consultationDocumentRepository = consultationDocumentRepository;
         this.storageService = storageService;
+        this.consultationSessionRepository = consultationSessionRepository;
     }
 
     @Override
     @Transactional
-    public void handledConsultationMessage(ConsultationMessage consultationMessage) {
+    public void handledConsultationMessage(ConsultationMessageDTO consultationMessage) {
         try {
             log.debug("Validating Message: {}", consultationMessage);
             validate(consultationMessage.getConsultationId(),
+                    consultationMessage.getConsultationSessionId(),
                     consultationMessage.getReceiver(), consultationMessage.getSender());
             addMessage(consultationMessage);
         } catch (ConsultationServiceException e) {
 
 
-            ConsultationMessage errorMessage = new ConsultationMessage();
+            ConsultationMessageDTO errorMessage = new ConsultationMessageDTO();
             errorMessage.setConsultationId(consultationMessage.getConsultationId());
             errorMessage.setSender(SYSTEM_USER);
             errorMessage.setReceiver(consultationMessage.getSender());
@@ -136,13 +132,17 @@ public class ConsultationServiceImpl implements ConsultationService {
         consultation.setSymptoms(symptomsDTO.getText());
         consultation.setStatus(ConsultationStatus.WAITING_FOR_DOCTOR);
 
+        ConsultationSession consultationSession = new ConsultationSession();
+        consultationSession.setConsultation(consultation);
+        consultationSession.setStatus(ConsultationSessionStatus.WAITING_FOR_DOCTOR);
+        consultation.getSessions().add(consultationSession);
 
         consultationRepository.save(consultation);
 
         ConsultationDTO consultationDTO = modelMapper.map(consultation, ConsultationDTO.class);
-        consultationDTO.setDoctor("");
         consultationDTO.setPatient(patient.getUserName());
         consultationDTO.setSymptoms(symptomsDTO.getText());
+        consultationDTO.setCurrentSessionIdIfExists(consultationSession.getConsultationSessionId().toString());
 
         messagingTemplate.convertAndSend("/topic/new-patient", consultationDTO);
 
@@ -150,44 +150,53 @@ public class ConsultationServiceImpl implements ConsultationService {
     }
 
     @Override
-    public void validate(String consultationId, String receiver, String sender)
+    public void validate(String consultationId,
+                         String consultationSessionId,
+                         String receiver, String sender)
             throws ConsultationServiceException {
-        log.info("Validating consultationId: {}, receiver: {}, sender: {}", consultationId, receiver, sender);
-        Consultation consultation =
-                consultationRepository.findByConsultationId(UUID.fromString(consultationId));
+        log.info("Validating consultationId: {}, receiver: {}, sender: {}", consultationSessionId, receiver, sender);
+        ConsultationSession consultationSession =
+                consultationSessionRepository.findByConsultationSessionId(UUID.fromString(consultationSessionId));
 
-        if(consultation == null) {
-            throw new ConsultationServiceException("Invalid Consultation, ", 402);
+        if(consultationSession == null) {
+            throw new ConsultationServiceException("Invalid Consultation Session, ", 402);
         }
 
         if(ObjectUtils.isEmpty(receiver)) {
             throw new ConsultationServiceException("Receiver cannot be empty  "
-                    + consultation.getStatus(), 402);
+                    + consultationSession.getStatus(), 402);
         }
 
         if(ObjectUtils.isEmpty(sender)) {
             throw new ConsultationServiceException("Sender cannot be empty  "
-                    + consultation.getStatus(), 402);
+                    + consultationSession.getStatus(), 402);
         }
 
+        //TODO Add validation to check consultationSessionId belongs to the same consultation
+        Consultation consultation =
+                consultationRepository.findByConsultationId(UUID.fromString(consultationId));
+
+
+
         if(!(receiver.equalsIgnoreCase(consultation.getPatient().getCoreUser().getUserName()) ||
-                receiver.equalsIgnoreCase(consultation.getDoctor().getCoreUser().getUserName()))) {
+                receiver.equalsIgnoreCase(consultationSession.getDoctor().getCoreUser().getUserName()))) {
             throw new ConsultationServiceException("Receiver cannot access consultation:  " + consultation.getConsultationId()
-                    + consultation.getStatus(), 405);
+                    + consultationSession.getStatus(), 405);
         }
 
         if(!(sender.equalsIgnoreCase(consultation.getPatient().getCoreUser().getUserName()) ||
-                sender.equalsIgnoreCase(consultation.getDoctor().getCoreUser().getUserName()))) {
+                sender.equalsIgnoreCase(consultationSession.getDoctor().getCoreUser().getUserName()))) {
             throw new ConsultationServiceException("Sender cannot access consultation:  " + consultation.getConsultationId()
                     + consultation.getStatus(), 405);
         }
 
-
     }
 
     @Override
-    public ConsultationDTO assign(String doctor, String consultationId) throws ConsultationServiceException {
+    public ConsultationDTO assign(String doctor, String consultationId, String consultationSessionId) throws ConsultationServiceException {
         Consultation consultation = consultationRepository.findByConsultationId(UUID.fromString(consultationId));
+
+        log.info("Assigning doctor: {} to consultationId: {}", doctor, consultationId);
 
         if(consultation == null) {
             throw new ConsultationServiceException("invalid consultationId: " + consultationId, 402);
@@ -206,24 +215,50 @@ public class ConsultationServiceImpl implements ConsultationService {
             throw new ConsultationServiceException("Health User does not exist: " + doctor + ", consultationId: "
                     + consultationId, 402);
         }
+
         AxSaludWooUser axSaludWooUser = axSaludWooUserOptional.get();
-        consultation.setDoctor(axSaludWooUser);
+        ConsultationSession consultationSession = consultationSessionRepository
+                .findByConsultationSessionId(UUID.fromString(consultationSessionId));
+
+        if(consultationSession == null) {
+            throw new ConsultationServiceException("consultationSession: " + consultationSessionId + " does not exist, consultationId: "
+                    + consultationId, 402);
+        }
+
+        consultationSession.setDoctor(axSaludWooUser);
+        consultationSession.setStartAt(LocalDateTime.now());
+        consultationSession.setStatus(ConsultationSessionStatus.ON_GOING);
+
         consultation.setStatus(ConsultationStatus.ON_GOING);
-        consultation.setStartedAt(LocalDateTime.now());
+
+        if(ConsultationStatus.WAITING_FOR_DOCTOR == consultation.getStatus()) {
+            consultation.setStartedAt(LocalDateTime.now());
+        }
+
+        ConsultationSessionIdDTO consultationSessionIdDTO = new ConsultationSessionIdDTO();
+        DoctorViewDTO doctorViewDTO = new DoctorViewDTO();
+        modelMapper.map(consultationSession.getDoctor(), doctorViewDTO);
+        consultationSessionIdDTO.setDoctorViewDTO(doctorViewDTO);
+        consultationSessionIdDTO.setStartAt(LocalDateTime.now());
+        consultationSessionIdDTO.setConsultationSessionId(consultationSession
+                .getConsultationSessionId().toString());
 
         ConsultationDTO consultationDTO = new ConsultationDTO();
         consultationDTO.setWelcomeMessage(axSaludWooUser.getDoctorWelcomeMessage());
         consultationDTO.setPatient(consultation.getPatient().getCoreUser().getUserName());
-        consultationDTO.setDoctor(doctor);
+        consultationDTO.getConsultationSessionIdDTOList().add(consultationSessionIdDTO);
+        consultationDTO.setCurrentSessionIdIfExists(consultationSessionId);
         consultationDTO.setConsultationId(consultation.getConsultationId().toString());
 
-        ConsultationMessage welcomeMessage = new ConsultationMessage();
+        ConsultationMessageDTO welcomeMessage = new ConsultationMessageDTO();
         welcomeMessage.setSender(doctor);
         welcomeMessage.setReceiver(consultationDTO.getPatient());
         welcomeMessage.setConsultationId(consultationId);
+        welcomeMessage.setConsultationSessionId(consultationSession.getConsultationSessionId().toString());
         welcomeMessage.setContent("👋 " + consultationDTO.getWelcomeMessage());
         welcomeMessage.setMessageType("WELCOME");
 
+        log.info("Sending Welcome message:{} ", welcomeMessage);
         addMessage(welcomeMessage);
 
         messagingTemplate.convertAndSendToUser(
@@ -232,17 +267,21 @@ public class ConsultationServiceImpl implements ConsultationService {
                 welcomeMessage
         );
 
+        consultationRepository.save(consultation);
+
         return consultationDTO;
 
     }
 
     @Override
-    public void addMessage(ConsultationMessage consultationMessage) throws ConsultationServiceException {
-        Consultation consultation =
-                consultationRepository.findByConsultationId(UUID.fromString(consultationMessage.getConsultationId()));
+    public void addMessage(ConsultationMessageDTO consultationMessage) throws ConsultationServiceException {
+        ConsultationSession consultationSession =
+                consultationSessionRepository
+                        .findByConsultationSessionId(
+                                UUID.fromString(consultationMessage.getConsultationSessionId()));
 
         ConsultationMessageEntity consultationMessageEntity = new ConsultationMessageEntity();
-        consultationMessageEntity.setConsultation(consultation);
+        consultationMessageEntity.setConsultationSession(consultationSession);
         consultationMessageEntity.setContent(consultationMessage.getContent());
 
         log.info("Adding message to DB, sentBy: {}", consultationMessage.getSender());
@@ -259,12 +298,12 @@ public class ConsultationServiceImpl implements ConsultationService {
         axSaludWooUserOptional.ifPresent(consultationMessageEntity::setSentBy);
 
         consultationMessageRepository.save(consultationMessageEntity);
-        consultation.getMessages().add(consultationMessageEntity);
-        consultationRepository.save(consultation);
+        consultationSession.getMessages().add(consultationMessageEntity);
+        consultationSessionRepository.save(consultationSession);
     }
 
     @Override
-    public long appendDocument(String userName, String consultationId,
+    public long appendDocument(String userName, String consultationSessionId,
                                  MultipartFile file) throws ConsultationServiceException {
         try {
             WoowUser woowUser = woowUserRepository.findByUserName(userName);
@@ -273,8 +312,8 @@ public class ConsultationServiceImpl implements ConsultationService {
 
             AxSaludWooUser axSaludWooUser = axSaludWooUserOptional.get();
 
-            Consultation consultation =
-                    consultationRepository.findByConsultationId(UUID.fromString(consultationId));
+            ConsultationSession consultationSession =
+                    consultationSessionRepository.findByConsultationSessionId(UUID.fromString(consultationSessionId));
             StorageServiceUploadResponseDTO storageServiceUploadResponseDTO =
                     storageService.uploadFile(file);
 
@@ -295,12 +334,12 @@ public class ConsultationServiceImpl implements ConsultationService {
 
             doc.setUploadedBy(axSaludWooUser);
             doc.setUploaderRole(axSaludWooUser.getUserType());
-            doc.setConsultation(consultation);
+            doc.setConsultationSession(consultationSession);
 
             doc = consultationDocumentRepository.save(doc);
 
-            consultation.getDocuments().add(doc);
-            consultationRepository.save(consultation);
+            consultationSession.getDocuments().add(doc);
+            consultationSessionRepository.save(consultationSession);
 
             return doc.getId();
         } catch (StorageServiceException e) {
@@ -309,9 +348,9 @@ public class ConsultationServiceImpl implements ConsultationService {
     }
 
     @Override
-    public String downloadDocument(String userName, String consultationId, long fileId) throws ConsultationServiceException {
-        Consultation consultation =
-                consultationRepository.findByConsultationId(UUID.fromString(consultationId));
+    public String downloadDocument(String userName, String consultationSessionId, long fileId) throws ConsultationServiceException {
+        ConsultationSession consultation =
+                consultationSessionRepository.findByConsultationSessionId(UUID.fromString(consultationSessionId));
         Optional<ConsultationDocument> consultationDocumentOptional =
                 consultationDocumentRepository.findById(fileId);
         ConsultationDocument consultationDocument = consultationDocumentOptional.get();
