@@ -316,7 +316,7 @@ public class ConsultationServiceImpl implements ConsultationService {
 
     @Override
     public List<ConsultationDTO> getAllConsultation() {
-        consultationRepository.findAllOrderByStatusDesc();
+        //consultationRepository.findAllOrderByStatusDesc();
         return null;
     }
 }

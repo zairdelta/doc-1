@@ -10,5 +10,5 @@ import java.util.UUID;
 @Repository
 public interface ConsultationRepository extends JpaRepository<Consultation, Long> {
     Consultation findByConsultationId(UUID uuid);
-    List<Consultation> findAllOrderByStatusDesc();
+    //List<Consultation> findAllOrderByStatusDesc();
 }
