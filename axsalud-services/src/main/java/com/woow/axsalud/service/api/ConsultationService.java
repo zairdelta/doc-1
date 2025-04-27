@@ -7,6 +7,8 @@ import com.woow.axsalud.service.api.exception.ConsultationServiceException;
 import com.woow.core.service.api.exception.WooUserServiceException;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 public interface ConsultationService {
     void handledConsultationMessage(ConsultationMessage consultationMessage);
     ConsultationDTO create(SymptomsDTO symptomsDTO, String userName) throws WooUserServiceException;
@@ -18,4 +20,6 @@ public interface ConsultationService {
 
     long appendDocument(String userName, String consultationId, MultipartFile file) throws ConsultationServiceException;
     String downloadDocument(String userName, String consultationId, long fileId) throws ConsultationServiceException;
+
+    List<ConsultationDTO> getAllConsultation();
 }

@@ -31,6 +31,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -81,7 +82,13 @@ public class ConsultationServiceImpl implements ConsultationService {
             errorMessage.setReceiver(consultationMessage.getSender());
             errorMessage.setContent("❌ Failed to send message: " + e.getMessage());
             errorMessage.setMessageType("ERROR");
-            addMessage(errorMessage);
+
+            try {
+                addMessage(errorMessage);
+            } catch (ConsultationServiceException ex) {
+                log.error("There was an error processing errorMessage: {}", e.getMessage());
+            }
+
             messagingTemplate.convertAndSendToUser(
                     consultationMessage.getSender(),
                     "/queue/errors",
@@ -221,7 +228,7 @@ public class ConsultationServiceImpl implements ConsultationService {
     }
 
     @Override
-    public void addMessage(ConsultationMessage consultationMessage) {
+    public void addMessage(ConsultationMessage consultationMessage) throws ConsultationServiceException {
         Consultation consultation =
                 consultationRepository.findByConsultationId(UUID.fromString(consultationMessage.getConsultationId()));
 
@@ -229,7 +236,13 @@ public class ConsultationServiceImpl implements ConsultationService {
         consultationMessageEntity.setConsultation(consultation);
         consultationMessageEntity.setContent(consultationMessage.getContent());
 
+        log.info("Adding message to DB, sender: {}", consultationMessage.getSender());
+
         WoowUser woowUser = woowUserRepository.findByUserName(consultationMessage.getSender());
+        log.debug("WoowUSer: {}", woowUser);
+        if(woowUser == null) {
+            throw new ConsultationServiceException("User not found: " + consultationMessage.getSender(), 404);
+        }
 
         Optional<AxSaludWooUser> axSaludWooUserOptional =
                 axSaludUserRepository.findByCoreUser_UserId(woowUser.getUserId());
@@ -299,5 +312,11 @@ public class ConsultationServiceImpl implements ConsultationService {
         } catch (StorageServiceException e) {
             throw new ConsultationServiceException(e.getMessage(), 301);
         }
+    }
+
+    @Override
+    public List<ConsultationDTO> getAllConsultation() {
+        consultationRepository.findAllOrderByStatusDesc();
+        return null;
     }
 }

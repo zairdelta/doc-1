@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 public interface WoowUserRepository extends JpaRepository<WoowUser, Long> {
 
     WoowUser findByEmail(String email);
-    WoowUser findByUserName(String email);
+    WoowUser findByUserName(String userName);
     WoowUser findByUserId(long userId);
 
 }
