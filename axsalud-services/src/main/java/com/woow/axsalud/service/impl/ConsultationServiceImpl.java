@@ -140,7 +140,11 @@ public class ConsultationServiceImpl implements ConsultationService {
         ConsultationSession consultationSession = new ConsultationSession();
         consultationSession.setConsultation(consultation);
         consultationSession.setStatus(ConsultationSessionStatus.WAITING_FOR_DOCTOR);
+        consultationSessionRepository.save(consultationSession);
+
         consultation.getSessions().add(consultationSession);
+
+
 
         consultationRepository.save(consultation);
 
@@ -275,6 +279,7 @@ public class ConsultationServiceImpl implements ConsultationService {
         consultationSession.setDoctor(axSaludWooUser);
         consultationSession.setStartAt(LocalDateTime.now());
         consultationSession.setStatus(ConsultationSessionStatus.ON_GOING);
+        consultationSessionRepository.save(consultationSession);
 
         consultation.setStatus(ConsultationStatus.ON_GOING);
         consultation
