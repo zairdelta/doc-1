@@ -66,15 +66,15 @@ public class ConsultationServiceImpl implements ConsultationService {
 
     @Override
     @Transactional
-    public void handledConsultationMessage(ConsultationMessageDTO consultationMessage) {
+    public void handledConsultationMessage(final ConsultationMessageDTO consultationMessage) {
         try {
             log.debug("Validating Message: {}", consultationMessage);
+            validateOnSend(consultationMessage);
             validate(consultationMessage.getConsultationId(),
                     consultationMessage.getConsultationSessionId(),
                     consultationMessage.getReceiver(), consultationMessage.getSender());
             addMessage(consultationMessage);
         } catch (ConsultationServiceException e) {
-
 
             ConsultationMessageDTO errorMessage = new ConsultationMessageDTO();
             errorMessage.setConsultationId(consultationMessage.getConsultationId());
@@ -103,6 +103,12 @@ public class ConsultationServiceImpl implements ConsultationService {
                 "/queue/messages",
                 consultationMessage
         );
+    }
+
+    private void validateOnSend(final ConsultationMessageDTO consultationMessage) throws ConsultationServiceException {
+        if(consultationMessage.getReceiver() == null) {
+            throw new ConsultationServiceException("Receiver cannot be null while sending a message", 401);
+        }
     }
 
     @Override
@@ -366,7 +372,9 @@ public class ConsultationServiceImpl implements ConsultationService {
     }
 
     @Override
-    public List<ConsultationDTO> getAllConsultation() {
+    public List<ConsultationDTO> getAllConsultation(String userName,
+                                                    int pageNumber,
+                                                    int elementsPerPage) {
         //consultationRepository.findAllOrderByStatusDesc();
         return null;
     }

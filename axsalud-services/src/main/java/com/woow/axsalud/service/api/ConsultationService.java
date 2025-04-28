@@ -21,5 +21,6 @@ public interface ConsultationService {
     long appendDocument(String userName, String consultationSessionId, MultipartFile file) throws ConsultationServiceException;
     String downloadDocument(String userName, String consultationSessionId, long fileId) throws ConsultationServiceException;
 
-    List<ConsultationDTO> getAllConsultation();
+    List<ConsultationDTO> getAllConsultation(String userName, int pageNumber,
+                                             int elementsPerPage);
 }

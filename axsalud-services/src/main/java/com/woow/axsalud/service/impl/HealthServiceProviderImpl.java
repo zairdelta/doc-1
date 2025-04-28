@@ -19,6 +19,9 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Optional;
+
 @Transactional
 @Slf4j
 @Service
@@ -75,6 +78,31 @@ public class HealthServiceProviderImpl implements HealthServiceProvider {
 
 
         return woowUser.getUserName();
+    }
+
+    @Override
+    public HealthServiceProviderDTO get(String userName) throws WooUserServiceException {
+        WoowUser woowUser = woowUserRepository.findByUserName(userName);
+        if(woowUser == null) {
+            throw new WooUserServiceException("userName: " + userName + ", does not exist", 404);
+        }
+        Optional<AxSaludWooUser> axSaludWooUserOptional =
+                axSaludUserRepository.findByCoreUser_UserId(woowUser.getUserId());
+
+
+        AxSaludWooUser axSaludWooUser = axSaludWooUserOptional
+                .orElseThrow(() -> new WooUserServiceException("ax_userName: " + userName +
+                ", does not exist", 404));
+
+        HealthServiceProviderDTO dto = new HealthServiceProviderDTO();
+
+        dto.setDoctorData(axSaludWooUser.getDoctorData());
+        dto.setWelcomeMessage(axSaludWooUser.getDoctorWelcomeMessage());
+        UserDtoCreate userDtoCreate = new UserDtoCreate();
+        modelMapper.map(woowUser, userDtoCreate);
+        dto.setUserDtoCreate(userDtoCreate);
+
+        return dto;
     }
 
     @Override

@@ -14,6 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -72,5 +74,31 @@ public class HealthServiceProviderController {
                 .status(HttpStatus.OK)
                 .header(LOCATION, appRoot + ROOT_PATH + userName)
                 .build();
+    }
+
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/new")
+    @Operation(summary = "get Health Service User",
+            description = "Creates a new Health Service user with the role HEALTH_SERVICE_PROVIDER.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Health user details"),
+            @ApiResponse(responseCode = "301", description = "Forbidden"),
+            @ApiResponse(responseCode = "410", description = "Password cannot be empty"),
+            @ApiResponse(responseCode = "411", description = "Username already exists"),
+            @ApiResponse(responseCode = "414", description = "Sponsor is not active or does not exist"),
+            @ApiResponse(responseCode = "415", description = "User is not active")
+    })
+    public ResponseEntity<?> get(HttpServletRequest request,
+                                 @AuthenticationPrincipal UserDetails userDetails) {
+        String userName = "";
+        try {
+            // captchaService.processResponse(request, gRecaptchaResponse);
+            return ResponseEntity.ok(healthServiceProvider.get(userDetails.getUsername()));
+        } catch (final WooUserServiceException e) {
+            return WooBoHttpError.of(e).toResponseEntity();
+        } catch (Exception e) {
+            log.error("Error while creating user: {}", e.getMessage(), e);
+            return ResponseEntity.notFound().build();
+        }
     }
 }

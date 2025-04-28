@@ -29,12 +29,14 @@ public class ConsultationController {
 
     @GetMapping("/{consultationId}")
     public ResponseEntity<ConsultationDTO> get(@PathVariable String consultationId,
-                                               @AuthenticationPrincipal UserDetails userDetails) {
+                                               @AuthenticationPrincipal UserDetails userDetails,
+                                               @RequestParam(name = "pageNumber") int pageNumber,
+                                               @RequestParam(name = "totalByPage") int totalByPage) {
         return ResponseEntity.ok().build();
     }
 
     @GetMapping
-    public ResponseEntity<ConsultationDTO> getAllForUserId(@PathVariable String consultationId,
+    public ResponseEntity<ConsultationDTO> getAll(@PathVariable String consultationId,
                                                @AuthenticationPrincipal UserDetails userDetails) {
         return ResponseEntity.ok().build();
     }
