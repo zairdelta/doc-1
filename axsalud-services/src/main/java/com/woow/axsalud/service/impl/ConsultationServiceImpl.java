@@ -121,7 +121,7 @@ public class ConsultationServiceImpl implements ConsultationService {
             throw new WooUserServiceException("User not found", 404);
         }
 
-        log.info("Creating consultation for userName: {}, userId:{}",
+        log.info("Creating a new consultation for userName: {}, userId:{}",
                 patient.getUserName(), patient.getUserId());
 
         Optional<AxSaludWooUser> axSaludWooUserOptional =
@@ -149,7 +149,42 @@ public class ConsultationServiceImpl implements ConsultationService {
         consultationDTO.setPatient(patient.getUserName());
         consultationDTO.setSymptoms(symptomsDTO.getText());
         consultationDTO.setCurrentSessionIdIfExists(consultationSession.getConsultationSessionId().toString());
+        log.info("Sending consultationDTO to topic/new-patient: {}", consultationDTO);
+        messagingTemplate.convertAndSend("/topic/new-patient", consultationDTO);
 
+        return consultationDTO;
+    }
+
+    @Override
+    public ConsultationDTO continueWithConsultation(String userName, String consultationId)
+            throws WooUserServiceException {
+
+        log.info("continue with consultation: {}, patient: {}", consultationId, userName);
+
+        WoowUser patient = woowUserRepository.findByUserName(userName);
+        if(patient == null) {
+            log.warn("Consultation could not be created, patient not found: {}",
+                    userName);
+            throw new WooUserServiceException("User not found", 404);
+        }
+
+        log.info("Creating consultation for userName: {}, userId:{}",
+                patient.getUserName(), patient.getUserId());
+
+        Consultation consultation = consultationRepository
+                .findByConsultationId(UUID.fromString(consultationId));
+
+        ConsultationSession consultationSession = new ConsultationSession();
+        consultationSession.setConsultation(consultation);
+        consultationSession.setStatus(ConsultationSessionStatus.WAITING_FOR_DOCTOR);
+        consultation.getSessions().add(consultationSession);
+
+        consultationRepository.save(consultation);
+
+        ConsultationDTO consultationDTO = modelMapper.map(consultation, ConsultationDTO.class);
+        consultationDTO.setCurrentSessionIdIfExists(consultationSession.getConsultationSessionId().toString());
+
+        log.info("Sending consultationDTO to topic/new-patient: {}", consultationDTO);
         messagingTemplate.convertAndSend("/topic/new-patient", consultationDTO);
 
         return consultationDTO;
@@ -321,7 +356,8 @@ public class ConsultationServiceImpl implements ConsultationService {
             AxSaludWooUser axSaludWooUser = axSaludWooUserOptional.get();
 
             ConsultationSession consultationSession =
-                    consultationSessionRepository.findByConsultationSessionId(UUID.fromString(consultationSessionId));
+                    consultationSessionRepository
+                            .findByConsultationSessionId(UUID.fromString(consultationSessionId));
             StorageServiceUploadResponseDTO storageServiceUploadResponseDTO =
                     storageService.uploadFile(file);
 
@@ -356,19 +392,21 @@ public class ConsultationServiceImpl implements ConsultationService {
     }
 
     @Override
-    public String downloadDocument(String userName, String consultationSessionId, long fileId) throws ConsultationServiceException {
-        ConsultationSession consultation =
-                consultationSessionRepository.findByConsultationSessionId(UUID.fromString(consultationSessionId));
+    public String downloadDocument(String userName,
+                                   String consultationSessionId, long fileId) throws ConsultationServiceException {
+
         Optional<ConsultationDocument> consultationDocumentOptional =
                 consultationDocumentRepository.findById(fileId);
         ConsultationDocument consultationDocument = consultationDocumentOptional.get();
-        try {
-            return storageService.generateSignedUrl(consultationDocument.getElementPublicId(),
+       // try {
+            return consultationDocument.getSecureUrl();
+            /* storageService.generateSignedUrl(consultationDocument.getElementPublicId(),
                     consultationDocument.getVersion(),
                     consultationDocument.getFormat(), 95000);
         } catch (StorageServiceException e) {
             throw new ConsultationServiceException(e.getMessage(), 301);
         }
+        */
     }
 
     @Override
