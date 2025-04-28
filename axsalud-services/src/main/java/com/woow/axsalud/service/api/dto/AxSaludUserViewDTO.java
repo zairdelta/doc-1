@@ -1,6 +1,8 @@
 package com.woow.axsalud.service.api.dto;
 
+import com.woow.axsalud.data.client.AxSaludWooUser;
 import lombok.Data;
+import org.modelmapper.ModelMapper;
 
 import java.time.LocalDate;
 
@@ -21,4 +23,11 @@ public class AxSaludUserViewDTO {
     private String addressLine1;
     private String addressLine2;
     private String hid;
+
+    public static AxSaludUserViewDTO from(AxSaludWooUser axSaludWooUser) {
+        AxSaludUserViewDTO axSaludUserViewDTO = new AxSaludUserViewDTO();
+        ModelMapper modelMapper = new ModelMapper();
+        modelMapper.map(axSaludWooUser, axSaludUserViewDTO);
+        return axSaludUserViewDTO;
+    }
 }

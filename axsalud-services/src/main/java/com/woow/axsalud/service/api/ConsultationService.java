@@ -1,5 +1,6 @@
 package com.woow.axsalud.service.api;
 
+import com.woow.axsalud.data.consultation.ConsultationStatus;
 import com.woow.axsalud.service.api.dto.ConsultationMessageDTO;
 import com.woow.axsalud.service.api.dto.ConsultationDTO;
 import com.woow.axsalud.service.api.dto.SymptomsDTO;
@@ -26,4 +27,5 @@ public interface ConsultationService {
 
     List<ConsultationDTO> getAllConsultation(String userName, int pageNumber,
                                              int elementsPerPage);
+    List<ConsultationDTO> getConsultationsByStatus(ConsultationStatus status);
 }

@@ -32,5 +32,6 @@ public class ConsultationMessageEntity {
 
     @Enumerated(EnumType.STRING)
     private ConsultationMessageStatus status;
+    private String messageType;
 
 }

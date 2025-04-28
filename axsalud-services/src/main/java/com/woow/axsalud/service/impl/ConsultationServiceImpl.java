@@ -23,9 +23,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -149,6 +148,8 @@ public class ConsultationServiceImpl implements ConsultationService {
         consultationDTO.setPatient(patient.getUserName());
         consultationDTO.setSymptoms(symptomsDTO.getText());
         consultationDTO.setCurrentSessionIdIfExists(consultationSession.getConsultationSessionId().toString());
+        consultation.setCurrentSessionIdIfExists(consultationSession.getConsultationSessionId().toString());
+        consultationRepository.save(consultation);
         log.info("Sending consultationDTO to topic/new-patient: {}", consultationDTO);
         messagingTemplate.convertAndSend("/topic/new-patient", consultationDTO);
 
@@ -177,7 +178,11 @@ public class ConsultationServiceImpl implements ConsultationService {
         ConsultationSession consultationSession = new ConsultationSession();
         consultationSession.setConsultation(consultation);
         consultationSession.setStatus(ConsultationSessionStatus.WAITING_FOR_DOCTOR);
+
+        consultationSession = consultationSessionRepository.save(consultationSession);
+
         consultation.getSessions().add(consultationSession);
+        consultation.setCurrentSessionIdIfExists(consultationSession.getConsultationSessionId().toString());
 
         consultationRepository.save(consultation);
 
@@ -235,7 +240,8 @@ public class ConsultationServiceImpl implements ConsultationService {
 
     @Override
     public ConsultationDTO assign(String doctor, String consultationId, String consultationSessionId) throws ConsultationServiceException {
-        Consultation consultation = consultationRepository.findByConsultationId(UUID.fromString(consultationId));
+        Consultation consultation =
+                consultationRepository.findByConsultationId(UUID.fromString(consultationId));
 
         log.info("Assigning doctor: {} to consultationId: {}", doctor, consultationId);
 
@@ -271,6 +277,8 @@ public class ConsultationServiceImpl implements ConsultationService {
         consultationSession.setStatus(ConsultationSessionStatus.ON_GOING);
 
         consultation.setStatus(ConsultationStatus.ON_GOING);
+        consultation
+                .setCurrentSessionIdIfExists(consultationSession.getConsultationSessionId().toString());
 
         if(ConsultationStatus.WAITING_FOR_DOCTOR == consultation.getStatus()) {
             consultation.setStartedAt(LocalDateTime.now());
@@ -416,4 +424,16 @@ public class ConsultationServiceImpl implements ConsultationService {
         //consultationRepository.findAllOrderByStatusDesc();
         return null;
     }
+
+    @Override
+    public List<ConsultationDTO> getConsultationsByStatus(ConsultationStatus status) {
+        List<Consultation> consultations =
+                consultationRepository.findByStatusOrderByCreatedAtAsc(status);
+
+        return consultations.stream()
+                .filter(Objects::nonNull)
+                .map(ConsultationDTO::from)
+                .collect(Collectors.toList());
+    }
+
 }

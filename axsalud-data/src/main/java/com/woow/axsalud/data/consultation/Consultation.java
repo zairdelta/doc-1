@@ -29,6 +29,7 @@ public class Consultation {
     private String symptoms;
     @Enumerated(EnumType.STRING)
     private ConsultationStatus status;
+    private String currentSessionIdIfExists;
 
     @OneToMany(mappedBy = "consultation",
             cascade = CascadeType.ALL, orphanRemoval = true)
