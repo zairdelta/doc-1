@@ -33,6 +33,12 @@ public class ConsultationController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping
+    public ResponseEntity<ConsultationDTO> getAllForUserId(@PathVariable String consultationId,
+                                               @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok().build();
+    }
+
 
     @PostMapping
     public ResponseEntity<ConsultationDTO> create(@RequestBody final SymptomsDTO symptomsDTO,

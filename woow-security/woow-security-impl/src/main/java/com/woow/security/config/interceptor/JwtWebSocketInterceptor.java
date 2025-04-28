@@ -12,6 +12,8 @@ import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
+
 @Component
 @Slf4j
 public class JwtWebSocketInterceptor implements ChannelInterceptor {
@@ -26,7 +28,11 @@ public class JwtWebSocketInterceptor implements ChannelInterceptor {
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
 
-        log.info("Getting stomp message: {}", message.getPayload());
+        String payloadConvertedToString = message.getPayload() == null ? "NO PAYLOAD" :
+                new String((byte[]) message.getPayload(), StandardCharsets.UTF_8);
+        log.info("Accessor: command: {}, receipt: {}, message:{} ",
+                accessor.getCommand(), accessor.getReceipt(),
+                payloadConvertedToString);
 
 
         if (StompCommand.CONNECT.equals(accessor.getCommand())) {

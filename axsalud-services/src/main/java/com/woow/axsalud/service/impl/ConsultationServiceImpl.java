@@ -275,6 +275,8 @@ public class ConsultationServiceImpl implements ConsultationService {
 
     @Override
     public void addMessage(ConsultationMessageDTO consultationMessage) throws ConsultationServiceException {
+
+        log.info("AddMessage received: {}", consultationMessage);
         ConsultationSession consultationSession =
                 consultationSessionRepository
                         .findByConsultationSessionId(
