@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Value;
 @Slf4j
 @CrossOrigin(origins = "*")
 @Tag(name = "Patient User Endpoint", description = "Operations related to patient users")
-
 public class VideoController {
 
     @Value("${AGORA_APP_ID}")
