@@ -23,7 +23,7 @@ public class VideoController {
     @Value("${AGORA_APP_CERTIFICATE}")
     private  String APP_CERTIFICATE;
 
-    @Value("{TOKEN_VIDEO_CALL_DURATION_IN_SECONDS:600}")
+    @Value("${TOKEN_VIDEO_CALL_DURATION_IN_SECONDS:600}")
     private int CALL_DURATION;
     @GetMapping("/{consultationSessionId}/accessToken")
     public ResponseEntity<VideoTokenDTO> getAccessToken(@PathVariable String consultationSessionId) {
