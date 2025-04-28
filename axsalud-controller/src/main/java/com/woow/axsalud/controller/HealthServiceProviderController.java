@@ -77,7 +77,7 @@ public class HealthServiceProviderController {
     }
 
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping("/new")
+    @GetMapping
     @Operation(summary = "get Health Service User",
             description = "Creates a new Health Service user with the role HEALTH_SERVICE_PROVIDER.")
     @ApiResponses(value = {
@@ -90,7 +90,6 @@ public class HealthServiceProviderController {
     })
     public ResponseEntity<?> get(HttpServletRequest request,
                                  @AuthenticationPrincipal UserDetails userDetails) {
-        String userName = "";
         try {
             // captchaService.processResponse(request, gRecaptchaResponse);
             return ResponseEntity.ok(healthServiceProvider.get(userDetails.getUsername()));
