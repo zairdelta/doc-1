@@ -8,6 +8,9 @@ import com.woow.axsalud.service.api.dto.ConsultationDTO;
 import com.woow.axsalud.service.api.dto.PatientViewDTO;
 import com.woow.core.service.api.exception.WooUserServiceException;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -80,6 +83,22 @@ public class WoowUserController {
     }
 
     @GetMapping("/consultations")
+    @Operation(
+            summary = "Get the user's consultations (Patient)",
+            description = "Fetch all consultations for the authenticated user. User must have the PATIENT or USER role."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "List of consultations retrieved successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = ConsultationDTO.class))
+                    )
+            ),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden")
+    })
     public ResponseEntity<List<ConsultationDTO>> getUserConsultations(@AuthenticationPrincipal UserDetails userDetails) {
         try {
             return ResponseEntity.ok(axSaludService.getConsultation(userDetails.getUsername()));

@@ -151,9 +151,6 @@ public class AxSaludServiceImpl implements AxSaludService {
 
                 DoctorViewDTO doctorViewDTO = new DoctorViewDTO();
                 modelMapper.map(consultationSession.getDoctor(), doctorViewDTO);
-                //doctorViewDTO.setWelcomeMessage(consultationSession.getDoctor().getDoctorWelcomeMessage());
-               // doctorViewDTO.setCp();
-             //   doctorViewDTO.setDoctorData(consultationSession.getDoctor().getDoctorData());
                 consultationSessionIdDTO.setDoctorViewDTO(doctorViewDTO);
                 consultationSessionIdDTOList.add(consultationSessionIdDTO);
             }
