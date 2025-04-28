@@ -129,6 +129,11 @@ public class WooBoUserAuthenticationController {
         WooSecurityUserDetails wooUserDetails = (WooSecurityUserDetails) userDetails;
         JwtResponse jwtResponse = new JwtResponse(token, wooUserDetails.getUser_id());
         wooUser.setLogin_attempts(retries);
+        String firstAuthority = wooUserDetails.getAuthorities()
+                .iterator()
+                .next()
+                .getAuthority();
+        jwtResponse.setAppRole(firstAuthority);
         userRepository.save(wooUser);
 
         return ResponseEntity.ok(jwtResponse);
