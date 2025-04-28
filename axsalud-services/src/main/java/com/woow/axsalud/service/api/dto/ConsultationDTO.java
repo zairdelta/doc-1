@@ -1,7 +1,6 @@
 package com.woow.axsalud.service.api.dto;
 
 import com.woow.axsalud.data.consultation.Consultation;
-import com.woow.axsalud.data.consultation.ConsultationSession;
 import com.woow.axsalud.data.consultation.ConsultationStatus;
 import lombok.Data;
 
