@@ -64,6 +64,7 @@ CREATE TABLE `consultation` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `consultation_id` binary(16) DEFAULT NULL,
   `created_at` datetime(6) DEFAULT NULL,
+  `current_session_id_if_exists` varchar(255) DEFAULT NULL,
   `finished_at` datetime(6) DEFAULT NULL,
   `started_at` datetime(6) DEFAULT NULL,
   `status` enum('FINISHED','ON_GOING','SUSPENDED','WAITING_FOR_DOCTOR') DEFAULT NULL,
@@ -132,6 +133,7 @@ DROP TABLE IF EXISTS `consultation_message_entity`;
 CREATE TABLE `consultation_message_entity` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `content` text NOT NULL,
+  `message_type` varchar(255) DEFAULT NULL,
   `status` enum('DELIVERED','SENT_TO_RECEIVER','SERVER_RECEIVED') DEFAULT NULL,
   `timestamp` datetime(6) NOT NULL,
   `consultation_session_id` bigint DEFAULT NULL,
@@ -360,7 +362,7 @@ CREATE TABLE `service_provider` (
 
 LOCK TABLES `service_provider` WRITE;
 /*!40000 ALTER TABLE `service_provider` DISABLE KEYS */;
-INSERT INTO `service_provider` VALUES (1,'2025-04-27 23:47:24.000000','https://localhost:8080/external_provider','HealthConnect','2025-12-31');
+INSERT INTO `service_provider` VALUES (1,'2025-04-28 17:29:02.000000','https://localhost:8080/external_provider','HealthConnect','2025-12-31');
 /*!40000 ALTER TABLE `service_provider` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -431,7 +433,7 @@ CREATE TABLE `woow_user` (
 
 LOCK TABLES `woow_user` WRITE;
 /*!40000 ALTER TABLE `woow_user` DISABLE KEYS */;
-INSERT INTO `woow_user` VALUES (1,'yes','Av Reforma 123','Int 5','1995-06-15','CDMX','MX','01234','2025-04-27 23:47:24.000000','master@example.com',_binary '',NULL,0,'masterLastName',0,1,'5551234567','master@example.com',NULL,'$2a$10$nOyz3qX1lLYv9GOZcwBieeO1KSYDT6funrQx322uHIuX8LWY9XQQW',_binary '\0','CDMX',_binary '','master@example.com'),(2,'yes','Street 1','Street 2',NULL,'CDMX','MX','12345','2025-04-27 22:47:26.671305','realuser@woow.com',_binary '\0',NULL,0,'User',0,0,'1234567890','Real',NULL,'$2a$10$AtspY4PKY0mnYhz7g294/OajPuWXwpA42Rd2SDgrZvg.y354.Izbm',_binary '\0','CDMX',_binary '','realuser@woow.com');
+INSERT INTO `woow_user` VALUES (1,'yes','Av Reforma 123','Int 5','1995-06-15','CDMX','MX','01234','2025-04-28 17:29:02.000000','master@example.com',_binary '',NULL,0,'masterLastName',0,1,'5551234567','master@example.com',NULL,'$2a$10$nOyz3qX1lLYv9GOZcwBieeO1KSYDT6funrQx322uHIuX8LWY9XQQW',_binary '\0','CDMX',_binary '','master@example.com'),(2,'yes','Street 1','Street 2',NULL,'CDMX','MX','12345','2025-04-28 16:29:04.131221','realuser@woow.com',_binary '\0',NULL,0,'User',0,0,'1234567890','Real',NULL,'$2a$10$YKzT3Tc37zQKAH2S1bQipOsWny/ltpvw7UNyAnoqq9bbPvfCuWu6.',_binary '\0','CDMX',_binary '','realuser@woow.com');
 /*!40000 ALTER TABLE `woow_user` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -444,4 +446,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-04-27 23:54:10
+-- Dump completed on 2025-04-28 17:30:14
