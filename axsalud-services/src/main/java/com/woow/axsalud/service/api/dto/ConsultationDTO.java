@@ -31,10 +31,10 @@ public class ConsultationDTO {
         consultationDTO.setConsultationId(consultation.getConsultationId().toString());
         consultationDTO.setId(consultation.getId());
         consultationDTO.setStatus(consultation.getStatus());
-        consultationDTO.setSymptoms(consultationDTO.getSymptoms());
-        consultationDTO.setPatient(consultationDTO.getPatient());
-        consultationDTO.setCurrentSessionIdIfExists(consultationDTO.getCurrentSessionIdIfExists());
-        consultationDTO.setFinishedAt(consultationDTO.getFinishedAt());
+        consultationDTO.setSymptoms(consultation.getSymptoms());
+        consultationDTO.setPatient(consultation.getPatient().getCoreUser().getUserName());
+        consultationDTO.setCurrentSessionIdIfExists(consultation.getCurrentSessionIdIfExists());
+        consultationDTO.setFinishedAt(consultation.getFinishedAt());
         consultationDTO.setCreatedAt(consultation.getCreatedAt());
 
         consultationDTO
