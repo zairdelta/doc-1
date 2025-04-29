@@ -4,7 +4,7 @@ import com.woow.axsalud.controller.exception.WooBoHttpError;
 import com.woow.axsalud.data.consultation.ConsultationStatus;
 import com.woow.axsalud.service.api.ConsultationService;
 import com.woow.axsalud.service.api.dto.ConsultationDTO;
-import com.woow.axsalud.service.api.dto.FileUploaddedDTO;
+import com.woow.axsalud.service.api.dto.FileResponseDTO;
 import com.woow.axsalud.service.api.dto.SymptomsDTO;
 import com.woow.axsalud.service.api.exception.ConsultationServiceException;
 import com.woow.core.service.api.exception.WooUserServiceException;
@@ -18,9 +18,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/consultation")
@@ -86,10 +84,10 @@ public class ConsultationController {
     }
 
     @PostMapping("{consultationId}/sessionId/{consultationSessionId}/file")
-    public ResponseEntity<FileUploaddedDTO> upload(@PathVariable String consultationId,
-                                                   @PathVariable String consultationSessionId,
-                                                   @AuthenticationPrincipal UserDetails userDetails,
-                                                   @RequestBody MultipartFile file) {
+    public ResponseEntity<FileResponseDTO> upload(@PathVariable String consultationId,
+                                                  @PathVariable String consultationSessionId,
+                                                  @AuthenticationPrincipal UserDetails userDetails,
+                                                  @RequestBody MultipartFile file) {
         try {
 
             return ResponseEntity.ok().body(consultationService.appendDocument(userDetails.getUsername(),
@@ -102,13 +100,12 @@ public class ConsultationController {
 
 
     @GetMapping("{consultationId}/sessionId/{consultationSessionId}/file/{fileId}")
-    public ResponseEntity<String> downloadFile(@PathVariable String consultationId,
+    public ResponseEntity<FileResponseDTO> downloadFile(@PathVariable String consultationId,
                                                @PathVariable long fileId,
                                                @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            String signedUrl = consultationService
-                    .downloadDocument(userDetails.getUsername(), consultationId, fileId);
-            return ResponseEntity.ok(signedUrl);
+            return ResponseEntity.ok().body(consultationService
+                    .downloadDocument(userDetails.getUsername(), consultationId, fileId));
         } catch (ConsultationServiceException e) {
             return WooBoHttpError.of(e).toResponseEntity();
         }

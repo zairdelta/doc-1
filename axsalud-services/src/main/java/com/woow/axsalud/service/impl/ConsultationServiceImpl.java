@@ -360,8 +360,8 @@ public class ConsultationServiceImpl implements ConsultationService {
     }
 
     @Override
-    public FileUploaddedDTO appendDocument(String userName, String consultationSessionId,
-                                 MultipartFile file) throws ConsultationServiceException {
+    public FileResponseDTO appendDocument(String userName, String consultationSessionId,
+                                          MultipartFile file) throws ConsultationServiceException {
         try {
             WoowUser woowUser = woowUserRepository.findByUserName(userName);
             Optional<AxSaludWooUser> axSaludWooUserOptional =
@@ -403,31 +403,42 @@ public class ConsultationServiceImpl implements ConsultationService {
 
             consultationSession.getDocuments().add(doc);
             consultationSessionRepository.save(consultationSession);
-            FileUploaddedDTO fileUploaddedDTO = new FileUploaddedDTO();
-            fileUploaddedDTO.setId(doc.getId());
-            fileUploaddedDTO.setName(doc.getFileName());
-            fileUploaddedDTO.setUrl(doc.getSecureUrl());
-            return fileUploaddedDTO;
+            FileResponseDTO fileResponseDTO = new FileResponseDTO();
+            fileResponseDTO.setId(doc.getId());
+            fileResponseDTO.setName(doc.getFileName());
+            fileResponseDTO.setUrl(doc.getSecureUrl());
+            return fileResponseDTO;
         } catch (StorageServiceException e) {
             throw new ConsultationServiceException(e.getMessage(), 301);
         }
     }
 
     @Override
-    public String downloadDocument(String userName,
+    public FileResponseDTO downloadDocument(String userName,
                                    String consultationSessionId, long fileId) throws ConsultationServiceException {
 
         Optional<ConsultationDocument> consultationDocumentOptional =
                 consultationDocumentRepository.findById(fileId);
         ConsultationDocument consultationDocument = consultationDocumentOptional.get();
-       try {
-            //return consultationDocument.getSecureUrl();
+       //try {
+        FileResponseDTO fileResponseDTO = new FileResponseDTO();
+        fileResponseDTO.setName(consultationDocument.getFileName());
+        fileResponseDTO.setId(fileId);
+        fileResponseDTO.setUrl(consultationDocument.getSecureUrl());
+
+        consultationDocument.setLastAccessedAt(LocalDateTime.now());
+        consultationDocumentRepository.save(consultationDocument);
+        return fileResponseDTO;
+
+            /*
             return  storageService.generateSignedUrl(consultationDocument.getElementPublicId(),
                     consultationDocument.getVersion(),
                     consultationDocument.getFormat(), 95000);
-        } catch (StorageServiceException e) {
-            throw new ConsultationServiceException(e.getMessage(), 301);
-        }
+
+             */
+      //  } catch (StorageServiceException e) {
+       //     throw new ConsultationServiceException(e.getMessage(), 301);
+      //  }
 
     }
 

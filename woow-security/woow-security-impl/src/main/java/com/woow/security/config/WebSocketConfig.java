@@ -63,7 +63,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                             return null;
 
                 }}})
-                .setAllowedOriginPatterns("*");
+                .setAllowedOriginPatterns("*")
+                .withSockJS();
     }
 
     @Override

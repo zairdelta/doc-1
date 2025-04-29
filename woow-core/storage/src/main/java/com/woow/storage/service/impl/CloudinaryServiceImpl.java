@@ -52,9 +52,10 @@ public class CloudinaryServiceImpl implements StorageService {
                             "resource_type", "raw",
                             "use_filename", true,
                             "unique_filename", true,
-                            "secure", true,
-                            "access_mode", "authenticated",
-                            "access_control", accessControlList,
+                           "secure", true, // false for now
+                           //TODO we need premium to add "secure", true,
+                            //TODO we need premium to add "access_mode", "authenticated",
+                         //TODO   "access_control", accessControlList,
                             "format", fallbackFormat
                     )
             );
@@ -94,7 +95,7 @@ public class CloudinaryServiceImpl implements StorageService {
         try {
 
 
-
+//TODO we need premium to access this feature
             String signedUrl = cloudinary.url().transformation(new Transformation())
                     .type("authenticated")
                     .authToken(new AuthToken(cloudinary.config.apiKey)

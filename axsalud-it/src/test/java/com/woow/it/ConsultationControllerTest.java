@@ -1,6 +1,5 @@
 package com.woow.it;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.woow.WoowBaseTest;
 import com.woow.axsalud.common.WoowConstants;
@@ -30,7 +29,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -330,9 +328,9 @@ public class ConsultationControllerTest extends WoowBaseTest {
         HttpEntity<MultiValueMap<String, Object>> multipartRequest =
                 new HttpEntity<>(body, multipartHeaders);
 
-        ResponseEntity<String> uploadResponse = restTemplate.postForEntity(
+        ResponseEntity<FileResponseDTO> uploadResponse = restTemplate.postForEntity(
                 getBaseUrl() + "consultation/" + consultationId + "/sessionId/"
-                        + consultationSessionId + "/file", multipartRequest, String.class);
+                        + consultationSessionId + "/file", multipartRequest, FileResponseDTO.class);
 
         Assertions.assertEquals(HttpStatus.OK, uploadResponse.getStatusCode());
         Assertions.assertNotNull(uploadResponse.getBody());
@@ -373,29 +371,28 @@ public class ConsultationControllerTest extends WoowBaseTest {
         HttpEntity<MultiValueMap<String, Object>> uploadRequest =
                 new HttpEntity<>(body, uploadHeaders);
 
-        ResponseEntity<String> uploadResponse = restTemplate.postForEntity(
+        ResponseEntity<FileResponseDTO> fileUploadedResponse = restTemplate.postForEntity(
                 getBaseUrl() + "consultation/" + consultationId + "/sessionId/"
-                        + consultationSessionId + "/file", uploadRequest, String.class);
+                        + consultationSessionId + "/file", uploadRequest, FileResponseDTO.class);
 
-        Assertions.assertEquals(HttpStatus.OK, uploadResponse.getStatusCode());
+        Assertions.assertEquals(HttpStatus.OK, fileUploadedResponse.getStatusCode());
 
-        Map<String, Long> result = objectMapper.readValue(uploadResponse.getBody(), new TypeReference<>() {});
-        Long fileId = result.get("fileId");
+        Long fileId = fileUploadedResponse.getBody().getId();
 
         HttpHeaders downloadHeaders = new HttpHeaders();
         addAuthorizationHeader(axSaludUserDTO.getUserDtoCreate(), downloadHeaders);
 
         HttpEntity<Void> downloadRequest = new HttpEntity<>(downloadHeaders);
 
-        ResponseEntity<String> downloadResponse = restTemplate.exchange(
+        ResponseEntity<FileResponseDTO> downloadResponse = restTemplate.exchange(
                 getBaseUrl() + "consultation/" + consultationId + "/sessionId/"
                         + consultationSessionId + "/file/" + fileId,
                 HttpMethod.GET,
                 downloadRequest,
-                String.class);
+                FileResponseDTO.class);
 
         Assertions.assertEquals(HttpStatus.OK, downloadResponse.getStatusCode());
-        Assertions.assertTrue(downloadResponse.getBody().startsWith("https://")); // URL firmada
+        Assertions.assertTrue(downloadResponse.getBody().getUrl().contains("https:")); // URL firmada
     }
 
 
