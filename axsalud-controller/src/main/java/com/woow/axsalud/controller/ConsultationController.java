@@ -4,6 +4,7 @@ import com.woow.axsalud.controller.exception.WooBoHttpError;
 import com.woow.axsalud.data.consultation.ConsultationStatus;
 import com.woow.axsalud.service.api.ConsultationService;
 import com.woow.axsalud.service.api.dto.ConsultationDTO;
+import com.woow.axsalud.service.api.dto.ConsultationMessagesPagingDTO;
 import com.woow.axsalud.service.api.dto.FileResponseDTO;
 import com.woow.axsalud.service.api.dto.SymptomsDTO;
 import com.woow.axsalud.service.api.exception.ConsultationServiceException;
@@ -106,6 +107,19 @@ public class ConsultationController {
         try {
             return ResponseEntity.ok().body(consultationService
                     .downloadDocument(userDetails.getUsername(), consultationId, fileId));
+        } catch (ConsultationServiceException e) {
+            return WooBoHttpError.of(e).toResponseEntity();
+        }
+    }
+
+    @GetMapping("/consultationMessages")
+    public ResponseEntity<ConsultationMessagesPagingDTO> downloadFile(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam int pageNumber, @RequestParam int elementsPerPage) {
+        try {
+            return ResponseEntity.ok().body(consultationService
+                    .getAllMessageByUserNameUsingPaginationPagination(userDetails.getUsername(),
+                            pageNumber, elementsPerPage));
         } catch (ConsultationServiceException e) {
             return WooBoHttpError.of(e).toResponseEntity();
         }

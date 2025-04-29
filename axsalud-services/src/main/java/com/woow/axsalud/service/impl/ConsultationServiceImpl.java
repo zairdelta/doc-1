@@ -15,6 +15,9 @@ import com.woow.storage.api.StorageServiceUploadResponseDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -459,6 +462,32 @@ public class ConsultationServiceImpl implements ConsultationService {
                 .filter(Objects::nonNull)
                 .map(ConsultationDTO::from)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public ConsultationMessagesPagingDTO
+    getAllMessageByUserNameUsingPaginationPagination(String userName,
+                                                     int pageNumber,
+                                                     int totalElementsPerPage)
+            throws ConsultationServiceException {
+
+        Pageable pageable = PageRequest.of(0, 20);
+        Page<ConsultationMessageEntity> page = consultationMessageRepository
+                .findMessagesByPatientUserNameOrdered(userName, pageable);
+
+        List<ConsultationMessageEntity> messages = page.getContent();
+        long totalElements = page.getTotalElements();
+        int totalPages = page.getTotalPages();
+
+        ConsultationMessagesPagingDTO consultationMessagesPagingDTO = new ConsultationMessagesPagingDTO();
+        consultationMessagesPagingDTO.setMessages(messages.stream()
+                .filter(Objects::nonNull)
+                .map(ConsultationMessageDTO::from)
+                .collect(Collectors.toList()));
+        consultationMessagesPagingDTO.setTotalElements(totalElements);
+        consultationMessagesPagingDTO.setTotalPages(totalPages);
+
+        return consultationMessagesPagingDTO;
     }
 
 }
