@@ -105,3 +105,6 @@ google:
 
 jwt:
   secret: 123
+
+AGORA_APP_ID: 123123
+AGORA_APP_CERTIFICATE: 123123

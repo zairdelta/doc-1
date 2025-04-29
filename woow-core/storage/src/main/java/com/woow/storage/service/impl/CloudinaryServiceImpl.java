@@ -3,6 +3,7 @@ package com.woow.storage.service.impl;
 import com.cloudinary.AuthToken;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.Transformation;
+import com.cloudinary.Url;
 import com.cloudinary.utils.ObjectUtils;
 import com.woow.storage.api.StorageService;
 import com.woow.storage.api.StorageServiceException;
@@ -11,11 +12,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -102,7 +104,6 @@ public class CloudinaryServiceImpl implements StorageService {
                     .generate();
 
             return signedUrl;
-
         } catch (Exception e) {
             log.error("Error generating secureURL: " + e.getMessage());
             throw new StorageServiceException("Failed to generate signed URL", 402);

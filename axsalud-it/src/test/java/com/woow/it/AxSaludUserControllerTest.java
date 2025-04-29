@@ -52,6 +52,7 @@ public class AxSaludUserControllerTest extends WoowBaseTest {
         patientData.setEmergencyContactNumber("844345345345");
         patientData.setHeight(13f);
         patientData.setWeight(90.1f);
+        patientData.setPreexistences("Preexistences");
         PatientAdditional patientAdditional = new PatientAdditional();
         patientData.setPatientAdditionalSet(new HashSet<>());
         patientAdditional.setBirth(LocalDate.now());

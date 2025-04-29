@@ -308,7 +308,11 @@ public class ConsultationControllerTest extends WoowBaseTest {
         ResponseEntity<ConsultationDTO> consultationResponse =
                 restTemplate.postForEntity(getBaseUrl() + "consultation", consultationRequest, ConsultationDTO.class);
 
-        String consultationId = consultationResponse.getBody().getConsultationId().toString();
+        String consultationId = consultationResponse.getBody()
+                .getConsultationId();
+
+        String consultationSessionId = consultationResponse.getBody()
+                .getCurrentSessionIdIfExists();
 
         // Load file from resources (src/test/resources/sample.pdf for example)
         File file = new File(Objects.requireNonNull(getClass()
@@ -327,7 +331,8 @@ public class ConsultationControllerTest extends WoowBaseTest {
                 new HttpEntity<>(body, multipartHeaders);
 
         ResponseEntity<String> uploadResponse = restTemplate.postForEntity(
-                getBaseUrl() + "consultation/" + consultationId + "/file", multipartRequest, String.class);
+                getBaseUrl() + "consultation/" + consultationId + "/sessionId/"
+                        + consultationSessionId + "/file", multipartRequest, String.class);
 
         Assertions.assertEquals(HttpStatus.OK, uploadResponse.getStatusCode());
         Assertions.assertNotNull(uploadResponse.getBody());
@@ -351,7 +356,8 @@ public class ConsultationControllerTest extends WoowBaseTest {
         ResponseEntity<ConsultationDTO> consultationResponse = restTemplate.postForEntity(
                 getBaseUrl() + "consultation", consultationRequest, ConsultationDTO.class);
         String consultationId = consultationResponse.getBody().getConsultationId().toString();
-
+        String consultationSessionId = consultationResponse
+                .getBody().getCurrentSessionIdIfExists().toString();
 
         File file = new File(Objects.requireNonNull(getClass()
                 .getClassLoader().getResource("storageExample.txt")).getFile());
@@ -368,8 +374,8 @@ public class ConsultationControllerTest extends WoowBaseTest {
                 new HttpEntity<>(body, uploadHeaders);
 
         ResponseEntity<String> uploadResponse = restTemplate.postForEntity(
-                getBaseUrl() + "consultation/" + consultationId + "/file",
-                uploadRequest, String.class);
+                getBaseUrl() + "consultation/" + consultationId + "/sessionId/"
+                        + consultationSessionId + "/file", uploadRequest, String.class);
 
         Assertions.assertEquals(HttpStatus.OK, uploadResponse.getStatusCode());
 
@@ -382,7 +388,8 @@ public class ConsultationControllerTest extends WoowBaseTest {
         HttpEntity<Void> downloadRequest = new HttpEntity<>(downloadHeaders);
 
         ResponseEntity<String> downloadResponse = restTemplate.exchange(
-                getBaseUrl() + "consultation/" + consultationId + "/file/" + fileId,
+                getBaseUrl() + "consultation/" + consultationId + "/sessionId/"
+                        + consultationSessionId + "/file/" + fileId,
                 HttpMethod.GET,
                 downloadRequest,
                 String.class);

@@ -84,14 +84,15 @@ public class ConsultationController {
         }
     }
 
-    @PostMapping("{consultationId}/file")
+    @PostMapping("{consultationId}/sessionId/{consultationSessionId}/file")
     public ResponseEntity<Map> upload(@PathVariable String consultationId,
+                                      @PathVariable String consultationSessionId,
                                          @AuthenticationPrincipal UserDetails userDetails,
                                     @RequestBody MultipartFile file) {
         try {
             Map<String, Long> docIdMap = new HashMap<>();
             Long docId = consultationService.appendDocument(userDetails.getUsername(),
-                    consultationId, file);
+                    consultationSessionId, file);
             docIdMap.put("fileId", docId);
             return ResponseEntity
                     .ok(docIdMap);
@@ -102,12 +103,13 @@ public class ConsultationController {
     }
 
 
-    @GetMapping("/{consultationId}/file/{fileId}")
+    @GetMapping("{consultationId}/sessionId/{consultationSessionId}/file/{fileId}")
     public ResponseEntity<String> downloadFile(@PathVariable String consultationId,
                                                @PathVariable long fileId,
                                                @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            String signedUrl = consultationService.downloadDocument(userDetails.getUsername(), consultationId, fileId);
+            String signedUrl = consultationService
+                    .downloadDocument(userDetails.getUsername(), consultationId, fileId);
             return ResponseEntity.ok(signedUrl);
         } catch (ConsultationServiceException e) {
             return WooBoHttpError.of(e).toResponseEntity();

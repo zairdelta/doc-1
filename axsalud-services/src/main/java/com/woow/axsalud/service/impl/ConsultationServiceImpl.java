@@ -372,6 +372,11 @@ public class ConsultationServiceImpl implements ConsultationService {
             ConsultationSession consultationSession =
                     consultationSessionRepository
                             .findByConsultationSessionId(UUID.fromString(consultationSessionId));
+
+            if(consultationSession == null) {
+                throw new ConsultationServiceException("consultationSessionId does not exists: " + consultationSessionId, 402);
+            }
+
             StorageServiceUploadResponseDTO storageServiceUploadResponseDTO =
                     storageService.uploadFile(file);
 
@@ -412,15 +417,15 @@ public class ConsultationServiceImpl implements ConsultationService {
         Optional<ConsultationDocument> consultationDocumentOptional =
                 consultationDocumentRepository.findById(fileId);
         ConsultationDocument consultationDocument = consultationDocumentOptional.get();
-       // try {
-            return consultationDocument.getSecureUrl();
-            /* storageService.generateSignedUrl(consultationDocument.getElementPublicId(),
+       try {
+            //return consultationDocument.getSecureUrl();
+            return  storageService.generateSignedUrl(consultationDocument.getElementPublicId(),
                     consultationDocument.getVersion(),
                     consultationDocument.getFormat(), 95000);
         } catch (StorageServiceException e) {
             throw new ConsultationServiceException(e.getMessage(), 301);
         }
-        */
+
     }
 
     @Override
