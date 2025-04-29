@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import java.util.UUID;
 
 @Repository
 public interface ConsultationMessageRepository extends JpaRepository<ConsultationMessageEntity, Long> {
@@ -21,5 +21,15 @@ public interface ConsultationMessageRepository extends JpaRepository<Consultatio
 """)
     Page<ConsultationMessageEntity> findMessagesByPatientUserNameOrdered(@Param("userName") String userName,
                                                                          Pageable pageable);
+
+    @Query("""
+    SELECT m
+    FROM ConsultationMessageEntity m
+    WHERE m.consultationSession.consultationSessionId = :sessionId
+    ORDER BY m.timestamp DESC
+""")
+    Page<ConsultationMessageEntity> findMessagesByConsultationSessionId(@Param("sessionId") UUID sessionId,
+                                                                        Pageable pageable);
+
 
 }

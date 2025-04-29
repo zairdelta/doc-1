@@ -490,4 +490,34 @@ public class ConsultationServiceImpl implements ConsultationService {
         return consultationMessagesPagingDTO;
     }
 
+    @Override
+    public ConsultationMessagesPagingDTO getAllMessagesGivenConsultationIdAndSessionId(String consultationId,
+                                                                                       String consultationSessionId,
+                                                                                       int pageNumber, int totalElementsPerPage)
+            throws ConsultationServiceException {
+
+        if(ObjectUtils.isEmpty(consultationSessionId)) {
+            throw new ConsultationServiceException("consultationSessionId cannot be empty", 402);
+        }
+
+        Pageable pageable = PageRequest.of(pageNumber, totalElementsPerPage);
+        Page<ConsultationMessageEntity> page = consultationMessageRepository
+                .findMessagesByConsultationSessionId(UUID.fromString(consultationSessionId), pageable);
+
+        List<ConsultationMessageEntity> messages = page.getContent();
+        long totalElements = page.getTotalElements();
+        int totalPages = page.getTotalPages();
+
+        ConsultationMessagesPagingDTO consultationMessagesPagingDTO = new ConsultationMessagesPagingDTO();
+        consultationMessagesPagingDTO.setMessages(messages.stream()
+                .filter(Objects::nonNull)
+                .map(ConsultationMessageDTO::from)
+                .collect(Collectors.toList()));
+        consultationMessagesPagingDTO.setTotalElements(totalElements);
+        consultationMessagesPagingDTO.setTotalPages(totalPages);
+
+        return consultationMessagesPagingDTO;
+    }
+
+
 }

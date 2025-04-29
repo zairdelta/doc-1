@@ -25,5 +25,12 @@ public interface ConsultationService {
     ConsultationDTO getbyConsultationId(String userName, String consultationId);
     List<ConsultationDTO> getConsultationsByStatus(ConsultationStatus status);
     ConsultationMessagesPagingDTO getAllMessageByUserNameUsingPaginationPagination
-            (String userName, int pageNumber, int totalElementsPerPage) throws ConsultationServiceException;;
+            (String userName, int pageNumber, int totalElementsPerPage) throws ConsultationServiceException;
+
+    ConsultationMessagesPagingDTO getAllMessagesGivenConsultationIdAndSessionId(String consultationId,
+                                                                                String consultationSessionId,
+                                                                                int pageNumber,
+                                                                                int totalElementsPerPage)
+            throws ConsultationServiceException;
+
 }

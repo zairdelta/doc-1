@@ -113,12 +113,41 @@ public class ConsultationController {
     }
 
     @GetMapping("/consultationMessages")
-    public ResponseEntity<ConsultationMessagesPagingDTO> downloadFile(
+    public ResponseEntity<ConsultationMessagesPagingDTO> getConsultationAllUserConsultationMessages(
             @AuthenticationPrincipal UserDetails userDetails,
             @RequestParam int pageNumber, @RequestParam int elementsPerPage) {
         try {
             return ResponseEntity.ok().body(consultationService
                     .getAllMessageByUserNameUsingPaginationPagination(userDetails.getUsername(),
+                            pageNumber, elementsPerPage));
+        } catch (ConsultationServiceException e) {
+            return WooBoHttpError.of(e).toResponseEntity();
+        }
+    }
+
+    @GetMapping("{userName}/consultationMessages")
+    public ResponseEntity<ConsultationMessagesPagingDTO> downloadFile(
+            @PathVariable String userName,
+            @RequestParam int pageNumber, @RequestParam int elementsPerPage) {
+        try {
+            return ResponseEntity.ok().body(consultationService
+                    .getAllMessageByUserNameUsingPaginationPagination(userName,
+                            pageNumber, elementsPerPage));
+        } catch (ConsultationServiceException e) {
+            return WooBoHttpError.of(e).toResponseEntity();
+        }
+    }
+
+    @GetMapping("{consultationId}/sessionId/{consultationSessionId}/messages")
+    public ResponseEntity<ConsultationMessagesPagingDTO> getConsultationMessagesGivenConsultationId
+            (@PathVariable String consultationId,
+             @PathVariable String consultationSessionId,
+             @RequestParam int pageNumber,
+             @RequestParam int elementsPerPage,
+             @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            return ResponseEntity.ok().body(consultationService.
+                    getAllMessagesGivenConsultationIdAndSessionId(consultationId, consultationSessionId,
                             pageNumber, elementsPerPage));
         } catch (ConsultationServiceException e) {
             return WooBoHttpError.of(e).toResponseEntity();
