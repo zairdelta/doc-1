@@ -17,7 +17,7 @@ public interface ConsultationMessageRepository extends JpaRepository<Consultatio
     SELECT m
     FROM ConsultationMessageEntity m
     WHERE m.consultationSession.consultation.patient.coreUser.userName = :userName
-    ORDER BY m.timestamp ASC
+    ORDER BY m.timestamp DESC
 """)
     Page<ConsultationMessageEntity> findMessagesByPatientUserNameOrdered(@Param("userName") String userName,
                                                                          Pageable pageable);
