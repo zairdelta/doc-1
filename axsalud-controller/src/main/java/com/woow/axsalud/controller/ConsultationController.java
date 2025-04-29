@@ -126,7 +126,7 @@ public class ConsultationController {
     }
 
     @GetMapping("{userName}/consultationMessages")
-    public ResponseEntity<ConsultationMessagesPagingDTO> downloadFile(
+    public ResponseEntity<ConsultationMessagesPagingDTO> getConsultationMessagesByUserName(
             @PathVariable String userName,
             @RequestParam int pageNumber, @RequestParam int elementsPerPage) {
         try {
