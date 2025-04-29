@@ -4,6 +4,7 @@ import com.woow.axsalud.controller.exception.WooBoHttpError;
 import com.woow.axsalud.data.consultation.ConsultationStatus;
 import com.woow.axsalud.service.api.ConsultationService;
 import com.woow.axsalud.service.api.dto.ConsultationDTO;
+import com.woow.axsalud.service.api.dto.FileUploaddedDTO;
 import com.woow.axsalud.service.api.dto.SymptomsDTO;
 import com.woow.axsalud.service.api.exception.ConsultationServiceException;
 import com.woow.core.service.api.exception.WooUserServiceException;
@@ -47,10 +48,10 @@ public class ConsultationController {
 
     @GetMapping("/{consultationId}")
     public ResponseEntity<ConsultationDTO> get(@PathVariable String consultationId,
-                                               @AuthenticationPrincipal UserDetails userDetails,
-                                               @RequestParam(name = "pageNumber") int pageNumber,
-                                               @RequestParam(name = "totalByPage") int totalByPage) {
-        return ResponseEntity.ok().build();
+                                               @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok().body(consultationService
+                .getbyConsultationId(userDetails.getUsername(),
+                        consultationId));
     }
 
 
@@ -85,17 +86,14 @@ public class ConsultationController {
     }
 
     @PostMapping("{consultationId}/sessionId/{consultationSessionId}/file")
-    public ResponseEntity<Map> upload(@PathVariable String consultationId,
-                                      @PathVariable String consultationSessionId,
-                                         @AuthenticationPrincipal UserDetails userDetails,
-                                    @RequestBody MultipartFile file) {
+    public ResponseEntity<FileUploaddedDTO> upload(@PathVariable String consultationId,
+                                                   @PathVariable String consultationSessionId,
+                                                   @AuthenticationPrincipal UserDetails userDetails,
+                                                   @RequestBody MultipartFile file) {
         try {
-            Map<String, Long> docIdMap = new HashMap<>();
-            Long docId = consultationService.appendDocument(userDetails.getUsername(),
-                    consultationSessionId, file);
-            docIdMap.put("fileId", docId);
-            return ResponseEntity
-                    .ok(docIdMap);
+
+            return ResponseEntity.ok().body(consultationService.appendDocument(userDetails.getUsername(),
+                    consultationSessionId, file));
         } catch (ConsultationServiceException e) {
             return WooBoHttpError.of(e).toResponseEntity();
         }

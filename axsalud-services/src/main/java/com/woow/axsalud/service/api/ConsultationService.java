@@ -3,6 +3,7 @@ package com.woow.axsalud.service.api;
 import com.woow.axsalud.data.consultation.ConsultationStatus;
 import com.woow.axsalud.service.api.dto.ConsultationMessageDTO;
 import com.woow.axsalud.service.api.dto.ConsultationDTO;
+import com.woow.axsalud.service.api.dto.FileUploaddedDTO;
 import com.woow.axsalud.service.api.dto.SymptomsDTO;
 import com.woow.axsalud.service.api.exception.ConsultationServiceException;
 import com.woow.core.service.api.exception.WooUserServiceException;
@@ -22,10 +23,9 @@ public interface ConsultationService {
     void addMessage(ConsultationMessageDTO consultationMessage)
             throws ConsultationServiceException;
 
-    long appendDocument(String userName, String consultationSessionId, MultipartFile file) throws ConsultationServiceException;
+    FileUploaddedDTO appendDocument(String userName, String consultationSessionId, MultipartFile file) throws ConsultationServiceException;
     String downloadDocument(String userName, String consultationSessionId, long fileId) throws ConsultationServiceException;
 
-    List<ConsultationDTO> getAllConsultation(String userName, int pageNumber,
-                                             int elementsPerPage);
+    ConsultationDTO getbyConsultationId(String userName, String consultationId);
     List<ConsultationDTO> getConsultationsByStatus(ConsultationStatus status);
 }

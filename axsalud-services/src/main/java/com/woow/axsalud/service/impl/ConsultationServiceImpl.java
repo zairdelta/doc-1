@@ -360,7 +360,7 @@ public class ConsultationServiceImpl implements ConsultationService {
     }
 
     @Override
-    public long appendDocument(String userName, String consultationSessionId,
+    public FileUploaddedDTO appendDocument(String userName, String consultationSessionId,
                                  MultipartFile file) throws ConsultationServiceException {
         try {
             WoowUser woowUser = woowUserRepository.findByUserName(userName);
@@ -403,8 +403,11 @@ public class ConsultationServiceImpl implements ConsultationService {
 
             consultationSession.getDocuments().add(doc);
             consultationSessionRepository.save(consultationSession);
-
-            return doc.getId();
+            FileUploaddedDTO fileUploaddedDTO = new FileUploaddedDTO();
+            fileUploaddedDTO.setId(doc.getId());
+            fileUploaddedDTO.setName(doc.getFileName());
+            fileUploaddedDTO.setUrl(doc.getSecureUrl());
+            return fileUploaddedDTO;
         } catch (StorageServiceException e) {
             throw new ConsultationServiceException(e.getMessage(), 301);
         }
@@ -429,11 +432,11 @@ public class ConsultationServiceImpl implements ConsultationService {
     }
 
     @Override
-    public List<ConsultationDTO> getAllConsultation(String userName,
-                                                    int pageNumber,
-                                                    int elementsPerPage) {
-        //consultationRepository.findAllOrderByStatusDesc();
-        return null;
+    public ConsultationDTO getbyConsultationId(String userName, String consultationId) {
+
+        Consultation consultation =
+                consultationRepository.findByConsultationId(UUID.fromString(consultationId));
+        return ConsultationDTO.from(consultation);
     }
 
     @Override
