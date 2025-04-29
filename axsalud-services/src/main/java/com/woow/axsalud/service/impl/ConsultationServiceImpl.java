@@ -471,7 +471,7 @@ public class ConsultationServiceImpl implements ConsultationService {
                                                      int totalElementsPerPage)
             throws ConsultationServiceException {
 
-        Pageable pageable = PageRequest.of(0, 20);
+        Pageable pageable = PageRequest.of(pageNumber, totalElementsPerPage);
         Page<ConsultationMessageEntity> page = consultationMessageRepository
                 .findMessagesByPatientUserNameOrdered(userName, pageable);
 
