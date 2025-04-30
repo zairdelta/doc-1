@@ -21,8 +21,8 @@ public class PatientData {
     private float build = 0;
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "patient_data_id")
-    Set<PatientAdditional> patientAdditionalSet = new HashSet<>();
+    private Set<PatientAdditional> patientAdditionalSet = new HashSet<>();
     @Lob
     @Column(nullable = false, columnDefinition = "TEXT")
-    String preexistences;
+    private String preexistences;
 }

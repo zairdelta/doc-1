@@ -2,12 +2,12 @@ package com.woow.axsalud.service.api;
 
 import com.woow.axsalud.data.client.AxSaludWooUser;
 import com.woow.axsalud.service.api.dto.HealthServiceProviderDTO;
+import com.woow.axsalud.service.api.dto.HealthServiceProviderUpdateDTO;
 import com.woow.core.service.api.exception.WooUserServiceException;
-
-import java.util.List;
 
 public interface HealthServiceProvider {
     String save(HealthServiceProviderDTO healthServiceProviderDTO) throws WooUserServiceException;
+    String update(String userName, HealthServiceProviderUpdateDTO healthServiceProviderDTO) throws WooUserServiceException;
 
     HealthServiceProviderDTO get(String userName) throws WooUserServiceException;
     void connected(AxSaludWooUser axSaludWooUser);

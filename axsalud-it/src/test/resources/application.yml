@@ -73,6 +73,9 @@ woo:
         user: postmaster@axtrading.io
         pwd: 174c7acda9022896b0911a6f6c43fc3c-02fa25a3-40f876ec
         domain: axtrading.io
+    data:
+      encryption:
+        key: a9f3k7v2x1z8p6q4
 
 sms:
   accountSID: ACb5e031dff028e2577518e3a0eb186780

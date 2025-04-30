@@ -4,6 +4,7 @@ import com.woow.axsalud.controller.exception.WooBoHttpError;
 import com.woow.axsalud.data.client.PatientData;
 import com.woow.axsalud.service.api.AxSaludService;
 import com.woow.axsalud.service.api.dto.AxSaludUserDTO;
+import com.woow.axsalud.service.api.dto.AxSaludUserUpdateDTO;
 import com.woow.axsalud.service.api.dto.ConsultationDTO;
 import com.woow.axsalud.service.api.dto.PatientViewDTO;
 import com.woow.core.service.api.exception.WooUserServiceException;
@@ -143,6 +144,36 @@ public class WoowUserController {
             log.error("Error while updating patient data: {}", e.getMessage(), e);
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @ResponseStatus(HttpStatus.CREATED)
+    @PutMapping
+    @Operation(summary = "Updates a Patient",
+            description = "Updates a Patient, the new information will be replace, endpoints except all the fields even if they are the" +
+                    "same value.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User updated successfully. Returns Location header."),
+            @ApiResponse(responseCode = "301", description = "Forbidden"),
+            @ApiResponse(responseCode = "415", description = "User is not active")
+    })
+    public ResponseEntity<?> put(HttpServletRequest request,
+                                 @Valid @RequestBody AxSaludUserUpdateDTO axSaludUserUpdateDTO,
+                                 @AuthenticationPrincipal UserDetails userDetails) {
+        String userName = userDetails.getUsername();
+        try {
+            // captchaService.processResponse(request, gRecaptchaResponse);
+            userName = axSaludService.update(userName, axSaludUserUpdateDTO);
+        } catch (final WooUserServiceException e) {
+            return WooBoHttpError.of(e).toResponseEntity();
+        } catch (Exception e) {
+            log.error("Error while creating user: {}", e.getMessage(), e);
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .header(LOCATION, appRoot + ROOT_PATH + userName)
+                .build();
     }
 
 }

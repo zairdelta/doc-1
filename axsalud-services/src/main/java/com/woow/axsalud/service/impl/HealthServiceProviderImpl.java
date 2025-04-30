@@ -9,6 +9,7 @@ import com.woow.axsalud.data.repository.DoctorDataRepository;
 import com.woow.axsalud.service.api.DoctorQueueManager;
 import com.woow.axsalud.service.api.HealthServiceProvider;
 import com.woow.axsalud.service.api.dto.HealthServiceProviderDTO;
+import com.woow.axsalud.service.api.dto.HealthServiceProviderUpdateDTO;
 import com.woow.core.data.repository.WoowUserRepository;
 import com.woow.core.data.user.WoowUser;
 import com.woow.core.service.api.UserDtoCreate;
@@ -19,7 +20,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Optional;
 
 @Transactional
@@ -78,6 +78,24 @@ public class HealthServiceProviderImpl implements HealthServiceProvider {
 
 
         return woowUser.getUserName();
+    }
+
+    @Override
+    public String update(String userName, HealthServiceProviderUpdateDTO healthServiceProviderDTO)
+            throws WooUserServiceException {
+
+        log.debug("Doctor userName to be updated: {}, new Data: {}", userName, healthServiceProviderDTO);
+        wooWUserService.updateWooUserByUserName(userName, healthServiceProviderDTO.getUserUpdateDto());
+
+        WoowUser woowUser = woowUserRepository.findByUserName(userName);
+        Optional<AxSaludWooUser> axSaludWooUserOptional =
+                axSaludUserRepository.findByCoreUser_UserId(woowUser.getUserId());
+        AxSaludWooUser axSaludWooUser =
+                axSaludWooUserOptional.orElseThrow(() -> new WooUserServiceException("Error trying to update user: " +
+                        userName, 402));
+        axSaludWooUser.setDoctorWelcomeMessage(healthServiceProviderDTO.getWelcomeMessage());
+        axSaludWooUser.setDoctorData(healthServiceProviderDTO.getDoctorData());
+        return userName;
     }
 
     @Override

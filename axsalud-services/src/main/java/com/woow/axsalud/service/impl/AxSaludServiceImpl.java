@@ -192,4 +192,24 @@ public class AxSaludServiceImpl implements AxSaludService {
         axSaludUserRepository.save(axSaludWooUser);
     }
 
+    @Override
+    public String update(String userName, AxSaludUserUpdateDTO axSaludUserUpdateDTO) throws WooUserServiceException {
+        log.debug("Patient userName to be updated: {}, new Data: {}", userName, axSaludUserUpdateDTO);
+        wooWUserService.updateWooUserByUserName(userName, axSaludUserUpdateDTO.getUserUpdateDto());
+
+        WoowUser woowUser = woowUserRepository.findByUserName(userName);
+        Optional<AxSaludWooUser> axSaludWooUserOptional =
+                axSaludUserRepository.findByCoreUser_UserId(woowUser.getUserId());
+        AxSaludWooUser axSaludWooUser =
+                axSaludWooUserOptional.orElseThrow(() -> new WooUserServiceException("Error trying to update user: " +
+                        userName, 402));
+
+        PatientData patientData = new PatientData();
+
+        modelMapper.map(axSaludUserUpdateDTO.getPatientDataUpdateDTO(), patientData);
+        axSaludWooUser.setPatientData(patientData);
+        axSaludUserRepository.save(axSaludWooUser);
+        return userName;
+    }
+
 }

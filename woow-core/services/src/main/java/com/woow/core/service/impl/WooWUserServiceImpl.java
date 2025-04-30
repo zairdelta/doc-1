@@ -156,8 +156,7 @@ public class WooWUserServiceImpl implements WooWUserService, SecurityService {
 
     private void updateWoowUser(WoowUser existingWooUser, UserUpdateDto wooUserDTO) {
 
-
-        modelMapper.map(existingWooUser, wooUserDTO);
+        modelMapper.map(wooUserDTO, existingWooUser);
 
         if (wooUserDTO.getPassword() != null &&
                 !wooUserDTO.getPassword().equalsIgnoreCase("")) {
@@ -175,6 +174,9 @@ public class WooWUserServiceImpl implements WooWUserService, SecurityService {
             existingWooUser.setEmail(wooUserDTO.getEmail());
             existingWooUser.setEmailConfirm(false);
         }
+
+        woowUserRepository.save(existingWooUser);
+
     }
 
     @Override

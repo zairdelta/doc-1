@@ -3,6 +3,7 @@ package com.woow.axsalud.controller;
 import com.woow.axsalud.controller.exception.WooBoHttpError;
 import com.woow.axsalud.service.api.HealthServiceProvider;
 import com.woow.axsalud.service.api.dto.HealthServiceProviderDTO;
+import com.woow.axsalud.service.api.dto.HealthServiceProviderUpdateDTO;
 import com.woow.core.service.api.exception.WooUserServiceException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -53,9 +54,7 @@ public class HealthServiceProviderController {
             @ApiResponse(responseCode = "200", description = "User created successfully. Returns Location header."),
             @ApiResponse(responseCode = "301", description = "Forbidden"),
             @ApiResponse(responseCode = "410", description = "Password cannot be empty"),
-            @ApiResponse(responseCode = "411", description = "Username already exists"),
-            @ApiResponse(responseCode = "414", description = "Sponsor is not active or does not exist"),
-            @ApiResponse(responseCode = "415", description = "User is not active")
+            @ApiResponse(responseCode = "411", description = "Username already exists")
     })
     public ResponseEntity<?> save(HttpServletRequest request,
                                   @Valid @RequestBody HealthServiceProviderDTO healthServiceProviderDTO) {
@@ -75,6 +74,38 @@ public class HealthServiceProviderController {
                 .header(LOCATION, appRoot + ROOT_PATH + userName)
                 .build();
     }
+
+
+    @ResponseStatus(HttpStatus.CREATED)
+    @PutMapping
+    @Operation(summary = "Updates a Health Service Provider",
+            description = "Updates a Health Service Provider user with the role HEALTH_SERVICE_PROVIDER." +
+                    "Service would expect all fields, as it will replace them for the ones sent.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User updated successfully. Returns Location header."),
+            @ApiResponse(responseCode = "301", description = "Forbidden"),
+            @ApiResponse(responseCode = "415", description = "User is not active")
+    })
+    public ResponseEntity<?> put(HttpServletRequest request,
+                                 @Valid @RequestBody HealthServiceProviderUpdateDTO healthServiceProviderUpdateDTO,
+                                 @AuthenticationPrincipal UserDetails userDetails) {
+        String userName = userDetails.getUsername();
+        try {
+            // captchaService.processResponse(request, gRecaptchaResponse);
+            userName = healthServiceProvider.update(userName, healthServiceProviderUpdateDTO);
+        } catch (final WooUserServiceException e) {
+            return WooBoHttpError.of(e).toResponseEntity();
+        } catch (Exception e) {
+            log.error("Error while creating user: {}", e.getMessage(), e);
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .header(LOCATION, appRoot + ROOT_PATH + userName)
+                .build();
+    }
+
 
     @ResponseStatus(HttpStatus.CREATED)
     @GetMapping
