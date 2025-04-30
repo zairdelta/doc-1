@@ -1,5 +1,6 @@
 package com.woow.axsalud.service.api;
 
+import com.woow.axsalud.data.consultation.ConsultationSession;
 import com.woow.axsalud.data.consultation.ConsultationStatus;
 import com.woow.axsalud.service.api.dto.*;
 import com.woow.axsalud.service.api.exception.ConsultationServiceException;
@@ -32,5 +33,7 @@ public interface ConsultationService {
                                                                                 int pageNumber,
                                                                                 int totalElementsPerPage)
             throws ConsultationServiceException;
+
+    ConsultationSession getConsultationSession(String consultationSessionId) throws ConsultationServiceException;
 
 }

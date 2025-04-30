@@ -54,6 +54,14 @@
             <artifactId>storage</artifactId>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>io.agora</groupId>
+            <artifactId>authentication</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.agora</groupId>
+            <artifactId>authentication</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

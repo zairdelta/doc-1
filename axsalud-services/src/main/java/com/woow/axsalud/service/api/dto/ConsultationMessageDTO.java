@@ -15,7 +15,7 @@ public class ConsultationMessageDTO {
     private String consultationSessionId;
     private LocalDateTime timeProcessed;
     private ChatStatus status = ChatStatus.STARTED;
-    private String messageType;
+    private ConsultationMessgeTypeEnum messageType;
 
     public static ConsultationMessageDTO from(ConsultationMessageEntity consultationMessageEntity) {
         ConsultationMessageDTO consultationMessageDTO = new ConsultationMessageDTO();
@@ -26,7 +26,8 @@ public class ConsultationMessageDTO {
         consultationMessageDTO.setConsultationId(consultationMessageEntity
                 .getConsultationSession().getConsultation().getConsultationId().toString());
         consultationMessageDTO.setTimeProcessed(consultationMessageEntity.getTimestamp());
-        consultationMessageDTO.setMessageType(consultationMessageEntity.getMessageType());
+        consultationMessageDTO.setMessageType(
+                ConsultationMessgeTypeEnum.fromString(consultationMessageEntity.getMessageType()));
         consultationMessageDTO.setContent(consultationMessageEntity.getContent());
         consultationMessageDTO.setSender(consultationMessageEntity.getSentBy().getCoreUser().getUserName());
         return consultationMessageDTO;

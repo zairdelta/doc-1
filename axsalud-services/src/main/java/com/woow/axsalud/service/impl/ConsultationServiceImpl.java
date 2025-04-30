@@ -83,7 +83,7 @@ public class ConsultationServiceImpl implements ConsultationService {
             errorMessage.setSender(SYSTEM_USER);
             errorMessage.setReceiver(consultationMessage.getSender());
             errorMessage.setContent("❌ Failed to send message: " + e.getMessage());
-            errorMessage.setMessageType("ERROR");
+            errorMessage.setMessageType(ConsultationMessgeTypeEnum.ERROR);
 
             log.error("Error validating or adding message for consultationMessage: {}, errorMessage:{}, reporting to system user: {}",
                     consultationMessage, errorMessage, SYSTEM_USER);
@@ -314,7 +314,7 @@ public class ConsultationServiceImpl implements ConsultationService {
         welcomeMessage.setConsultationId(consultationId);
         welcomeMessage.setConsultationSessionId(consultationSession.getConsultationSessionId().toString());
         welcomeMessage.setContent("👋 " + consultationDTO.getWelcomeMessage());
-        welcomeMessage.setMessageType("WELCOME");
+        welcomeMessage.setMessageType(ConsultationMessgeTypeEnum.WELCOME);
 
         log.info("Sending Welcome message:{} ", welcomeMessage);
         addMessage(welcomeMessage);
@@ -517,6 +517,17 @@ public class ConsultationServiceImpl implements ConsultationService {
         consultationMessagesPagingDTO.setTotalPages(totalPages);
 
         return consultationMessagesPagingDTO;
+    }
+
+    @Override
+    public ConsultationSession getConsultationSession(String consultationSessionId) throws ConsultationServiceException {
+        if(ObjectUtils.isEmpty(consultationSessionId)) {
+            throw new ConsultationServiceException("invalid consultationSessionId: " + consultationSessionId, 402);
+        }
+        ConsultationSession consultationSession =
+        consultationSessionRepository.findByConsultationSessionId(UUID.fromString(consultationSessionId));
+
+        return consultationSession;
     }
 
 
