@@ -17,6 +17,8 @@ logging:
     com.woow: DEBUG
 
 spring:
+  config:
+    import: classpath:banner-config.yml
   flyway:
     enabled: false
   profiles:

@@ -1,0 +1,7 @@
+app:
+  info:
+    author: Dan Pacheco
+    environment: production
+    version: 1.0.1
+    spring-boot:
+      version: 3.4.2
