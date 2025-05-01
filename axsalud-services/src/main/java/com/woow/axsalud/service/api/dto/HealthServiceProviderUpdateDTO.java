@@ -7,5 +7,5 @@ import lombok.Data;
 public class HealthServiceProviderUpdateDTO {
  private UserUpdateDto userUpdateDto;
     private String welcomeMessage;
-    private DoctorData doctorData;
+    private DoctorDataDTO doctorData;
 }

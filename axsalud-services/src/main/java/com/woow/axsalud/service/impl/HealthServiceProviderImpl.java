@@ -8,6 +8,8 @@ import com.woow.axsalud.data.repository.AxSaludUserRepository;
 import com.woow.axsalud.data.repository.DoctorDataRepository;
 import com.woow.axsalud.service.api.DoctorQueueManager;
 import com.woow.axsalud.service.api.HealthServiceProvider;
+import com.woow.axsalud.service.api.dto.DoctorDataDTO;
+import com.woow.axsalud.service.api.dto.DoctorViewDTO;
 import com.woow.axsalud.service.api.dto.HealthServiceProviderDTO;
 import com.woow.axsalud.service.api.dto.HealthServiceProviderUpdateDTO;
 import com.woow.core.data.repository.WoowUserRepository;
@@ -52,7 +54,8 @@ public class HealthServiceProviderImpl implements HealthServiceProvider {
     @Override
     public String save(HealthServiceProviderDTO healthServiceProviderDTO)
             throws WooUserServiceException {
-        healthServiceProviderDTO.getDoctorData().setId(0);
+
+
         UserDtoCreate userDtoCreate = new UserDtoCreate();
         modelMapper.map(healthServiceProviderDTO.getUserDtoCreate(), userDtoCreate);
         userDtoCreate.setUserName(healthServiceProviderDTO.getUserDtoCreate().getEmail());
@@ -69,7 +72,9 @@ public class HealthServiceProviderImpl implements HealthServiceProvider {
 
         if(healthServiceProviderDTO.getDoctorData() != null) {
             DoctorData doctorData = new DoctorData();
-            modelMapper.map(healthServiceProviderDTO.getDoctorData(), doctorData);
+            doctorData.setUniversity(healthServiceProviderDTO.getDoctorData().getUniversity());
+            doctorData.setLicenseNumber(healthServiceProviderDTO.getDoctorData().getLicenseNumber());
+            doctorData.setSpeciality(healthServiceProviderDTO.getDoctorData().getSpeciality());
             doctorDataRepository.save(doctorData);
             axSaludWooUser.setDoctorData(doctorData);
         }
@@ -85,18 +90,20 @@ public class HealthServiceProviderImpl implements HealthServiceProvider {
             throws WooUserServiceException {
 
         log.debug("Doctor userName to be updated: {}, new Data: {}", userName, healthServiceProviderDTO);
-        wooWUserService.updateWooUserByUserName(userName, healthServiceProviderDTO.getUserUpdateDto());
+        WoowUser woowUser = wooWUserService.updateWooUserByUserName(userName, healthServiceProviderDTO.getUserUpdateDto());
 
-
-        WoowUser woowUser = woowUserRepository.findByUserName(userName);
         Optional<AxSaludWooUser> axSaludWooUserOptional =
                 axSaludUserRepository.findByCoreUser_UserId(woowUser.getUserId());
         AxSaludWooUser axSaludWooUser =
-                axSaludWooUserOptional.orElseThrow(() -> new WooUserServiceException("Error trying to update user: " +
+                axSaludWooUserOptional.orElseThrow(()
+                        -> new WooUserServiceException("Error trying to update user: " +
                         userName, 402));
         axSaludWooUser.setDoctorWelcomeMessage(healthServiceProviderDTO.getWelcomeMessage());
-        healthServiceProviderDTO.getDoctorData().setId(axSaludWooUser.getDoctorData().getId());
-        axSaludWooUser.setDoctorData(healthServiceProviderDTO.getDoctorData());
+        DoctorData doctorData = new DoctorData();
+        doctorData.setUniversity(healthServiceProviderDTO.getDoctorData().getUniversity());
+        doctorData.setLicenseNumber(healthServiceProviderDTO.getDoctorData().getLicenseNumber());
+        doctorData.setSpeciality(healthServiceProviderDTO.getDoctorData().getSpeciality());
+        axSaludWooUser.setDoctorData(doctorData);
         return userName;
     }
 
@@ -116,7 +123,7 @@ public class HealthServiceProviderImpl implements HealthServiceProvider {
 
         HealthServiceProviderDTO dto = new HealthServiceProviderDTO();
 
-        dto.setDoctorData(axSaludWooUser.getDoctorData());
+        dto.setDoctorData(DoctorDataDTO.from(axSaludWooUser.getDoctorData()));
         dto.setWelcomeMessage(axSaludWooUser.getDoctorWelcomeMessage());
         UserDtoCreate userDtoCreate = new UserDtoCreate();
         modelMapper.map(woowUser, userDtoCreate);

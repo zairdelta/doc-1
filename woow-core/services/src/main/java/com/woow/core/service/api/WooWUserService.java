@@ -1,5 +1,6 @@
 package com.woow.core.service.api;
 
+import com.woow.core.data.user.WoowUser;
 import com.woow.core.service.api.exception.WooUserServiceException;
 
 public interface WooWUserService {
@@ -8,7 +9,7 @@ public interface WooWUserService {
 
     WooUserViewDTO getUserByName(String userName) throws WooUserServiceException;
     WooUserViewDTO getByUserId(long userId) throws WooUserServiceException;
-    void updateWooUserByUserName(String userName, UserUpdateDto wooUserDTO) throws WooUserServiceException;
+    WoowUser updateWooUserByUserName(String userName, UserUpdateDto wooUserDTO) throws WooUserServiceException;
     void updateWooUserByUserId(long userId, UserUpdateDto wooUserDTO) throws WooUserServiceException;
 
     void cancelMembership(long userId) throws WooUserServiceException;

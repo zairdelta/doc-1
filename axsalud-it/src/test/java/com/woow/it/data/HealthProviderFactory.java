@@ -1,6 +1,7 @@
 package com.woow.it.data;
 
 import com.woow.axsalud.data.client.DoctorData;
+import com.woow.axsalud.service.api.dto.DoctorDataDTO;
 import com.woow.axsalud.service.api.dto.HealthServiceProviderDTO;
 import com.woow.core.service.api.UserDtoCreate;
 
@@ -25,7 +26,7 @@ public class HealthProviderFactory {
         user.setAddressLine1("Street 1");
         user.setAddressLine2("Street 2");
 
-        DoctorData doctorData = new DoctorData();
+        DoctorDataDTO doctorData = new DoctorDataDTO();
         doctorData.setSpeciality("Speciality");
         doctorData.setUniversity("University");
         doctorData.setLicenseNumber("number 00012324ODF");

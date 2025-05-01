@@ -98,7 +98,7 @@ public class WooWUserServiceImpl implements WooWUserService, SecurityService {
     }
 
     @Override
-    public void updateWooUserByUserName(String userName, UserUpdateDto wooUserDTO)
+    public WoowUser updateWooUserByUserName(String userName, UserUpdateDto wooUserDTO)
             throws WooUserServiceException {
         WoowUser existingWooUser = woowUserRepository.findByUserName(userName);
 
@@ -106,7 +106,7 @@ public class WooWUserServiceImpl implements WooWUserService, SecurityService {
             throw new WooUserServiceException("not found: " + userName, 404);
         }
 
-        updateWoowUser(existingWooUser, wooUserDTO);
+        return updateWoowUser(existingWooUser, wooUserDTO);
 
     }
 
@@ -154,7 +154,7 @@ public class WooWUserServiceImpl implements WooWUserService, SecurityService {
         woowUserRepository.save(existingWooUser);
     }
 
-    private void updateWoowUser(WoowUser existingWooUser, UserUpdateDto wooUserDTO) {
+    private WoowUser updateWoowUser(WoowUser existingWooUser, UserUpdateDto wooUserDTO) {
 
         modelMapper.map(wooUserDTO, existingWooUser);
 
@@ -175,7 +175,7 @@ public class WooWUserServiceImpl implements WooWUserService, SecurityService {
             existingWooUser.setEmailConfirm(false);
         }
 
-        woowUserRepository.save(existingWooUser);
+        return woowUserRepository.save(existingWooUser);
 
     }
 

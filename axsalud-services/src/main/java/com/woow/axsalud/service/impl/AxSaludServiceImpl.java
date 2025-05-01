@@ -195,9 +195,7 @@ public class AxSaludServiceImpl implements AxSaludService {
     @Override
     public String update(String userName, AxSaludUserUpdateDTO axSaludUserUpdateDTO) throws WooUserServiceException {
         log.debug("Patient userName to be updated: {}, new Data: {}", userName, axSaludUserUpdateDTO);
-        wooWUserService.updateWooUserByUserName(userName, axSaludUserUpdateDTO.getUserUpdateDto());
-
-        WoowUser woowUser = woowUserRepository.findByUserName(userName);
+        WoowUser woowUser = wooWUserService.updateWooUserByUserName(userName, axSaludUserUpdateDTO.getUserUpdateDto());
         Optional<AxSaludWooUser> axSaludWooUserOptional =
                 axSaludUserRepository.findByCoreUser_UserId(woowUser.getUserId());
         AxSaludWooUser axSaludWooUser =

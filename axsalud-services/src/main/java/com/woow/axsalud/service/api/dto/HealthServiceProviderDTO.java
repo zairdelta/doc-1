@@ -10,5 +10,6 @@ import lombok.Setter;
 public class HealthServiceProviderDTO {
     private UserDtoCreate userDtoCreate;
     private String welcomeMessage;
-    private DoctorData doctorData;
+    private DoctorDataDTO doctorData;
+
 }

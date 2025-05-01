@@ -156,8 +156,7 @@ public class WoowUserController {
             @ApiResponse(responseCode = "301", description = "Forbidden"),
             @ApiResponse(responseCode = "415", description = "User is not active")
     })
-    public ResponseEntity<?> put(HttpServletRequest request,
-                                 @Valid @RequestBody AxSaludUserUpdateDTO axSaludUserUpdateDTO,
+    public ResponseEntity<?> put(@Valid @RequestBody AxSaludUserUpdateDTO axSaludUserUpdateDTO,
                                  @AuthenticationPrincipal UserDetails userDetails) {
         String userName = userDetails.getUsername();
         try {
