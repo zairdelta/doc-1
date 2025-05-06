@@ -37,7 +37,7 @@ public class JwtWebSocketInterceptor implements ChannelInterceptor {
 
         if (StompCommand.CONNECT.equals(accessor.getCommand())) {
             String authHeader = accessor.getFirstNativeHeader("Authorization");
-            log.info("Getting STOMP CONNECT");
+            log.info("Getting STOMP CONNECT, getting authentication header");
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 String jwtToken = authHeader.substring(7);
                 String username = jwtTokenUtil.getUsernameFromToken(jwtToken);
@@ -51,6 +51,12 @@ public class JwtWebSocketInterceptor implements ChannelInterceptor {
                             userDetails, null, userDetails.getAuthorities()));
                 }
             }
+        } else if (accessor.getCommand() == StompCommand.SEND
+                || accessor.getCommand() == StompCommand.MESSAGE) {
+            log.info("Outbound STOMP message to destination [{}], STOMP session [{}], payload: {}",
+                    accessor.getDestination(),
+                    accessor.getSessionId(),
+                    message.getPayload());
         }
 
         return message;
