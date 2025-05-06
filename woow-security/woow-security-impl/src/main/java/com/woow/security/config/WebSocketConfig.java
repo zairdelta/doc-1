@@ -2,6 +2,7 @@ package com.woow.security.config;
 
 import com.woow.security.api.JwtTokenUtil;
 import com.woow.security.config.interceptor.JwtWebSocketInterceptor;
+import com.woow.security.config.interceptor.OutBoundIInterceptor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -23,12 +24,16 @@ import java.util.Map;
 @Slf4j
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    @Autowired
     private JwtTokenUtil jwtTokenUtil;
     private final JwtWebSocketInterceptor jwtWebSocketInterceptor;
+    private final OutBoundIInterceptor outBoundIInterceptor;
 
-    public WebSocketConfig(JwtWebSocketInterceptor jwtWebSocketInterceptor) {
+    public WebSocketConfig(JwtWebSocketInterceptor jwtWebSocketInterceptor,
+                           OutBoundIInterceptor outBoundIInterceptor,
+                           JwtTokenUtil jwtTokenUtil) {
         this.jwtWebSocketInterceptor = jwtWebSocketInterceptor;
+        this.outBoundIInterceptor = outBoundIInterceptor;
+        this.jwtTokenUtil = jwtTokenUtil;
     }
 
     @Override
@@ -77,4 +82,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void configureClientInboundChannel(ChannelRegistration registration) {
         registration.interceptors(jwtWebSocketInterceptor);
     }
+
+    @Override
+    public void configureClientOutboundChannel(ChannelRegistration registration) {
+        registration.interceptors(outBoundIInterceptor);
+    }
+
 }

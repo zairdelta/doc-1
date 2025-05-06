@@ -28,11 +28,27 @@ public class JwtWebSocketInterceptor implements ChannelInterceptor {
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
 
-        String payloadConvertedToString = message.getPayload() == null ? "NO PAYLOAD" :
-                new String((byte[]) message.getPayload(), StandardCharsets.UTF_8);
-        log.info("Accessor: command: {}, receipt: {}, message:{} ",
-                accessor.getCommand(), accessor.getReceipt(),
-                payloadConvertedToString);
+        String payloadConvertedToString;
+
+        if (message.getPayload() == null) {
+            payloadConvertedToString = "NO PAYLOAD";
+        } else if (message.getPayload() instanceof byte[]) {
+            payloadConvertedToString = new String((byte[]) message.getPayload(),
+                    StandardCharsets.UTF_8);
+        } else {
+            payloadConvertedToString = message.getPayload().toString();
+        }
+
+
+        if (accessor.getCommand() != null) {
+            log.info("Inbound STOMP message - Command: [{}]," +
+                            " Destination: [{}], Session: [{}], Payload: {}, Receipt:{}",
+                    accessor.getCommand(),
+                    accessor.getDestination(),
+                    accessor.getSessionId(),
+                    payloadConvertedToString,
+                    accessor.getReceipt());
+        }
 
 
         if (StompCommand.CONNECT.equals(accessor.getCommand())) {
@@ -53,7 +69,7 @@ public class JwtWebSocketInterceptor implements ChannelInterceptor {
             }
         } else if (accessor.getCommand() == StompCommand.SEND
                 || accessor.getCommand() == StompCommand.MESSAGE) {
-            log.info("Outbound STOMP message to destination [{}], STOMP session [{}], payload: {}",
+            log.info("INBOUND STOMP message to destination [{}], STOMP session [{}], payload: {}",
                     accessor.getDestination(),
                     accessor.getSessionId(),
                     message.getPayload());
