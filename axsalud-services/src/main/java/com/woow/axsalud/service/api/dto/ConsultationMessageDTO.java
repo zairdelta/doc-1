@@ -32,4 +32,17 @@ public class ConsultationMessageDTO {
         consultationMessageDTO.setSender(consultationMessageEntity.getSentBy().getCoreUser().getUserName());
         return consultationMessageDTO;
     }
+    public static ConsultationMessageDTO from(FileResponseDTO fileResponseDTO, String sender) {
+        ConsultationMessageDTO consultationMessageDTO = new ConsultationMessageDTO();
+        consultationMessageDTO.setId(0);
+        consultationMessageDTO
+                .setConsultationSessionId(fileResponseDTO.getConsultationSessionId());
+        consultationMessageDTO.setConsultationId(fileResponseDTO.getConsultationId());
+        consultationMessageDTO.setTimeProcessed(LocalDateTime.now());
+        consultationMessageDTO.setMessageType(ConsultationMessgeTypeEnum.FILE_UPLOADED);
+        consultationMessageDTO.setContent(String.valueOf(fileResponseDTO.getId()));
+        consultationMessageDTO.setSender(sender);
+        return consultationMessageDTO;
+    }
+
 }

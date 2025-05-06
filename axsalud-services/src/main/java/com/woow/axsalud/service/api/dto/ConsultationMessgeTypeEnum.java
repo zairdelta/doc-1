@@ -4,7 +4,10 @@ public enum ConsultationMessgeTypeEnum {
     ERROR("ERROR"),
     WELCOME("WELCOME"),
     TEXT_MESSAGE("TEXT_MESSAGE"),
-    START_VIDEO_CALL("START_VIDEO_CALL");
+    START_VIDEO_CALL("START_VIDEO_CALL"),
+    SESSION_ESTABLISHED("SESSION_ESTABLISHED"),
+    CLOSE_SESSION("CLOSE_SESSION"),
+    FILE_UPLOADED("FILE_UPLOADED");
 
     private String type;
     ConsultationMessgeTypeEnum(String type) {

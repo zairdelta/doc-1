@@ -44,4 +44,7 @@ public class ConsultationSession {
 
     @OneToMany(mappedBy = "consultationSession", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ConsultationDocument> documents = new HashSet<>();
+
+    @ElementCollection
+    private Set<String> closedBy = new HashSet<>();
 }

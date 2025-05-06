@@ -6,5 +6,7 @@ import lombok.Data;
 public class FileResponseDTO {
     private String name;
     private String url;
+    private String consultationId;
+    private String consultationSessionId;
     private long id;
 }

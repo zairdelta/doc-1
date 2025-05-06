@@ -246,6 +246,17 @@ public class ConsultationServiceImpl implements ConsultationService {
 
     }
 
+    private void validateConsultationSessionParties(String userName, ConsultationSession consultationSession)
+            throws ConsultationServiceException {
+
+        Consultation consultation = consultationSession.getConsultation();
+        if(!(userName.equalsIgnoreCase(consultation.getPatient().getCoreUser().getUserName()) ||
+                userName.equalsIgnoreCase(consultationSession.getDoctor().getCoreUser().getUserName()))) {
+            throw new ConsultationServiceException("Receiver cannot access consultation:  " + consultation.getConsultationId()
+                    + consultationSession.getStatus(), 405);
+        }
+    }
+
     @Override
     public ConsultationDTO assign(String doctor, String consultationId, String consultationSessionId) throws ConsultationServiceException {
         Consultation consultation =
@@ -334,7 +345,7 @@ public class ConsultationServiceImpl implements ConsultationService {
     @Override
     public void addMessage(ConsultationMessageDTO consultationMessage) throws ConsultationServiceException {
 
-        log.info("AddMessage received: {}", consultationMessage);
+        log.info("AddMessage received at service layer: {}", consultationMessage);
         ConsultationSession consultationSession =
                 consultationSessionRepository
                         .findByConsultationSessionId(
@@ -410,6 +421,12 @@ public class ConsultationServiceImpl implements ConsultationService {
             fileResponseDTO.setId(doc.getId());
             fileResponseDTO.setName(doc.getFileName());
             fileResponseDTO.setUrl(doc.getSecureUrl());
+            fileResponseDTO.setConsultationSessionId(consultationSessionId);
+            fileResponseDTO.setConsultationId(
+                    consultationSession.getConsultation().getConsultationId().toString());
+            ConsultationMessageDTO consultationMessageDTO =
+                    ConsultationMessageDTO.from(fileResponseDTO, userName);
+            addMessage(consultationMessageDTO);
             return fileResponseDTO;
         } catch (StorageServiceException e) {
             throw new ConsultationServiceException(e.getMessage(), 301);
@@ -520,14 +537,71 @@ public class ConsultationServiceImpl implements ConsultationService {
     }
 
     @Override
-    public ConsultationSession getConsultationSession(String consultationSessionId) throws ConsultationServiceException {
+    public ConsultationSession getConsultationSession(String consultationSessionId)
+            throws ConsultationServiceException {
         if(ObjectUtils.isEmpty(consultationSessionId)) {
-            throw new ConsultationServiceException("invalid consultationSessionId: " + consultationSessionId, 402);
+            throw new ConsultationServiceException("invalid consultationSessionId: " +
+                    consultationSessionId, 402);
         }
         ConsultationSession consultationSession =
         consultationSessionRepository.findByConsultationSessionId(UUID.fromString(consultationSessionId));
 
         return consultationSession;
+    }
+
+    @Override
+    public void closeSession(String consultationId, String consultationSessionId, String sender)
+            throws ConsultationServiceException {
+
+        ConsultationSession consultationSession =
+                consultationSessionRepository
+                        .findByConsultationSessionId(UUID.fromString(consultationSessionId));
+
+        if(!ConsultationSessionStatus.FINISHED
+                .getStatus().equalsIgnoreCase(consultationSession.getStatus().toString())) {
+            consultationSession.setStatus(ConsultationSessionStatus.FINISHED);
+            consultationSession.setFinishedAt(LocalDateTime.now());
+        }
+
+        consultationSession.getClosedBy().add(sender);
+        consultationSessionRepository.save(consultationSession);
+
+    }
+
+    @Override
+    public ConsultationSessionViewDTO getConsultationSession(String userName, String consultationSessionId)
+            throws ConsultationServiceException {
+
+        log.info("getting consultation Session details for: {}, sessionID: {}", userName,
+                consultationSessionId);
+        if(ObjectUtils.isEmpty(consultationSessionId) ||
+        ObjectUtils.isEmpty(userName)) {
+            throw new ConsultationServiceException("userName and consultationSessionId are mandatory", 401);
+        }
+
+        ConsultationSession consultationSession = consultationSessionRepository
+                .findByConsultationSessionId(UUID.fromString(consultationSessionId));
+        validateConsultationSessionParties(userName, consultationSession);
+        ConsultationSessionViewDTO consultationSessionViewDTO = new ConsultationSessionViewDTO();
+        consultationSessionViewDTO.setConsultationId(consultationSession.getConsultation().getConsultationId().toString());
+        consultationSessionViewDTO.setConsultationSessionId(consultationSessionId);
+        consultationSessionViewDTO.setStartAt(consultationSession.getStartAt());
+        consultationSessionViewDTO.setFinishedAt(consultationSession.getFinishedAt());
+
+        Consultation consultation = consultationSession.getConsultation();
+
+        WoowUser patientWoowUser = consultation.getPatient().getCoreUser();
+        WoowUser doctorWoowUser = consultationSession.getDoctor().getCoreUser();
+        DoctorViewDTO doctorViewDTO = new DoctorViewDTO();
+        doctorViewDTO.setName(doctorWoowUser.getName());
+        doctorViewDTO.setLastName(doctorWoowUser.getLastName());
+
+        PatientViewDTO patientViewDTO = new PatientViewDTO();
+        patientViewDTO.setName(patientWoowUser.getName());
+        patientViewDTO.setLastName(patientWoowUser.getLastName());
+        consultationSessionViewDTO.setDoctorViewDTO(doctorViewDTO);
+        consultationSessionViewDTO.setPatientViewDTO(patientViewDTO);
+        return consultationSessionViewDTO;
     }
 
 

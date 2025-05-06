@@ -35,5 +35,9 @@ public interface ConsultationService {
             throws ConsultationServiceException;
 
     ConsultationSession getConsultationSession(String consultationSessionId) throws ConsultationServiceException;
+    void closeSession(String consultationId, String consultationSessionId, String sender)
+            throws ConsultationServiceException;
+
+    ConsultationSessionViewDTO getConsultationSession(String userName, String consultationSessionId) throws ConsultationServiceException;
 
 }

@@ -3,10 +3,7 @@ package com.woow.axsalud.controller;
 import com.woow.axsalud.controller.exception.WooBoHttpError;
 import com.woow.axsalud.data.consultation.ConsultationStatus;
 import com.woow.axsalud.service.api.ConsultationService;
-import com.woow.axsalud.service.api.dto.ConsultationDTO;
-import com.woow.axsalud.service.api.dto.ConsultationMessagesPagingDTO;
-import com.woow.axsalud.service.api.dto.FileResponseDTO;
-import com.woow.axsalud.service.api.dto.SymptomsDTO;
+import com.woow.axsalud.service.api.dto.*;
 import com.woow.axsalud.service.api.exception.ConsultationServiceException;
 import com.woow.core.service.api.exception.WooUserServiceException;
 import io.swagger.v3.oas.annotations.Operation;
@@ -149,6 +146,19 @@ public class ConsultationController {
             return ResponseEntity.ok().body(consultationService.
                     getAllMessagesGivenConsultationIdAndSessionId(consultationId, consultationSessionId,
                             pageNumber, elementsPerPage));
+        } catch (ConsultationServiceException e) {
+            return WooBoHttpError.of(e).toResponseEntity();
+        }
+    }
+
+    @GetMapping("{consultationId}/sessionId/{consultationSessionId}/view")
+    public ResponseEntity<ConsultationSessionViewDTO> getConsultationSessionView
+            (@PathVariable String consultationId,
+             @PathVariable String consultationSessionId,
+             @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            return ResponseEntity.ok().body(consultationService.
+                    getConsultationSession(userDetails.getUsername(), consultationSessionId));
         } catch (ConsultationServiceException e) {
             return WooBoHttpError.of(e).toResponseEntity();
         }
