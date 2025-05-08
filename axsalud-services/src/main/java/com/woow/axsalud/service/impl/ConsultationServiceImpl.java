@@ -13,7 +13,6 @@ import com.woow.storage.api.StorageService;
 import com.woow.storage.api.StorageServiceException;
 import com.woow.storage.api.StorageServiceUploadResponseDTO;
 import lombok.extern.slf4j.Slf4j;
-import org.flywaydb.core.internal.util.CollectionsUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -496,6 +495,30 @@ public class ConsultationServiceImpl implements ConsultationService {
         Pageable pageable = PageRequest.of(pageNumber, totalElementsPerPage);
         Page<ConsultationMessageEntity> page = consultationMessageRepository
                 .findMessagesByPatientUserNameOrdered(userName, pageable);
+
+        List<ConsultationMessageEntity> messages = page.getContent();
+        long totalElements = page.getTotalElements();
+        int totalPages = page.getTotalPages();
+
+        ConsultationMessagesPagingDTO consultationMessagesPagingDTO = new ConsultationMessagesPagingDTO();
+        consultationMessagesPagingDTO.setMessages(messages.stream()
+                .filter(Objects::nonNull)
+                .map(ConsultationMessageDTO::from)
+                .collect(Collectors.toList()));
+        consultationMessagesPagingDTO.setTotalElements(totalElements);
+        consultationMessagesPagingDTO.setTotalPages(totalPages);
+
+        return consultationMessagesPagingDTO;
+    }
+
+    @Override
+    public ConsultationMessagesPagingDTO getAllMessageBySessionIdUsingPaginationPagination(String sessionId,
+                                                                                                     int pageNumber,
+                                                                                                     int totalElementsPerPage)
+            throws ConsultationServiceException {
+        Pageable pageable = PageRequest.of(pageNumber, totalElementsPerPage);
+        Page<ConsultationMessageEntity> page = consultationMessageRepository
+                .findMessagesByConsultationSessionId(UUID.fromString(sessionId), pageable);
 
         List<ConsultationMessageEntity> messages = page.getContent();
         long totalElements = page.getTotalElements();

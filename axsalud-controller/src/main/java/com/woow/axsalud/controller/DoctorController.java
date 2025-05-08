@@ -1,8 +1,15 @@
 package com.woow.axsalud.controller;
 
+import com.woow.axsalud.controller.exception.WooBoHttpError;
 import com.woow.axsalud.data.consultation.ComentariosMedicos;
 import com.woow.axsalud.data.repository.ComentariosMedicosRepository;
+import com.woow.axsalud.service.api.AxSaludService;
+import com.woow.axsalud.service.api.ConsultationService;
+import com.woow.axsalud.service.api.dto.ConsultationDTO;
+import com.woow.axsalud.service.api.dto.ConsultationMessagesPagingDTO;
 import com.woow.axsalud.service.api.dto.DoctorCommentsDTO;
+import com.woow.axsalud.service.api.exception.ConsultationServiceException;
+import com.woow.core.service.api.exception.WooUserServiceException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -10,10 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,11 +28,17 @@ import java.util.stream.Collectors;
 public class DoctorController {
 
     private ComentariosMedicosRepository comentariosMedicosRepository;
-    public DoctorController(final ComentariosMedicosRepository comentariosMedicosRepository) {
+    private ConsultationService consultationService;
+    private AxSaludService axSaludService;
+    public DoctorController(final ComentariosMedicosRepository comentariosMedicosRepository,
+                            final ConsultationService consultationService,
+                            final AxSaludService axSaludService) {
+        this.axSaludService = axSaludService;
         this.comentariosMedicosRepository = comentariosMedicosRepository;
+        this.consultationService = consultationService;
     }
 
-    @GetMapping("/patient/{userName}")
+    @GetMapping("/patient/{userName}/comments")
     @Operation(summary = "Get Patient's comments",
             description = "Retrieve all Doctor's Comments given to a user.")
     @ApiResponses(value = {
@@ -52,4 +62,49 @@ public class DoctorController {
                         .collect(Collectors.toList());
         return ResponseEntity.ok().body(doctorCommentsDTOS);
     }
+
+    @GetMapping("/patient/{userName}/consultationMessages")
+    public ResponseEntity<ConsultationMessagesPagingDTO> getConsultationMessagesByUserName(
+            @PathVariable String userName,
+            @RequestParam int pageNumber, @RequestParam int elementsPerPage) {
+        try {
+            return ResponseEntity.ok().body(consultationService
+                    .getAllMessageByUserNameUsingPaginationPagination(userName,
+                            pageNumber, elementsPerPage));
+        } catch (ConsultationServiceException e) {
+            return WooBoHttpError.of(e).toResponseEntity();
+        }
+    }
+
+    @GetMapping("/patient/sessionId/{sessionId}/consultationMessages")
+    public ResponseEntity<ConsultationMessagesPagingDTO> getConsultationMessagesBySessionIdAndUserName(
+            @PathVariable String consultationSessionId,
+            @RequestParam int pageNumber, @RequestParam int elementsPerPage) {
+        try {
+            return ResponseEntity.ok().body(consultationService
+                    .getAllMessageBySessionIdUsingPaginationPagination(consultationSessionId,
+                            pageNumber, elementsPerPage));
+        } catch (ConsultationServiceException e) {
+            return WooBoHttpError.of(e).toResponseEntity();
+        }
+    }
+
+    @GetMapping("/patient/{userName}/history")
+    @Operation(summary = "Get Patient's History, list of sessionId",
+            description = "Retrieve all consultation sessions Ids .")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Retrieves the Doctor's comments. ROL DOCTOR"),
+            @ApiResponse(responseCode = "400", description = "Invalid status parameter"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<List<ConsultationDTO>>
+    getPatientHistory(@PathVariable String userName,
+                     @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            return ResponseEntity.ok().body(axSaludService.getConsultation(userName));
+        } catch (WooUserServiceException e) {
+            return WooBoHttpError.of(e).toResponseEntity();
+        }
+    }
+
 }

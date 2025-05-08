@@ -30,6 +30,9 @@ public interface ConsultationService {
     ConsultationMessagesPagingDTO getAllMessageByUserNameUsingPaginationPagination
             (String userName, int pageNumber, int totalElementsPerPage) throws ConsultationServiceException;
 
+    public ConsultationMessagesPagingDTO
+    getAllMessageBySessionIdUsingPaginationPagination(String sessionId, int pageNumber, int totalElementsPerPage)
+            throws ConsultationServiceException;
     ConsultationMessagesPagingDTO getAllMessagesGivenConsultationIdAndSessionId(String consultationId,
                                                                                 String consultationSessionId,
                                                                                 int pageNumber,
