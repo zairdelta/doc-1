@@ -2,7 +2,6 @@ package com.woow.axsalud.controller;
 
 import com.woow.axsalud.controller.exception.WooBoHttpError;
 import com.woow.axsalud.data.consultation.ConsultationStatus;
-import com.woow.axsalud.data.consultation.DoctorPrescription;
 import com.woow.axsalud.data.consultation.LaboratoryPrescription;
 import com.woow.axsalud.service.api.ConsultationService;
 import com.woow.axsalud.service.api.dto.*;
@@ -171,11 +170,13 @@ public class ConsultationController {
             (@PathVariable String consultationId,
              @PathVariable String consultationSessionId,
              @AuthenticationPrincipal UserDetails userDetails,
-            @RequestBody List<DoctorPrescription> doctorPrescriptions) {
+            @RequestBody List<DoctorPrescriptionDTO> doctorPrescriptionsDTO) {
         try {
             consultationService
-                    .addDoctorPrescriptions(userDetails.getUsername(), consultationId, consultationSessionId,
-                            doctorPrescriptions);
+                    .addDoctorPrescriptions(userDetails.getUsername(),
+                            consultationId,
+                            consultationSessionId,
+                            doctorPrescriptionsDTO);
             return ResponseEntity.ok().build();
         }  catch (ConsultationServiceException e) {
             return WooBoHttpError.of(e).toResponseEntity();

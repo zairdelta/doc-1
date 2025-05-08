@@ -54,6 +54,57 @@ INSERT INTO `ax_salud_woo_user` VALUES (1,NULL,'HID-123',NULL,21,'OFFLINE','PATI
 UNLOCK TABLES;
 
 --
+-- Table structure for table `comentarios_medicos`
+--
+
+DROP TABLE IF EXISTS `comentarios_medicos`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `comentarios_medicos` (
+  `id` bigint NOT NULL,
+  `observaciones_medicas` text,
+  `ax_salud_user_id` bigint DEFAULT NULL,
+  `consultation_session_id` bigint DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UKsf9hfqd65garote1t5tr5ffqd` (`consultation_session_id`),
+  KEY `FKhfrsb4oirtm8x766esgr5x41m` (`ax_salud_user_id`),
+  CONSTRAINT `FKaswm66cvhl2terqqtx84y7m4y` FOREIGN KEY (`consultation_session_id`) REFERENCES `consultation_session` (`id`),
+  CONSTRAINT `FKhfrsb4oirtm8x766esgr5x41m` FOREIGN KEY (`ax_salud_user_id`) REFERENCES `ax_salud_woo_user` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `comentarios_medicos`
+--
+
+LOCK TABLES `comentarios_medicos` WRITE;
+/*!40000 ALTER TABLE `comentarios_medicos` DISABLE KEYS */;
+/*!40000 ALTER TABLE `comentarios_medicos` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `comentarios_medicos_seq`
+--
+
+DROP TABLE IF EXISTS `comentarios_medicos_seq`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `comentarios_medicos_seq` (
+  `next_val` bigint DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `comentarios_medicos_seq`
+--
+
+LOCK TABLES `comentarios_medicos_seq` WRITE;
+/*!40000 ALTER TABLE `comentarios_medicos_seq` DISABLE KEYS */;
+INSERT INTO `comentarios_medicos_seq` VALUES (1);
+/*!40000 ALTER TABLE `comentarios_medicos_seq` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `consultation`
 --
 
@@ -68,7 +119,7 @@ CREATE TABLE `consultation` (
   `finished_at` datetime(6) DEFAULT NULL,
   `started_at` datetime(6) DEFAULT NULL,
   `status` enum('FINISHED','ON_GOING','SUSPENDED','WAITING_FOR_DOCTOR') DEFAULT NULL,
-  `symptoms` text NOT NULL,
+  `symptoms` text,
   `patient_id` bigint DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `FKio232y6wlf8nty9cxyrv7tver` (`patient_id`),
@@ -132,7 +183,7 @@ DROP TABLE IF EXISTS `consultation_message_entity`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `consultation_message_entity` (
   `id` bigint NOT NULL AUTO_INCREMENT,
-  `content` text NOT NULL,
+  `content` text,
   `message_type` varchar(255) DEFAULT NULL,
   `status` enum('DELIVERED','SENT_TO_RECEIVER','SERVER_RECEIVED') DEFAULT NULL,
   `timestamp` datetime(6) NOT NULL,
@@ -246,10 +297,9 @@ DROP TABLE IF EXISTS `doctor_prescription`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `doctor_prescription` (
   `id` bigint NOT NULL AUTO_INCREMENT,
-  `diagnostico` text NOT NULL,
-  `notas_de_recomendaciones` text NOT NULL,
-  `observaciones_medicas` text NOT NULL,
-  `receta_medica` text NOT NULL,
+  `diagnostico` text,
+  `notas_de_recomendaciones` text,
+  `receta_medica` text,
   `consultation_session_id` bigint DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `FK6chsqabkemqogwfg69xdi7fit` (`consultation_session_id`),
@@ -276,7 +326,7 @@ DROP TABLE IF EXISTS `health_service_provider_review`;
 CREATE TABLE `health_service_provider_review` (
   `id` int NOT NULL AUTO_INCREMENT,
   `service_type` int NOT NULL,
-  `text` text NOT NULL,
+  `text` text,
   `total_starts` int NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -345,10 +395,10 @@ DROP TABLE IF EXISTS `laboratory_prescription`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `laboratory_prescription` (
   `id` bigint NOT NULL AUTO_INCREMENT,
-  `notas_de_recomendaciones` text NOT NULL,
-  `observaciones_medicas` text NOT NULL,
-  `orden_de_laboratorio` text NOT NULL,
-  `posible_diagnostico` text NOT NULL,
+  `notas_de_recomendaciones` text,
+  `observaciones_medicas` text,
+  `orden_de_laboratorio` text,
+  `posible_diagnostico` text,
   `consultation_session_id` bigint DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `FKiw5058cmn1qhpp5wajcjq7x7w` (`consultation_session_id`),
@@ -401,24 +451,24 @@ DROP TABLE IF EXISTS `patient_data`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `patient_data` (
   `id` bigint NOT NULL AUTO_INCREMENT,
-  `alcohol` text NOT NULL,
-  `allergies` text NOT NULL,
+  `alcohol` text,
+  `allergies` text,
   `build` float NOT NULL,
-  `diseases` text NOT NULL,
+  `diseases` text,
   `emergency_contact_name` varchar(255) DEFAULT NULL,
   `emergency_contact_number` varchar(255) DEFAULT NULL,
-  `feeding` text NOT NULL,
+  `feeding` text,
   `height` float NOT NULL,
-  `hospitalized` text NOT NULL,
-  `hours_you_sleep` text NOT NULL,
-  `medical_treatment` text NOT NULL,
-  `medications` text NOT NULL,
-  `occupation` text NOT NULL,
-  `physical_activity` text NOT NULL,
-  `preexistences` text NOT NULL,
-  `smoke` text NOT NULL,
-  `supplements` text NOT NULL,
-  `surgery` text NOT NULL,
+  `hospitalized` text,
+  `hours_you_sleep` text,
+  `medical_treatment` text,
+  `medications` text,
+  `occupation` text,
+  `physical_activity` text,
+  `preexistences` text,
+  `smoke` text,
+  `supplements` text,
+  `surgery` text,
   `weight` float NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -456,7 +506,7 @@ CREATE TABLE `service_provider` (
 
 LOCK TABLES `service_provider` WRITE;
 /*!40000 ALTER TABLE `service_provider` DISABLE KEYS */;
-INSERT INTO `service_provider` VALUES (1,'2025-05-08 08:31:31.000000','https://localhost:8080/external_provider','HealthConnect','2025-12-31');
+INSERT INTO `service_provider` VALUES (1,'2025-05-08 11:24:44.000000','https://localhost:8080/external_provider','HealthConnect','2025-12-31');
 /*!40000 ALTER TABLE `service_provider` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -527,7 +577,7 @@ CREATE TABLE `woow_user` (
 
 LOCK TABLES `woow_user` WRITE;
 /*!40000 ALTER TABLE `woow_user` DISABLE KEYS */;
-INSERT INTO `woow_user` VALUES (1,'yes','Av Reforma 123','Int 5','1995-06-15','CDMX','MX','01234','2025-05-08 08:31:31.000000','master@example.com',_binary '',NULL,0,'masterLastName',0,1,'5551234567','master@example.com',NULL,'$2a$10$nOyz3qX1lLYv9GOZcwBieeO1KSYDT6funrQx322uHIuX8LWY9XQQW',_binary '\0','CDMX',_binary '','master@example.com'),(2,'yes','Street 1','Street 2',NULL,'CDMX','MX','12345','2025-05-08 07:31:32.977284','realuser@woow.com',_binary '\0',NULL,0,'User',0,0,'1234567890','Real',NULL,'$2a$10$mCbCeWuO7AMco8sd7uWQQe7fbChLA2PV/ObAnIyXzBMTbZ/CaaaZG',_binary '\0','CDMX',_binary '','realuser@woow.com');
+INSERT INTO `woow_user` VALUES (1,'yes','Av Reforma 123','Int 5','1995-06-15','CDMX','MX','01234','2025-05-08 11:24:44.000000','master@example.com',_binary '',NULL,0,'masterLastName',0,1,'5551234567','master@example.com',NULL,'$2a$10$nOyz3qX1lLYv9GOZcwBieeO1KSYDT6funrQx322uHIuX8LWY9XQQW',_binary '\0','CDMX',_binary '','master@example.com'),(2,'yes','Street 1','Street 2',NULL,'CDMX','MX','12345','2025-05-08 10:24:45.541771','realuser@woow.com',_binary '\0',NULL,0,'User',0,0,'1234567890','Real',NULL,'$2a$10$2y6JFkF5xF3n/EMzJZw2.OFVdVPt9V7QI2jjEHK8OwCkkxQroXt06',_binary '\0','CDMX',_binary '','realuser@woow.com');
 /*!40000 ALTER TABLE `woow_user` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -540,4 +590,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-08  8:41:29
+-- Dump completed on 2025-05-08 11:25:03

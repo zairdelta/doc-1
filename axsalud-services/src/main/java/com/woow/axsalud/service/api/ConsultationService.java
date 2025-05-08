@@ -42,7 +42,7 @@ public interface ConsultationService {
 
     ConsultationSessionViewDTO getConsultationSession(String userName, String consultationSessionId) throws ConsultationServiceException;
 
-    void addDoctorPrescriptions(String userName, String consultationId, String consultationSessionId, List<DoctorPrescription> doctorPrescriptions) throws ConsultationServiceException;
+    void addDoctorPrescriptions(String userName, String consultationId, String consultationSessionId, List<DoctorPrescriptionDTO> doctorPrescriptionDTOS) throws ConsultationServiceException;
     void addLaboratoryPrescriptions(String userName, String consultationId, String consultationSessionId, List<LaboratoryPrescription> laboratoryPrescriptions) throws ConsultationServiceException;
 
 }

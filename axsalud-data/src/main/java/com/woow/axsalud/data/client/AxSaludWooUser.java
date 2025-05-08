@@ -1,6 +1,7 @@
 package com.woow.axsalud.data.client;
 
 import com.woow.axsalud.common.UserStatesEnum;
+import com.woow.axsalud.data.consultation.ComentariosMedicos;
 import com.woow.axsalud.data.consultation.Consultation;
 import com.woow.core.data.user.WoowUser;
 import jakarta.persistence.*;
@@ -8,6 +9,7 @@ import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Data
@@ -36,4 +38,7 @@ public class AxSaludWooUser {
     private long serviceProvider;
     private String hid;
     private String doctorWelcomeMessage;
+
+    @OneToMany(mappedBy = "axSaludWooUser")
+    private Set<ComentariosMedicos> comentariosMedicos;
 }

@@ -51,4 +51,7 @@ public class ConsultationSession {
     @OneToMany(mappedBy = "consultationSession",
             cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<LaboratoryPrescription> laboratoryPrescriptions;
+
+    @OneToOne(mappedBy = "consultationSession")
+    private ComentariosMedicos comentariosMedicos;
 }

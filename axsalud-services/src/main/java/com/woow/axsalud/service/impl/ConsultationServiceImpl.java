@@ -47,6 +47,7 @@ public class ConsultationServiceImpl implements ConsultationService {
     private StorageService storageService;
     private ConsultationDocumentRepository consultationDocumentRepository;
     private ConsultationSessionRepository consultationSessionRepository;
+    private ComentariosMedicosRepository comentariosMedicosRepository;
 
     public ConsultationServiceImpl(ConsultationRepository consultationRepository,
                                    WoowUserRepository woowUserRepository,
@@ -56,7 +57,8 @@ public class ConsultationServiceImpl implements ConsultationService {
                                    ConsultationMessageRepository consultationMessageRepository,
                                    final ConsultationDocumentRepository consultationDocumentRepository,
                                    final StorageService storageService,
-                                   final ConsultationSessionRepository consultationSessionRepository) {
+                                   final ConsultationSessionRepository consultationSessionRepository,
+                                   final ComentariosMedicosRepository comentariosMedicosRepository) {
         this.consultationRepository = consultationRepository;
         this.woowUserRepository = woowUserRepository;
         this.axSaludUserRepository = axSaludUserRepository;
@@ -66,6 +68,7 @@ public class ConsultationServiceImpl implements ConsultationService {
         this.consultationDocumentRepository = consultationDocumentRepository;
         this.storageService = storageService;
         this.consultationSessionRepository = consultationSessionRepository;
+        this.comentariosMedicosRepository = comentariosMedicosRepository;
     }
 
     @Override
@@ -134,7 +137,7 @@ public class ConsultationServiceImpl implements ConsultationService {
         AxSaludWooUser axSaludPatient =
                 axSaludWooUserOptional
                         .orElseThrow(() -> new WooUserServiceException("User not found, principal " +
-                "user not configured, " + patient.getUserName(), 404));
+                                "user not configured, " + patient.getUserName(), 404));
 
         Consultation consultation = new Consultation();
         consultation.setPatient(axSaludPatient);
@@ -437,12 +440,12 @@ public class ConsultationServiceImpl implements ConsultationService {
 
     @Override
     public FileResponseDTO downloadDocument(String userName,
-                                   String consultationSessionId, long fileId) throws ConsultationServiceException {
+                                            String consultationSessionId, long fileId) throws ConsultationServiceException {
 
         Optional<ConsultationDocument> consultationDocumentOptional =
                 consultationDocumentRepository.findById(fileId);
         ConsultationDocument consultationDocument = consultationDocumentOptional.get();
-       //try {
+        //try {
         FileResponseDTO fileResponseDTO = new FileResponseDTO();
         fileResponseDTO.setName(consultationDocument.getFileName());
         fileResponseDTO.setId(fileId);
@@ -458,9 +461,9 @@ public class ConsultationServiceImpl implements ConsultationService {
                     consultationDocument.getFormat(), 95000);
 
              */
-      //  } catch (StorageServiceException e) {
-       //     throw new ConsultationServiceException(e.getMessage(), 301);
-      //  }
+        //  } catch (StorageServiceException e) {
+        //     throw new ConsultationServiceException(e.getMessage(), 301);
+        //  }
 
     }
 
@@ -546,7 +549,7 @@ public class ConsultationServiceImpl implements ConsultationService {
                     consultationSessionId, 402);
         }
         ConsultationSession consultationSession =
-        consultationSessionRepository.findByConsultationSessionId(UUID.fromString(consultationSessionId));
+                consultationSessionRepository.findByConsultationSessionId(UUID.fromString(consultationSessionId));
 
         return consultationSession;
     }
@@ -580,7 +583,7 @@ public class ConsultationServiceImpl implements ConsultationService {
         log.info("getting consultation Session details for: {}, sessionID: {}", userName,
                 consultationSessionId);
         if(ObjectUtils.isEmpty(consultationSessionId) ||
-        ObjectUtils.isEmpty(userName)) {
+                ObjectUtils.isEmpty(userName)) {
             throw new ConsultationServiceException("userName and consultationSessionId are mandatory", 401);
         }
 
@@ -612,20 +615,35 @@ public class ConsultationServiceImpl implements ConsultationService {
     }
 
     @Override
-    public void addDoctorPrescriptions(String userName, String consultationId, String consultationSessionId,
-                                       List<DoctorPrescription> doctorPrescriptions) throws ConsultationServiceException {
+    public void addDoctorPrescriptions(String userName, String consultationId,
+                                       String consultationSessionId,
+                                       List<DoctorPrescriptionDTO> doctorPrescriptionDTOS) throws ConsultationServiceException {
         ConsultationSession consultationSession =
                 consultationSessionRepository.findByConsultationSessionId(UUID.fromString(consultationSessionId));
         validateConsultationSessionParties(userName, consultationSession);
 
-        if(!CollectionUtils.isEmpty(doctorPrescriptions)) {
+        if(!CollectionUtils.isEmpty(doctorPrescriptionDTOS)) {
             Set<DoctorPrescription> doctorPrescriptionSet =
-                    doctorPrescriptions.stream()
+                    doctorPrescriptionDTOS.stream()
                             .map(doctorPrescription -> {
                                 DoctorPrescription doctorPrescription1 = new DoctorPrescription();
-                                 doctorPrescription.setId(0);
-                                 modelMapper.map(doctorPrescription, doctorPrescription1);
-                                 return doctorPrescription1;
+
+                                modelMapper.map(doctorPrescription, doctorPrescription1);
+                                doctorPrescription1.setConsultationSession(consultationSession);
+
+                                if(!ObjectUtils.isEmpty(doctorPrescription.getComentariosMedicos())) {
+                                    ComentariosMedicos comentariosMedicos = new ComentariosMedicos();
+                                    comentariosMedicos.setObservacionesMedicas(doctorPrescription.getComentariosMedicos());
+                                    comentariosMedicos
+                                            .setAxSaludWooUser(consultationSession.getConsultation().getPatient());
+                                    comentariosMedicos.setConsultationSession(consultationSession);
+                                    comentariosMedicos = comentariosMedicosRepository.save(comentariosMedicos);
+                                    consultationSession.setComentariosMedicos(comentariosMedicos);
+                                    consultationSessionRepository.save(consultationSession);
+
+                                }
+
+                                return doctorPrescription1;
                             })
                             .collect(Collectors.toSet());
             consultationSession.setDoctorPrescriptions(doctorPrescriptionSet);

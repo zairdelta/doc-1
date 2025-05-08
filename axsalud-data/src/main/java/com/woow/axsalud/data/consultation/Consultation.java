@@ -25,7 +25,7 @@ public class Consultation {
     private LocalDateTime finishedAt;
     private LocalDateTime startedAt;
     @Lob
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(nullable = true, columnDefinition = "TEXT")
     private String symptoms;
     @Enumerated(EnumType.STRING)
     private ConsultationStatus status;

@@ -23,8 +23,7 @@ public class ConsultationMessageEntity {
     @JoinColumn(name = "sent_by_user_id", nullable = false)
     private AxSaludWooUser sentBy;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
-    @Lob
+    @Column(nullable = true, columnDefinition = "TEXT")
     private String content;
 
     @Column(nullable = false)

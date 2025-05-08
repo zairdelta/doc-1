@@ -13,14 +13,12 @@ public class DoctorPrescription {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(nullable = true, columnDefinition = "TEXT")
     private String recetaMedica;
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(nullable = true, columnDefinition = "TEXT")
     private String notasDeRecomendaciones;
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(nullable = true, columnDefinition = "TEXT")
     private String diagnostico;
-    @Column(nullable = false, columnDefinition = "TEXT")
-    private String observacionesMedicas;
 
     @ManyToOne
     @JoinColumn(name = "consultation_session_id")
