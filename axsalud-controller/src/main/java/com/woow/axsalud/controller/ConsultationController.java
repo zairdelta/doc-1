@@ -2,6 +2,8 @@ package com.woow.axsalud.controller;
 
 import com.woow.axsalud.controller.exception.WooBoHttpError;
 import com.woow.axsalud.data.consultation.ConsultationStatus;
+import com.woow.axsalud.data.consultation.DoctorPrescription;
+import com.woow.axsalud.data.consultation.LaboratoryPrescription;
 import com.woow.axsalud.service.api.ConsultationService;
 import com.woow.axsalud.service.api.dto.*;
 import com.woow.axsalud.service.api.exception.ConsultationServiceException;
@@ -163,5 +165,44 @@ public class ConsultationController {
             return WooBoHttpError.of(e).toResponseEntity();
         }
     }
+
+    @PutMapping("{consultationId}/sessionId/{consultationSessionId}/doctorPrescription")
+    public ResponseEntity<ConsultationSessionViewDTO> addDoctorPrescription
+            (@PathVariable String consultationId,
+             @PathVariable String consultationSessionId,
+             @AuthenticationPrincipal UserDetails userDetails,
+            @RequestBody List<DoctorPrescription> doctorPrescriptions) {
+        try {
+            consultationService
+                    .addDoctorPrescriptions(userDetails.getUsername(), consultationId, consultationSessionId,
+                            doctorPrescriptions);
+            return ResponseEntity.ok().build();
+        }  catch (ConsultationServiceException e) {
+            return WooBoHttpError.of(e).toResponseEntity();
+        } catch (Exception e) {
+            return WooBoHttpError.of(e).toResponseEntity();
+        }
+    }
+
+    @PutMapping("{consultationId}/sessionId/{consultationSessionId}/laboratoryPrescriptions")
+    public ResponseEntity<ConsultationSessionViewDTO> addLaboratoryPrescriptions
+            (@PathVariable String consultationId,
+             @PathVariable String consultationSessionId,
+             @AuthenticationPrincipal UserDetails userDetails,
+             @RequestBody List<LaboratoryPrescription> laboratoryPrescriptions) {
+        try {
+            consultationService
+                    .addLaboratoryPrescriptions(userDetails.getUsername(),
+                            consultationId, consultationSessionId,
+                            laboratoryPrescriptions);
+            return ResponseEntity.ok().build();
+        } catch (ConsultationServiceException e) {
+            return WooBoHttpError.of(e).toResponseEntity();
+        } catch (Exception e) {
+            return WooBoHttpError.of(e).toResponseEntity();
+        }
+    }
+
+
 
 }

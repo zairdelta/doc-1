@@ -13,6 +13,7 @@ import com.woow.storage.api.StorageService;
 import com.woow.storage.api.StorageServiceException;
 import com.woow.storage.api.StorageServiceUploadResponseDTO;
 import lombok.extern.slf4j.Slf4j;
+import org.flywaydb.core.internal.util.CollectionsUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -21,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -561,6 +563,9 @@ public class ConsultationServiceImpl implements ConsultationService {
                 .getStatus().equalsIgnoreCase(consultationSession.getStatus().toString())) {
             consultationSession.setStatus(ConsultationSessionStatus.FINISHED);
             consultationSession.setFinishedAt(LocalDateTime.now());
+            consultationSession.getConsultation().setStatus(ConsultationStatus.FINISHED);
+            consultationSession.getConsultation().setFinishedAt(LocalDateTime.now());
+            consultationRepository.save(consultationSession.getConsultation());
         }
 
         consultationSession.getClosedBy().add(sender);
@@ -601,8 +606,53 @@ public class ConsultationServiceImpl implements ConsultationService {
         patientViewDTO.setLastName(patientWoowUser.getLastName());
         consultationSessionViewDTO.setDoctorViewDTO(doctorViewDTO);
         consultationSessionViewDTO.setPatientViewDTO(patientViewDTO);
+        consultationSessionViewDTO.setDoctorPrescriptions(consultationSession.getDoctorPrescriptions());
+        consultationSessionViewDTO.setLaboratoryPrescriptions(consultationSession.getLaboratoryPrescriptions());
         return consultationSessionViewDTO;
     }
 
+    @Override
+    public void addDoctorPrescriptions(String userName, String consultationId, String consultationSessionId,
+                                       List<DoctorPrescription> doctorPrescriptions) throws ConsultationServiceException {
+        ConsultationSession consultationSession =
+                consultationSessionRepository.findByConsultationSessionId(UUID.fromString(consultationSessionId));
+        validateConsultationSessionParties(userName, consultationSession);
+
+        if(!CollectionUtils.isEmpty(doctorPrescriptions)) {
+            Set<DoctorPrescription> doctorPrescriptionSet =
+                    doctorPrescriptions.stream()
+                            .map(doctorPrescription -> {
+                                DoctorPrescription doctorPrescription1 = new DoctorPrescription();
+                                 doctorPrescription.setId(0);
+                                 modelMapper.map(doctorPrescription, doctorPrescription1);
+                                 return doctorPrescription1;
+                            })
+                            .collect(Collectors.toSet());
+            consultationSession.setDoctorPrescriptions(doctorPrescriptionSet);
+        }
+    }
+
+    @Override
+    public void addLaboratoryPrescriptions(String userName, String consultationId,
+                                           String consultationSessionId,
+                                           List<LaboratoryPrescription> laboratoryPrescriptions)
+            throws ConsultationServiceException {
+        ConsultationSession consultationSession =
+                consultationSessionRepository.findByConsultationSessionId(UUID.fromString(consultationSessionId));
+        validateConsultationSessionParties(userName, consultationSession);
+
+        if(!CollectionUtils.isEmpty(laboratoryPrescriptions)) {
+            Set<LaboratoryPrescription> laboratoryPrescriptionsSet =
+                    laboratoryPrescriptions.stream()
+                            .map(laboratoryPrescription -> {
+                                LaboratoryPrescription laboratoryPrescription1 = new LaboratoryPrescription();
+                                laboratoryPrescription.setId(0);
+                                modelMapper.map(laboratoryPrescription, laboratoryPrescription1);
+                                return laboratoryPrescription1;
+                            })
+                            .collect(Collectors.toSet());
+            consultationSession.setLaboratoryPrescriptions(laboratoryPrescriptionsSet);
+        }
+    }
 
 }

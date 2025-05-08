@@ -2,6 +2,8 @@ package com.woow.axsalud.service.api;
 
 import com.woow.axsalud.data.consultation.ConsultationSession;
 import com.woow.axsalud.data.consultation.ConsultationStatus;
+import com.woow.axsalud.data.consultation.DoctorPrescription;
+import com.woow.axsalud.data.consultation.LaboratoryPrescription;
 import com.woow.axsalud.service.api.dto.*;
 import com.woow.axsalud.service.api.exception.ConsultationServiceException;
 import com.woow.core.service.api.exception.WooUserServiceException;
@@ -39,5 +41,8 @@ public interface ConsultationService {
             throws ConsultationServiceException;
 
     ConsultationSessionViewDTO getConsultationSession(String userName, String consultationSessionId) throws ConsultationServiceException;
+
+    void addDoctorPrescriptions(String userName, String consultationId, String consultationSessionId, List<DoctorPrescription> doctorPrescriptions) throws ConsultationServiceException;
+    void addLaboratoryPrescriptions(String userName, String consultationId, String consultationSessionId, List<LaboratoryPrescription> laboratoryPrescriptions) throws ConsultationServiceException;
 
 }

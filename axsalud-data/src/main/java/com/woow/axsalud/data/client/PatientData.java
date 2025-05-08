@@ -22,7 +22,33 @@ public class PatientData {
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "patient_data_id")
     private Set<PatientAdditional> patientAdditionalSet = new HashSet<>();
-    @Lob
+
     @Column(nullable = false, columnDefinition = "TEXT")
     private String preexistences;
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String occupation;
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String diseases;
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String allergies;
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String surgery;
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String hospitalized;
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String medicalTreatment;
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String medications;
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String supplements;
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String smoke;
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String alcohol;
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String physicalActivity;
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String feeding;
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String hoursYouSleep;
 }

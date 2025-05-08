@@ -34,6 +34,13 @@ public class WooBoHttpError {
         return WooBoHttpError;
     }
 
+    public static WooBoHttpError of(Exception e) {
+        WooBoHttpError WooBoHttpError = new WooBoHttpError();
+        WooBoHttpError.setMessage("Error while running operation");
+        WooBoHttpError.setCode(633);
+        return WooBoHttpError;
+    }
+
     public static WooBoHttpError of(ReCaptchaInvalidException e) {
         WooBoHttpError WooBoHttpError = new WooBoHttpError();
         WooBoHttpError.setMessage(e.getMessage());

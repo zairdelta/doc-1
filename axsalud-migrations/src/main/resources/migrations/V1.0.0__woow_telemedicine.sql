@@ -166,7 +166,6 @@ CREATE TABLE `consultation_session` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `consultation_session_id` binary(16) DEFAULT NULL,
   `created_at` datetime(6) DEFAULT NULL,
-  `diagnosis` text,
   `finished_at` datetime(6) DEFAULT NULL,
   `start_at` datetime(6) DEFAULT NULL,
   `status` enum('FINISHED','ON_GOING','SUSPENDED','WAITING_FOR_DOCTOR') DEFAULT NULL,
@@ -236,6 +235,35 @@ CREATE TABLE `doctor_data` (
 LOCK TABLES `doctor_data` WRITE;
 /*!40000 ALTER TABLE `doctor_data` DISABLE KEYS */;
 /*!40000 ALTER TABLE `doctor_data` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `doctor_prescription`
+--
+
+DROP TABLE IF EXISTS `doctor_prescription`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `doctor_prescription` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `diagnostico` text NOT NULL,
+  `notas_de_recomendaciones` text NOT NULL,
+  `observaciones_medicas` text NOT NULL,
+  `receta_medica` text NOT NULL,
+  `consultation_session_id` bigint DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `FK6chsqabkemqogwfg69xdi7fit` (`consultation_session_id`),
+  CONSTRAINT `FK6chsqabkemqogwfg69xdi7fit` FOREIGN KEY (`consultation_session_id`) REFERENCES `consultation_session` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `doctor_prescription`
+--
+
+LOCK TABLES `doctor_prescription` WRITE;
+/*!40000 ALTER TABLE `doctor_prescription` DISABLE KEYS */;
+/*!40000 ALTER TABLE `doctor_prescription` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -309,6 +337,35 @@ LOCK TABLES `jwt_black_list_seq` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `laboratory_prescription`
+--
+
+DROP TABLE IF EXISTS `laboratory_prescription`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `laboratory_prescription` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `notas_de_recomendaciones` text NOT NULL,
+  `observaciones_medicas` text NOT NULL,
+  `orden_de_laboratorio` text NOT NULL,
+  `posible_diagnostico` text NOT NULL,
+  `consultation_session_id` bigint DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `FKiw5058cmn1qhpp5wajcjq7x7w` (`consultation_session_id`),
+  CONSTRAINT `FKiw5058cmn1qhpp5wajcjq7x7w` FOREIGN KEY (`consultation_session_id`) REFERENCES `consultation_session` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `laboratory_prescription`
+--
+
+LOCK TABLES `laboratory_prescription` WRITE;
+/*!40000 ALTER TABLE `laboratory_prescription` DISABLE KEYS */;
+/*!40000 ALTER TABLE `laboratory_prescription` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `patient_additional`
 --
 
@@ -344,11 +401,24 @@ DROP TABLE IF EXISTS `patient_data`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `patient_data` (
   `id` bigint NOT NULL AUTO_INCREMENT,
+  `alcohol` text NOT NULL,
+  `allergies` text NOT NULL,
   `build` float NOT NULL,
+  `diseases` text NOT NULL,
   `emergency_contact_name` varchar(255) DEFAULT NULL,
   `emergency_contact_number` varchar(255) DEFAULT NULL,
+  `feeding` text NOT NULL,
   `height` float NOT NULL,
+  `hospitalized` text NOT NULL,
+  `hours_you_sleep` text NOT NULL,
+  `medical_treatment` text NOT NULL,
+  `medications` text NOT NULL,
+  `occupation` text NOT NULL,
+  `physical_activity` text NOT NULL,
   `preexistences` text NOT NULL,
+  `smoke` text NOT NULL,
+  `supplements` text NOT NULL,
+  `surgery` text NOT NULL,
   `weight` float NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -386,7 +456,7 @@ CREATE TABLE `service_provider` (
 
 LOCK TABLES `service_provider` WRITE;
 /*!40000 ALTER TABLE `service_provider` DISABLE KEYS */;
-INSERT INTO `service_provider` VALUES (1,'2025-05-06 10:08:21.000000','https://localhost:8080/external_provider','HealthConnect','2025-12-31');
+INSERT INTO `service_provider` VALUES (1,'2025-05-08 08:31:31.000000','https://localhost:8080/external_provider','HealthConnect','2025-12-31');
 /*!40000 ALTER TABLE `service_provider` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -457,7 +527,7 @@ CREATE TABLE `woow_user` (
 
 LOCK TABLES `woow_user` WRITE;
 /*!40000 ALTER TABLE `woow_user` DISABLE KEYS */;
-INSERT INTO `woow_user` VALUES (1,'yes','Av Reforma 123','Int 5','1995-06-15','CDMX','MX','01234','2025-05-06 10:08:21.000000','master@example.com',_binary '',NULL,0,'masterLastName',0,1,'5551234567','master@example.com',NULL,'$2a$10$nOyz3qX1lLYv9GOZcwBieeO1KSYDT6funrQx322uHIuX8LWY9XQQW',_binary '\0','CDMX',_binary '','master@example.com'),(2,'yes','Street 1','Street 2',NULL,'CDMX','MX','12345','2025-05-06 09:08:23.609584','realuser@woow.com',_binary '\0',NULL,0,'User',0,0,'1234567890','Real',NULL,'$2a$10$YGGIsHkU5yXUkMynY66iaOVCfPCxSsRJYbFw5YYQ6hCdaonyrwPCe',_binary '\0','CDMX',_binary '','realuser@woow.com');
+INSERT INTO `woow_user` VALUES (1,'yes','Av Reforma 123','Int 5','1995-06-15','CDMX','MX','01234','2025-05-08 08:31:31.000000','master@example.com',_binary '',NULL,0,'masterLastName',0,1,'5551234567','master@example.com',NULL,'$2a$10$nOyz3qX1lLYv9GOZcwBieeO1KSYDT6funrQx322uHIuX8LWY9XQQW',_binary '\0','CDMX',_binary '','master@example.com'),(2,'yes','Street 1','Street 2',NULL,'CDMX','MX','12345','2025-05-08 07:31:32.977284','realuser@woow.com',_binary '\0',NULL,0,'User',0,0,'1234567890','Real',NULL,'$2a$10$mCbCeWuO7AMco8sd7uWQQe7fbChLA2PV/ObAnIyXzBMTbZ/CaaaZG',_binary '\0','CDMX',_binary '','realuser@woow.com');
 /*!40000 ALTER TABLE `woow_user` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -470,4 +540,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-06 10:09:01
+-- Dump completed on 2025-05-08  8:41:29

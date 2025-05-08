@@ -28,10 +28,6 @@ public class ConsultationSession {
     @ManyToOne
     private AxSaludWooUser doctor;
 
-    @Lob
-    @Column(columnDefinition = "TEXT")
-    private String diagnosis;
-
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime startAt;
     private LocalDateTime finishedAt;
@@ -47,4 +43,12 @@ public class ConsultationSession {
 
     @ElementCollection
     private Set<String> closedBy = new HashSet<>();
+
+    @OneToMany(mappedBy = "consultationSession",
+            cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<DoctorPrescription> doctorPrescriptions = new HashSet<>();
+
+    @OneToMany(mappedBy = "consultationSession",
+            cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<LaboratoryPrescription> laboratoryPrescriptions;
 }
