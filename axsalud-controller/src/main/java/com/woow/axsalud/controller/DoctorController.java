@@ -1,9 +1,7 @@
 package com.woow.axsalud.controller;
 
 import com.woow.axsalud.data.consultation.ComentariosMedicos;
-import com.woow.axsalud.data.consultation.ConsultationStatus;
 import com.woow.axsalud.data.repository.ComentariosMedicosRepository;
-import com.woow.axsalud.service.api.dto.ConsultationDTO;
 import com.woow.axsalud.service.api.dto.DoctorCommentsDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -13,8 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -30,7 +28,7 @@ public class DoctorController {
         this.comentariosMedicosRepository = comentariosMedicosRepository;
     }
 
-    @GetMapping
+    @GetMapping("/patient/{userName}")
     @Operation(summary = "Get Patient's comments",
             description = "Retrieve all Doctor's Comments given to a user.")
     @ApiResponses(value = {
@@ -39,10 +37,10 @@ public class DoctorController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<List<DoctorCommentsDTO>>
-    getDoctorComment(@RequestParam ConsultationStatus status,
+    getDoctorComment(@PathVariable String userName,
                      @AuthenticationPrincipal UserDetails userDetails) {
         List<ComentariosMedicos> comentariosMedicos =
-                comentariosMedicosRepository.findByAxSaludWooUser_CoreUser_UserName(userDetails.getUsername());
+                comentariosMedicosRepository.findByAxSaludWooUser_CoreUser_UserName(userName);
 
         List<DoctorCommentsDTO> doctorCommentsDTOS =
                 comentariosMedicos.stream()
