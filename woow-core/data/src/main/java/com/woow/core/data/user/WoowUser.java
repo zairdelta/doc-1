@@ -21,6 +21,7 @@ public class WoowUser implements SecurityUser {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long userId;
     private LocalDate birth;
+    private String sex;
     private String name;
     private String userName;
     private String lastName;

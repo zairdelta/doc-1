@@ -9,7 +9,6 @@ import com.woow.axsalud.data.repository.DoctorDataRepository;
 import com.woow.axsalud.service.api.DoctorQueueManager;
 import com.woow.axsalud.service.api.HealthServiceProvider;
 import com.woow.axsalud.service.api.dto.DoctorDataDTO;
-import com.woow.axsalud.service.api.dto.DoctorViewDTO;
 import com.woow.axsalud.service.api.dto.HealthServiceProviderDTO;
 import com.woow.axsalud.service.api.dto.HealthServiceProviderUpdateDTO;
 import com.woow.core.data.repository.WoowUserRepository;
@@ -103,6 +102,8 @@ public class HealthServiceProviderImpl implements HealthServiceProvider {
         doctorData.setUniversity(healthServiceProviderDTO.getDoctorData().getUniversity());
         doctorData.setLicenseNumber(healthServiceProviderDTO.getDoctorData().getLicenseNumber());
         doctorData.setSpeciality(healthServiceProviderDTO.getDoctorData().getSpeciality());
+        doctorData.setMatriculaNacional(healthServiceProviderDTO.getDoctorData().getMatriculaNacional());
+        doctorData.setMatriculaProvincial(healthServiceProviderDTO.getDoctorData().getMatriculaProvincial());
         axSaludWooUser.setDoctorData(doctorData);
         return userName;
     }

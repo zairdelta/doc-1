@@ -15,7 +15,10 @@ public class DoctorData {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private long id;
+    private String doctorWelcomeMessage;
     private String licenseNumber;
     private String speciality;
     private String university;
+    private String matriculaNacional;
+    private String matriculaProvincial;
 }
