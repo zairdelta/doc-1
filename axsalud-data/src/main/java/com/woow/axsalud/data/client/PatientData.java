@@ -14,7 +14,6 @@ public class PatientData {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private long id;
-    private String dni;
     private String emergencyContactName = " ";
     private String emergencyContactNumber = " ";
     private float height = 0;

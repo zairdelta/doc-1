@@ -7,4 +7,5 @@ import lombok.Data;
 public class AxSaludUserUpdateDTO {
     private UserUpdateDto userUpdateDto;
     private PatientDataUpdateDTO patientDataUpdateDTO;
+    private String dni;
 }

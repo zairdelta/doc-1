@@ -38,6 +38,8 @@ public class AxSaludWooUser {
     private long serviceProvider;
     private String hid;
     private String doctorWelcomeMessage;
+    @Column(nullable = true)
+    private String dni;
 
     @OneToMany(mappedBy = "axSaludWooUser")
     private Set<ComentariosMedicos> comentariosMedicos;

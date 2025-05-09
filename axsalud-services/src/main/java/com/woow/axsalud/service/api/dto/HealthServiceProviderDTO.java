@@ -1,14 +1,11 @@
 package com.woow.axsalud.service.api.dto;
 
-import com.woow.axsalud.data.client.DoctorData;
-import com.woow.core.service.api.UserDtoCreate;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class HealthServiceProviderDTO {
-    private UserDtoCreate userDtoCreate;
+public class HealthServiceProviderDTO extends AxSaludUserDTO {
     private String welcomeMessage;
     private DoctorDataDTO doctorData;
 

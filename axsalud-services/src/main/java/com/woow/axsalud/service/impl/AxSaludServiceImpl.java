@@ -76,6 +76,7 @@ public class AxSaludServiceImpl implements AxSaludService {
 
         axSaludWooUser.setServiceProvider(serviceProvider.getId());
         axSaludWooUser.setHid(axSaludUserDTO.getHid());
+        axSaludWooUser.setDni(axSaludUserDTO.getDni());
         axSaludUserRepository.save(axSaludWooUser);
 
         return woowUser.getUserName();
@@ -104,6 +105,7 @@ public class AxSaludServiceImpl implements AxSaludService {
 
         modelMapper.map(woowUser, patientViewDTO);
         modelMapper.map(axSaludWooUser, patientViewDTO);
+        patientViewDTO.setDni(axSaludWooUser.getDni());
         patientViewDTO.setPatientData(axSaludWooUser.getPatientData());
 
         return patientViewDTO;
@@ -206,6 +208,7 @@ public class AxSaludServiceImpl implements AxSaludService {
 
         modelMapper.map(axSaludUserUpdateDTO.getPatientDataUpdateDTO(), patientData);
         axSaludWooUser.setPatientData(patientData);
+        axSaludWooUser.setDni(axSaludUserUpdateDTO.getDni());
         axSaludUserRepository.save(axSaludWooUser);
         return userName;
     }

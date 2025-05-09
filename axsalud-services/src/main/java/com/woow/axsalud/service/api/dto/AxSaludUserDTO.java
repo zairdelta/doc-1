@@ -6,5 +6,6 @@ import lombok.Data;
 @Data
 public class AxSaludUserDTO {
     private UserDtoCreate userDtoCreate;
+    private String dni;
     private String hid;
 }

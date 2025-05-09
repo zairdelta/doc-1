@@ -68,12 +68,14 @@ public class HealthServiceProviderImpl implements HealthServiceProvider {
         axSaludWooUser.setUserType(WoowUserType.HEALTH_SERVICE_PROVIDER);
         axSaludWooUser.setHid("NA");
         axSaludWooUser.setDoctorWelcomeMessage(healthServiceProviderDTO.getWelcomeMessage());
-
+        axSaludWooUser.setDni(healthServiceProviderDTO.getDni());
         if(healthServiceProviderDTO.getDoctorData() != null) {
             DoctorData doctorData = new DoctorData();
             doctorData.setUniversity(healthServiceProviderDTO.getDoctorData().getUniversity());
             doctorData.setLicenseNumber(healthServiceProviderDTO.getDoctorData().getLicenseNumber());
             doctorData.setSpeciality(healthServiceProviderDTO.getDoctorData().getSpeciality());
+            doctorData.setMatriculaProvincial(healthServiceProviderDTO.getDoctorData().getMatriculaProvincial());
+            doctorData.setMatriculaNacional(healthServiceProviderDTO.getDoctorData().getMatriculaNacional());
             doctorDataRepository.save(doctorData);
             axSaludWooUser.setDoctorData(doctorData);
         }
@@ -97,6 +99,7 @@ public class HealthServiceProviderImpl implements HealthServiceProvider {
                 axSaludWooUserOptional.orElseThrow(()
                         -> new WooUserServiceException("Error trying to update user: " +
                         userName, 402));
+        axSaludWooUser.setDni(healthServiceProviderDTO.getDni());
         axSaludWooUser.setDoctorWelcomeMessage(healthServiceProviderDTO.getWelcomeMessage());
         DoctorData doctorData = new DoctorData();
         doctorData.setUniversity(healthServiceProviderDTO.getDoctorData().getUniversity());
@@ -126,6 +129,7 @@ public class HealthServiceProviderImpl implements HealthServiceProvider {
 
         dto.setDoctorData(DoctorDataDTO.from(axSaludWooUser.getDoctorData()));
         dto.setWelcomeMessage(axSaludWooUser.getDoctorWelcomeMessage());
+        dto.setDni(axSaludWooUser.getDni());
         UserDtoCreate userDtoCreate = new UserDtoCreate();
         modelMapper.map(woowUser, userDtoCreate);
         dto.setUserDtoCreate(userDtoCreate);

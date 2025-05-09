@@ -23,6 +23,7 @@ public class AxSaludUserViewDTO {
     private String addressLine1;
     private String addressLine2;
     private String hid;
+    private String dni;
 
     public static AxSaludUserViewDTO from(AxSaludWooUser axSaludWooUser) {
         AxSaludUserViewDTO axSaludUserViewDTO = new AxSaludUserViewDTO();

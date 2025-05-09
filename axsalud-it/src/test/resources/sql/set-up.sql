@@ -24,7 +24,7 @@ VALUES (
 );
 
 INSERT INTO ax_salud_woo_user
-VALUES('1', NULL, 'HID-123', NULL, '21', 'OFFLINE', 'PATIENT', 1, NULL, NULL);
+VALUES('1', 'dni', NULL, 'HID-123', NULL, '21', 'OFFLINE', 'PATIENT', 1, NULL, NULL);
 
 INSERT INTO user_roles (user_id, role)
 VALUES

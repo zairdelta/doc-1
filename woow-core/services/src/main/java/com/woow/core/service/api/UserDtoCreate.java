@@ -26,5 +26,4 @@ public class UserDtoCreate {
     private String cp;
     private String addressLine1;
     private String addressLine2;
-
 }
