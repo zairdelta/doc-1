@@ -24,6 +24,7 @@ DROP TABLE IF EXISTS `ax_salud_woo_user`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ax_salud_woo_user` (
   `id` bigint NOT NULL AUTO_INCREMENT,
+  `dni` varchar(255) DEFAULT NULL,
   `doctor_welcome_message` varchar(255) DEFAULT NULL,
   `hid` varchar(255) DEFAULT NULL,
   `location_offices` enum('MX') DEFAULT NULL,
@@ -49,7 +50,7 @@ CREATE TABLE `ax_salud_woo_user` (
 
 LOCK TABLES `ax_salud_woo_user` WRITE;
 /*!40000 ALTER TABLE `ax_salud_woo_user` DISABLE KEYS */;
-INSERT INTO `ax_salud_woo_user` VALUES (1,NULL,'HID-123',NULL,21,'OFFLINE','PATIENT',1,NULL,NULL),(2,NULL,'HID-123',NULL,1,'OFFLINE','PATIENT',2,NULL,NULL);
+INSERT INTO `ax_salud_woo_user` VALUES (1,'dni',NULL,'HID-123',NULL,21,'OFFLINE','PATIENT',1,NULL,NULL),(2,NULL,NULL,'HID-123',NULL,2,'OFFLINE','PATIENT',2,NULL,NULL);
 /*!40000 ALTER TABLE `ax_salud_woo_user` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -458,7 +459,6 @@ CREATE TABLE `patient_data` (
   `allergies` text,
   `build` float NOT NULL,
   `diseases` text,
-  `dni` varchar(255) DEFAULT NULL,
   `emergency_contact_name` varchar(255) DEFAULT NULL,
   `emergency_contact_number` varchar(255) DEFAULT NULL,
   `feeding` text,
@@ -501,7 +501,7 @@ CREATE TABLE `service_provider` (
   `name` varchar(255) DEFAULT NULL,
   `service_expiration` date DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -510,7 +510,7 @@ CREATE TABLE `service_provider` (
 
 LOCK TABLES `service_provider` WRITE;
 /*!40000 ALTER TABLE `service_provider` DISABLE KEYS */;
-INSERT INTO `service_provider` VALUES (1,'2025-05-09 09:12:40.000000','https://localhost:8080/external_provider','HealthConnect','2025-12-31');
+INSERT INTO `service_provider` VALUES (2,'2025-05-09 10:03:16.000000','https://localhost:8080/external_provider','HealthConnect','2025-12-31');
 /*!40000 ALTER TABLE `service_provider` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -582,7 +582,7 @@ CREATE TABLE `woow_user` (
 
 LOCK TABLES `woow_user` WRITE;
 /*!40000 ALTER TABLE `woow_user` DISABLE KEYS */;
-INSERT INTO `woow_user` VALUES (1,'yes','Av Reforma 123','Int 5','1995-06-15','CDMX','MX','01234','2025-05-09 09:12:40.000000','master@example.com',_binary '',NULL,0,'masterLastName',0,1,'5551234567','master@example.com',NULL,'$2a$10$nOyz3qX1lLYv9GOZcwBieeO1KSYDT6funrQx322uHIuX8LWY9XQQW',_binary '\0',NULL,'CDMX',_binary '','master@example.com'),(2,'yes','Street 1','Street 2',NULL,'CDMX','MX','12345','2025-05-09 08:12:41.425856','realuser@woow.com',_binary '\0',NULL,0,'User',0,0,'1234567890','Real',NULL,'$2a$10$DR8//1iAAhglbuqOf4xXaOfTdNJ1sb1sOyrfwb2kT81y44WvZbcVS',_binary '\0',NULL,'CDMX',_binary '','realuser@woow.com');
+INSERT INTO `woow_user` VALUES (1,'yes','Av Reforma 123','Int 5','1995-06-15','CDMX','MX','01234','2025-05-09 10:03:16.000000','master@example.com',_binary '',NULL,0,'masterLastName',0,1,'5551234567','master@example.com',NULL,'$2a$10$nOyz3qX1lLYv9GOZcwBieeO1KSYDT6funrQx322uHIuX8LWY9XQQW',_binary '\0',NULL,'CDMX',_binary '','master@example.com'),(2,'yes','Street 1','Street 2',NULL,'CDMX','MX','12345','2025-05-09 09:03:18.180011','realuser@woow.com',_binary '\0',NULL,0,'User',0,0,'1234567890','Real',NULL,'$2a$10$CreCikUwkiRwnAqY5SUki.gA/P2fZyxuiFLFOf6dVtuae2Qc7.19a',_binary '\0',NULL,'CDMX',_binary '','realuser@woow.com');
 /*!40000 ALTER TABLE `woow_user` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -595,4 +595,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-09  9:29:24
+-- Dump completed on 2025-05-09 10:04:11
