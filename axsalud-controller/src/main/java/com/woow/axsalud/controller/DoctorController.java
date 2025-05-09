@@ -8,6 +8,7 @@ import com.woow.axsalud.service.api.ConsultationService;
 import com.woow.axsalud.service.api.dto.ConsultationDTO;
 import com.woow.axsalud.service.api.dto.ConsultationMessagesPagingDTO;
 import com.woow.axsalud.service.api.dto.DoctorCommentsDTO;
+import com.woow.axsalud.service.api.dto.PatientViewDTO;
 import com.woow.axsalud.service.api.exception.ConsultationServiceException;
 import com.woow.core.service.api.exception.WooUserServiceException;
 import io.swagger.v3.oas.annotations.Operation;
@@ -106,5 +107,26 @@ public class DoctorController {
             return WooBoHttpError.of(e).toResponseEntity();
         }
     }
+
+    @GetMapping("/patient/{userName}/patientInformation")
+    @Operation(summary = "Get patient information")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Patient found"),
+            @ApiResponse(responseCode = "301", description = "Forbidden"),
+            @ApiResponse(responseCode = "410", description = "Password cannot be empty"),
+            @ApiResponse(responseCode = "411", description = "User with username given already exists"),
+            @ApiResponse(responseCode = "414", description = "Sponsor is not active or does not exist."),
+            @ApiResponse(responseCode = "415", description = "User is not an active user")
+    })
+    public ResponseEntity<PatientViewDTO> getPatientData(@PathVariable String userName,
+                                                         @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            return ResponseEntity.ok(axSaludService.get(userName));
+        } catch (WooUserServiceException e) {
+            log.error("Error while getting user data: {}", e.getMessage(), e);
+            return ResponseEntity.notFound().build();
+        }
+    }
+
 
 }
