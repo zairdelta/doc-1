@@ -6,7 +6,8 @@ import jakarta.persistence.Enumerated;
 public enum ConsultationMessageStatus {
     DELIVERED("DELIVERED"),
     SERVER_RECEIVED("SERVER_RECEIVED"),
-    SENT_TO_RECEIVER("SENT_TO_RECEIVER");
+    SENT_TO_RECEIVER("SENT_TO_RECEIVER"),
+    SENT_TO_BROKER("SENT_TO_BROKER");
 
     private String status;
 
