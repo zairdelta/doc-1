@@ -155,7 +155,7 @@ public class ConsultationServiceImpl implements ConsultationService {
 
         consultation = consultationRepository.save(consultation);
 
-        ConsultationDTO consultationDTO = modelMapper.map(consultation, ConsultationDTO.class);
+        ConsultationDTO consultationDTO = ConsultationDTO.from(consultation);
         consultationDTO.setPatient(patient.getUserName());
         consultationDTO.setSymptoms(symptomsDTO.getText());
         consultationDTO.setCurrentSessionIdIfExists(consultationSession.getConsultationSessionId().toString());
