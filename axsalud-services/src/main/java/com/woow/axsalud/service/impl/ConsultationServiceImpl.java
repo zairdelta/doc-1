@@ -594,6 +594,9 @@ public class ConsultationServiceImpl implements ConsultationService {
             consultationRepository.save(consultationSession.getConsultation());
         }
 
+        consultationSession.getConsultation().setCurrentSessionIdIfExists(null);
+        consultationSession.getConsultation().setStatus(ConsultationStatus.FINISHED);
+        consultationRepository.save(consultationSession.getConsultation());
         consultationSession.getClosedBy().add(sender);
         consultationSessionRepository.save(consultationSession);
 
