@@ -178,7 +178,7 @@ public class ConsultationController {
             (@PathVariable String consultationId,
              @PathVariable String consultationSessionId,
              @AuthenticationPrincipal UserDetails userDetails,
-             @RequestBody List<LaboratoryPrescription> laboratoryPrescriptions) {
+             @RequestBody List<LaboratoryPrescriptionDTO> laboratoryPrescriptions) {
         try {
             consultationService
                     .addLaboratoryPrescriptions(userDetails.getUsername(),

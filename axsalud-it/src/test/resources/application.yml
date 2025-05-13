@@ -1,8 +1,12 @@
 logging:
   level:
+    org.springframework.messaging.simp.stomp: TRACE
+    org.springframework.messaging.simp.broker: TRACE
+    org.springframework.web.socket.messaging: TRACE
+    reactor.netty: DEBUG
+    io.netty: DEBUG
     org.hibernate.SQL: OFF
     org.hibernate.type.descriptor.sql: OFF
-
     # ADD THESE FOR WEBSOCKET DEBUGGING 👇
     org.springframework.web.socket: DEBUG
     org.springframework.web.socket.server.support: DEBUG
@@ -108,6 +112,19 @@ google:
 
 jwt:
   secret: 123
+stomp:
+  broker:
+    relay-host: 0rbjt9.stackhero-network.com
+    relay-port: 63338
+    client-login: admin
+    client-passcode: 9KLwnaP17gIdi8CoDetZIlHMgaaVxkqf
+    system-login: admin
+    system-passcode: 9KLwnaP17gIdi8CoDetZIlHMgaaVxkqf
+    max-connections: 10
+    pending-acquire-max-count: -1 #infinite
+    pending-acquire-timeout-in-seconds: 30
+    connection-pool-name: rabbitmq-pool
+
 
 AGORA_APP_ID: 123123
 AGORA_APP_CERTIFICATE: 123123

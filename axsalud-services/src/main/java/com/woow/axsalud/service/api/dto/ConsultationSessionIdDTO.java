@@ -22,6 +22,8 @@ public class ConsultationSessionIdDTO {
     private ConsultationSessionStatus status;
     private List<ConsultationMessageDTO> messages = new ArrayList<>();
     private List<ConsultationDocumentDTO> consultationDocumentDTOS = new ArrayList<>();
+    private List<LaboratoryPrescriptionDTO> laboratoryPrescriptionDTO = new ArrayList<>();
+    private List<DoctorPrescriptionDTO> doctorPrescriptionDTO = new ArrayList<>();
 
     public static ConsultationSessionIdDTO from(final ConsultationSession consultationSession) {
         ConsultationSessionIdDTO consultationSessionIdDTO = new ConsultationSessionIdDTO();

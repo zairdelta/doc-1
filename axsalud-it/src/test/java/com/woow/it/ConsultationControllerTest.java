@@ -21,6 +21,9 @@ import org.springframework.web.socket.messaging.WebSocketStompClient;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.socket.sockjs.client.SockJsClient;
+import org.springframework.web.socket.sockjs.client.Transport;
+import org.springframework.web.socket.sockjs.client.WebSocketTransport;
 
 import javax.net.ssl.*;
 import java.io.File;
@@ -394,6 +397,5 @@ public class ConsultationControllerTest extends WoowBaseTest {
         Assertions.assertEquals(HttpStatus.OK, downloadResponse.getStatusCode());
         Assertions.assertTrue(downloadResponse.getBody().getUrl().contains("https:")); // URL firmada
     }
-
 
 }

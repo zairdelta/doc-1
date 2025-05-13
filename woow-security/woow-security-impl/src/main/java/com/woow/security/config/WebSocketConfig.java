@@ -3,20 +3,29 @@ package com.woow.security.config;
 import com.woow.security.api.JwtTokenUtil;
 import com.woow.security.config.interceptor.JwtWebSocketInterceptor;
 import com.woow.security.config.interceptor.OutBoundIInterceptor;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.messaging.simp.stomp.StompReactorNettyCodec;
+import org.springframework.messaging.tcp.reactor.ReactorNettyTcpClient;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
+import reactor.netty.resources.ConnectionProvider;
+import reactor.netty.tcp.TcpClient;
 
+import javax.net.ssl.SSLException;
+import java.net.InetSocketAddress;
 import java.security.Principal;
+import java.time.Duration;
 import java.util.Map;
 
 @Configuration
@@ -27,14 +36,18 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     private JwtTokenUtil jwtTokenUtil;
     private final JwtWebSocketInterceptor jwtWebSocketInterceptor;
     private final OutBoundIInterceptor outBoundIInterceptor;
+    private RabbitMQStompBrokerProperties rabbitMQStompBrokerProperties;
 
     public WebSocketConfig(JwtWebSocketInterceptor jwtWebSocketInterceptor,
                            OutBoundIInterceptor outBoundIInterceptor,
-                           JwtTokenUtil jwtTokenUtil) {
+                           JwtTokenUtil jwtTokenUtil,
+                           RabbitMQStompBrokerProperties rabbitMQStompBrokerProperties) {
         this.jwtWebSocketInterceptor = jwtWebSocketInterceptor;
         this.outBoundIInterceptor = outBoundIInterceptor;
         this.jwtTokenUtil = jwtTokenUtil;
+        this.rabbitMQStompBrokerProperties = rabbitMQStompBrokerProperties;
     }
+
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
@@ -67,15 +80,52 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
                             return null;
 
-                }}})
+                        }}})
                 .setAllowedOriginPatterns("*")
                 .withSockJS();
     }
 
+    @Bean
+    public ReactorNettyTcpClient<byte[]> stompTcpClient() {
+        SslContext sslContext;
+        try {
+            sslContext = SslContextBuilder
+                    .forClient()
+                    .build();
+        } catch (SSLException e) {
+            throw new IllegalStateException("Failed to create SSL context", e);
+        }
+
+        ConnectionProvider connectionProvider =
+                ConnectionProvider.builder(rabbitMQStompBrokerProperties.getConnectionPoolName())
+                .maxConnections(rabbitMQStompBrokerProperties.getMaxConnections())
+                .pendingAcquireMaxCount(rabbitMQStompBrokerProperties.getPendingAcquireMaxCount())
+                .pendingAcquireTimeout(Duration.ofSeconds(rabbitMQStompBrokerProperties.getPendingAcquireTimeoutInSeconds()))
+                .build();
+
+        TcpClient sslClient = TcpClient.create(connectionProvider)
+                .secure(ssl -> ssl.sslContext(sslContext))
+                .remoteAddress(() ->
+                        new InetSocketAddress(rabbitMQStompBrokerProperties.getRelayHost(),
+                                rabbitMQStompBrokerProperties.getRelayPort()));
+
+        return new ReactorNettyTcpClient<>(client -> sslClient, new StompReactorNettyCodec());
+    }
+
     @Override
-    public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.setApplicationDestinationPrefixes("/app");
-        registry.enableSimpleBroker("/queue", "/topic");
+    public void configureMessageBroker(MessageBrokerRegistry config) {
+
+        config.enableStompBrokerRelay("/topic", "/queue") // Estos destinos serán enviados al broker externo (RabbitMQ)
+                .setRelayHost(rabbitMQStompBrokerProperties.getRelayHost())
+                .setRelayPort(rabbitMQStompBrokerProperties.getRelayPort())
+                .setClientLogin(rabbitMQStompBrokerProperties.getClientLogin())
+                .setClientPasscode(rabbitMQStompBrokerProperties.getClientPasscode())
+                .setSystemLogin(rabbitMQStompBrokerProperties.getSystemLogin())
+                .setSystemPasscode(rabbitMQStompBrokerProperties.getSystemPasscode())
+                .setTcpClient(stompTcpClient());
+
+        config.setApplicationDestinationPrefixes("/app");
+        config.setUserDestinationPrefix("/user");
     }
 
     @Override

@@ -676,7 +676,7 @@ public class ConsultationServiceImpl implements ConsultationService {
     @Override
     public void addLaboratoryPrescriptions(String userName, String consultationId,
                                            String consultationSessionId,
-                                           List<LaboratoryPrescription> laboratoryPrescriptions)
+                                           List<LaboratoryPrescriptionDTO> laboratoryPrescriptions)
             throws ConsultationServiceException {
         ConsultationSession consultationSession =
                 consultationSessionRepository.findByConsultationSessionId(UUID.fromString(consultationSessionId));

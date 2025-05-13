@@ -46,6 +46,6 @@ public interface ConsultationService {
     ConsultationSessionViewDTO getConsultationSession(String userName, String consultationSessionId) throws ConsultationServiceException;
 
     void addDoctorPrescriptions(String userName, String consultationId, String consultationSessionId, List<DoctorPrescriptionDTO> doctorPrescriptionDTOS) throws ConsultationServiceException;
-    void addLaboratoryPrescriptions(String userName, String consultationId, String consultationSessionId, List<LaboratoryPrescription> laboratoryPrescriptions) throws ConsultationServiceException;
+    void addLaboratoryPrescriptions(String userName, String consultationId, String consultationSessionId, List<LaboratoryPrescriptionDTO> laboratoryPrescriptions) throws ConsultationServiceException;
 
 }
