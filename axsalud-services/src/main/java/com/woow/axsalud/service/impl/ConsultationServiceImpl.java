@@ -669,7 +669,7 @@ public class ConsultationServiceImpl implements ConsultationService {
                                 return doctorPrescription1;
                             })
                             .collect(Collectors.toSet());
-            consultationSession.setDoctorPrescriptions(doctorPrescriptionSet);
+            consultationSession.getDoctorPrescriptions().addAll(doctorPrescriptionSet);
         }
     }
 
@@ -692,7 +692,7 @@ public class ConsultationServiceImpl implements ConsultationService {
                                 return laboratoryPrescription1;
                             })
                             .collect(Collectors.toSet());
-            consultationSession.setLaboratoryPrescriptions(laboratoryPrescriptionsSet);
+            consultationSession.getLaboratoryPrescriptions().addAll(laboratoryPrescriptionsSet);
         }
     }
 
