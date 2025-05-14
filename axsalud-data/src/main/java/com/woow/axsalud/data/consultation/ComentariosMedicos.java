@@ -3,9 +3,12 @@ package com.woow.axsalud.data.consultation;
 import com.woow.axsalud.data.client.AxSaludWooUser;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
-@Data
+@Getter
+@Setter
 public class ComentariosMedicos {
 
     @Id

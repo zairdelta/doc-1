@@ -6,13 +6,16 @@ import com.woow.axsalud.data.consultation.Consultation;
 import com.woow.core.data.user.WoowUser;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 @Entity
-@Data
+@Getter
+@Setter
 public class AxSaludWooUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

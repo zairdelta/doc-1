@@ -155,7 +155,7 @@ public class ConsultationServiceImpl implements ConsultationService {
 
         consultation = consultationRepository.save(consultation);
 
-        ConsultationDTO consultationDTO = modelMapper.map(consultation, ConsultationDTO.class);
+        ConsultationDTO consultationDTO = ConsultationDTO.from(consultation);
         consultationDTO.setPatient(patient.getUserName());
         consultationDTO.setSymptoms(symptomsDTO.getText());
         consultationDTO.setCurrentSessionIdIfExists(consultationSession.getConsultationSessionId().toString());
@@ -594,6 +594,9 @@ public class ConsultationServiceImpl implements ConsultationService {
             consultationRepository.save(consultationSession.getConsultation());
         }
 
+        consultationSession.getConsultation().setCurrentSessionIdIfExists(null);
+        consultationSession.getConsultation().setStatus(ConsultationStatus.FINISHED);
+        consultationRepository.save(consultationSession.getConsultation());
         consultationSession.getClosedBy().add(sender);
         consultationSessionRepository.save(consultationSession);
 
@@ -669,7 +672,7 @@ public class ConsultationServiceImpl implements ConsultationService {
                                 return doctorPrescription1;
                             })
                             .collect(Collectors.toSet());
-            consultationSession.setDoctorPrescriptions(doctorPrescriptionSet);
+            consultationSession.getDoctorPrescriptions().addAll(doctorPrescriptionSet);
         }
     }
 
@@ -692,7 +695,7 @@ public class ConsultationServiceImpl implements ConsultationService {
                                 return laboratoryPrescription1;
                             })
                             .collect(Collectors.toSet());
-            consultationSession.setLaboratoryPrescriptions(laboratoryPrescriptionsSet);
+            consultationSession.getLaboratoryPrescriptions().addAll(laboratoryPrescriptionsSet);
         }
     }
 

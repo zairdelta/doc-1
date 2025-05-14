@@ -169,6 +169,8 @@ public class ConsultationController {
         }  catch (ConsultationServiceException e) {
             return WooBoHttpError.of(e).toResponseEntity();
         } catch (Exception e) {
+            e.printStackTrace();
+            log.error("Errror while creating Doctor Prescription:{} ", e.getMessage());
             return WooBoHttpError.of(e).toResponseEntity();
         }
     }
@@ -188,6 +190,8 @@ public class ConsultationController {
         } catch (ConsultationServiceException e) {
             return WooBoHttpError.of(e).toResponseEntity();
         } catch (Exception e) {
+            e.printStackTrace();
+            log.error("Errror while creating laboratory Prescription:{} ", e.getMessage());
             return WooBoHttpError.of(e).toResponseEntity();
         }
     }
