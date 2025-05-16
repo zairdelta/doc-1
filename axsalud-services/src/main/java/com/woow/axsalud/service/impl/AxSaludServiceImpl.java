@@ -207,6 +207,7 @@ public class AxSaludServiceImpl implements AxSaludService {
         PatientData patientData = new PatientData();
 
         modelMapper.map(axSaludUserUpdateDTO.getPatientDataUpdateDTO(), patientData);
+        patientDataRepository.save(patientData);
         axSaludWooUser.setPatientData(patientData);
         axSaludWooUser.setDni(axSaludUserUpdateDTO.getDni());
         axSaludUserRepository.save(axSaludWooUser);
