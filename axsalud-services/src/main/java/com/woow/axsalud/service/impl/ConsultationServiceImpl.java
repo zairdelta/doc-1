@@ -6,6 +6,7 @@ import com.woow.axsalud.data.repository.*;
 import com.woow.axsalud.service.api.ConsultationService;
 import com.woow.axsalud.service.api.dto.*;
 import com.woow.axsalud.service.api.exception.ConsultationServiceException;
+import com.woow.axsalud.service.api.messages.ConsultationMessageDTO;
 import com.woow.core.data.repository.WoowUserRepository;
 import com.woow.core.data.user.WoowUser;
 import com.woow.core.service.api.exception.WooUserServiceException;

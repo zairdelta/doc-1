@@ -1,6 +1,8 @@
-package com.woow.axsalud.service.api.dto;
+package com.woow.axsalud.service.api.messages;
 
 import com.woow.axsalud.data.consultation.ConsultationMessageEntity;
+import com.woow.axsalud.service.api.dto.ConsultationMessgeTypeEnum;
+import com.woow.axsalud.service.api.dto.FileResponseDTO;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -14,7 +16,6 @@ public class ConsultationMessageDTO {
     private String consultationId;
     private String consultationSessionId;
     private LocalDateTime timeProcessed;
-    private ChatStatus status = ChatStatus.STARTED;
     private ConsultationMessgeTypeEnum messageType;
 
     public static ConsultationMessageDTO from(ConsultationMessageEntity consultationMessageEntity) {

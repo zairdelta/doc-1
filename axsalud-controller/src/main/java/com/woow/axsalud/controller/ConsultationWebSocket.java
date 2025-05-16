@@ -1,7 +1,7 @@
 package com.woow.axsalud.controller;
 
 import com.woow.axsalud.service.api.ConsultationService;
-import com.woow.axsalud.service.api.dto.ConsultationMessageDTO;
+import com.woow.axsalud.service.api.messages.ConsultationMessageDTO;
 import com.woow.axsalud.service.api.exception.ConsultationServiceException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;

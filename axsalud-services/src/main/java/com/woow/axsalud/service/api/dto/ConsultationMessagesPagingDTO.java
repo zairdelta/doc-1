@@ -1,5 +1,6 @@
 package com.woow.axsalud.service.api.dto;
 
+import com.woow.axsalud.service.api.messages.ConsultationMessageDTO;
 import lombok.Data;
 
 import java.util.ArrayList;

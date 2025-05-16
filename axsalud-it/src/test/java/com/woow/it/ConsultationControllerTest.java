@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.woow.WoowBaseTest;
 import com.woow.axsalud.common.WoowConstants;
 import com.woow.axsalud.service.api.dto.*;
+import com.woow.axsalud.service.api.messages.ConsultationMessageDTO;
 import com.woow.it.data.HealthProviderFactory;
 import com.woow.it.data.UserFactory;
 import org.apache.hc.core5.ssl.SSLContextBuilder;

@@ -4,7 +4,7 @@ import com.woow.axsalud.data.consultation.ConsultationSession;
 import com.woow.axsalud.service.api.ConsultationService;
 import com.woow.axsalud.service.api.WoowVideoCallsService;
 import com.woow.axsalud.service.api.dto.ConsultationMessgeTypeEnum;
-import com.woow.axsalud.service.api.dto.VideoCallStartMessageDTO;
+import com.woow.axsalud.service.api.messages.VideoCallStartMessageDTO;
 import com.woow.axsalud.service.api.dto.VideoTokenDTO;
 import com.woow.axsalud.service.api.exception.ConsultationServiceException;
 import com.woow.axsalud.service.api.exception.WoowVideoCallException;

@@ -2,10 +2,9 @@ package com.woow.axsalud.service.api;
 
 import com.woow.axsalud.data.consultation.ConsultationSession;
 import com.woow.axsalud.data.consultation.ConsultationStatus;
-import com.woow.axsalud.data.consultation.DoctorPrescription;
-import com.woow.axsalud.data.consultation.LaboratoryPrescription;
 import com.woow.axsalud.service.api.dto.*;
 import com.woow.axsalud.service.api.exception.ConsultationServiceException;
+import com.woow.axsalud.service.api.messages.ConsultationMessageDTO;
 import com.woow.core.service.api.exception.WooUserServiceException;
 import org.springframework.web.multipart.MultipartFile;
 
