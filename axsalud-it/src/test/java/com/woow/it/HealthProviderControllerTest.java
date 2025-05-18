@@ -1,7 +1,6 @@
 package com.woow.it;
 
 import com.woow.WoowBaseTest;
-import com.woow.axsalud.data.client.DoctorData;
 import com.woow.axsalud.service.api.dto.DoctorDataDTO;
 import com.woow.axsalud.service.api.dto.HealthServiceProviderDTO;
 import com.woow.axsalud.service.api.dto.HealthServiceProviderUpdateDTO;
@@ -69,11 +68,11 @@ public class HealthProviderControllerTest extends WoowBaseTest {
 
         updateDTO.setWelcomeMessage("Welcome to my updated health service!");
 
-        DoctorDataDTO doctorData = new DoctorDataDTO();
-        doctorData.setLicenseNumber("UPDATED-123");
-        doctorData.setSpeciality("UpdatedSpeciality");
-        doctorData.setUniversity("UpdatedUniversity");
-        updateDTO.setDoctorData(doctorData);
+        DoctorDataDTO doctorDataDTO = new DoctorDataDTO();
+        doctorDataDTO.setLicenseNumber("UPDATED-123");
+        doctorDataDTO.setSpeciality("UpdatedSpeciality");
+        doctorDataDTO.setUniversity("UpdatedUniversity");
+        updateDTO.setDoctorDataDTO(doctorDataDTO);
 
         // Step 3: Login as the new health provider user
         headers = new HttpHeaders();

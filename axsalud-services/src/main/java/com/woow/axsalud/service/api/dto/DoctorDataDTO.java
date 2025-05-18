@@ -20,4 +20,14 @@ public class DoctorDataDTO {
         doctorDataDTO.setMatriculaProvincial(doctorDataDTO.getMatriculaProvincial());
         return doctorDataDTO;
     }
+
+    public static DoctorData from(DoctorDataDTO doctorDataDTO) {
+        DoctorData doctorData = new DoctorData();
+        doctorData.setUniversity(doctorDataDTO.getUniversity());
+        doctorData.setLicenseNumber(doctorDataDTO.getLicenseNumber());
+        doctorData.setSpeciality(doctorDataDTO.getSpeciality());
+        doctorData.setMatriculaNacional(doctorDataDTO.getMatriculaNacional());
+        doctorData.setMatriculaProvincial(doctorDataDTO.getMatriculaProvincial());
+        return doctorData;
+    }
 }

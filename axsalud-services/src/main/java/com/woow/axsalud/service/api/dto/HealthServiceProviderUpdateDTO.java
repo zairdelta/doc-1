@@ -7,5 +7,5 @@ public class HealthServiceProviderUpdateDTO {
  private UserUpdateDto userUpdateDto;
     private String welcomeMessage;
     private String dni;
-    private DoctorDataDTO doctorData;
+    private DoctorDataDTO doctorDataDTO;
 }
