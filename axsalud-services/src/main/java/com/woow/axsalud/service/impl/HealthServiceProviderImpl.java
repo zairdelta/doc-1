@@ -101,13 +101,20 @@ public class HealthServiceProviderImpl implements HealthServiceProvider {
                         userName, 402));
         axSaludWooUser.setDni(healthServiceProviderDTO.getDni());
         axSaludWooUser.setDoctorWelcomeMessage(healthServiceProviderDTO.getWelcomeMessage());
-        DoctorData doctorData = new DoctorData();
-        doctorData.setUniversity(healthServiceProviderDTO.getDoctorData().getUniversity());
-        doctorData.setLicenseNumber(healthServiceProviderDTO.getDoctorData().getLicenseNumber());
-        doctorData.setSpeciality(healthServiceProviderDTO.getDoctorData().getSpeciality());
-        doctorData.setMatriculaNacional(healthServiceProviderDTO.getDoctorData().getMatriculaNacional());
-        doctorData.setMatriculaProvincial(healthServiceProviderDTO.getDoctorData().getMatriculaProvincial());
-        axSaludWooUser.setDoctorData(doctorData);
+
+        if(axSaludWooUser.getDoctorData() == null) {
+            axSaludWooUser.setDoctorData(new DoctorData());
+        }
+
+        DoctorData doctorData = axSaludWooUser.getDoctorData();
+        doctorData.setUniversity(healthServiceProviderDTO.getDoctorDataDTO().getUniversity());
+        doctorData.setLicenseNumber(healthServiceProviderDTO.getDoctorDataDTO().getLicenseNumber());
+        doctorData.setSpeciality(healthServiceProviderDTO.getDoctorDataDTO().getSpeciality());
+        doctorData.setMatriculaNacional(healthServiceProviderDTO.getDoctorDataDTO().getMatriculaNacional());
+        doctorData.setMatriculaProvincial(healthServiceProviderDTO.getDoctorDataDTO().getMatriculaProvincial());
+
+        axSaludUserRepository.save(axSaludWooUser);
+
         return userName;
     }
 
