@@ -3,10 +3,7 @@ package com.woow.it;
 import com.woow.WoowBaseTest;
 import com.woow.axsalud.data.client.PatientAdditional;
 import com.woow.axsalud.data.client.PatientData;
-import com.woow.axsalud.service.api.dto.AxSaludUserDTO;
-import com.woow.axsalud.service.api.dto.AxSaludUserUpdateDTO;
-import com.woow.axsalud.service.api.dto.PatientDataUpdateDTO;
-import com.woow.axsalud.service.api.dto.PatientViewDTO;
+import com.woow.axsalud.service.api.dto.*;
 import com.woow.core.service.api.UserUpdateDto;
 import com.woow.it.data.UserFactory;
 import org.junit.jupiter.api.Assertions;
@@ -79,16 +76,15 @@ public class AxSaludUserControllerTest extends WoowBaseTest {
         ResponseEntity<PatientViewDTO> getResponse = restTemplate.exchange(
                 getBaseUrl() + "woo_user", HttpMethod.GET, getRequest, PatientViewDTO.class);
 
-        // Step 4: Assert returned user data
         Assertions.assertEquals(HttpStatus.OK, getResponse.getStatusCode());
-        Assertions.assertTrue(getResponse.getBody().getPatientData() != null);
+        Assertions.assertTrue(getResponse.getBody().getPatientDataDTO() != null);
 
 
     }
 
     @Test
     void testGetPatientInformationFromAuthenticatedUser() {
-        // Step 1: Create user
+
         AxSaludUserDTO axSaludUserDTO = UserFactory.anyUser();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -106,8 +102,82 @@ public class AxSaludUserControllerTest extends WoowBaseTest {
         ResponseEntity<PatientViewDTO> getResponse = restTemplate.exchange(
                 getBaseUrl() + "woo_user", HttpMethod.GET, getRequest, PatientViewDTO.class);
 
-        // Step 4: Assert returned user data
         Assertions.assertEquals(HttpStatus.OK, getResponse.getStatusCode());
+    }
+
+    @Test
+    void testUpdatePatientDataWithAdditionalUsers() {
+
+        AxSaludUserDTO axSaludUserDTO = UserFactory.anyUser();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<AxSaludUserDTO> createRequest = new HttpEntity<>(axSaludUserDTO, headers);
+
+        ResponseEntity<Void> createResponse = restTemplate.postForEntity(
+                getBaseUrl() + "woo_user/new", createRequest, Void.class);
+
+        Assertions.assertEquals(HttpStatus.OK, createResponse.getStatusCode());
+
+        // Step 2: Prepare the update DTO
+        AxSaludUserUpdateDTO updateDTO = new AxSaludUserUpdateDTO();
+
+        UserUpdateDto userUpdateDto = new UserUpdateDto();
+        userUpdateDto.setName("UpdatedName");
+        userUpdateDto.setLastName("UpdatedLastName");
+        userUpdateDto.setEmail(axSaludUserDTO.getUserDtoCreate().getEmail());
+        userUpdateDto.setUserName(axSaludUserDTO.getUserDtoCreate().getUserName());
+        userUpdateDto.setCity("UpdatedCity");
+        updateDTO.setUserUpdateDto(userUpdateDto);
+
+        // Prepare updated patient data
+        PatientDataUpdateDTO patientDataUpdateDTO = new PatientDataUpdateDTO();
+        PatientDataDTO patientDataDTO = new PatientDataDTO();
+        patientDataDTO.setHeight(180f);
+        patientDataDTO.setWeight(75f);
+        patientDataDTO.setPreexistences("Updated Preexistences");
+        patientDataDTO.setEmergencyContactName("Updated Emergency Contact");
+        patientDataDTO.setEmergencyContactNumber("9999999999");
+
+        // Include patient additional
+        PatientAdditionalDTO additional = new PatientAdditionalDTO();
+        additional.setName("Child1");
+        additional.setBirth(LocalDate.of(2010, 1, 1));
+        patientDataDTO.getPatientAdditionalSet().add(additional);
+
+        patientDataUpdateDTO.setPatientDataDTO(patientDataDTO);
+        updateDTO.setPatientDataUpdateDTO(patientDataUpdateDTO);
+
+        // Step 3: Send update
+        addAuthorizationHeader(axSaludUserDTO.getUserDtoCreate(), headers);
+        HttpEntity<AxSaludUserUpdateDTO> updateRequest = new HttpEntity<>(updateDTO, headers);
+
+        ResponseEntity<Void> updateResponse = restTemplate.exchange(
+                getBaseUrl() + "woo_user",
+                HttpMethod.PUT,
+                updateRequest,
+                Void.class
+        );
+
+        Assertions.assertEquals(HttpStatus.OK, updateResponse.getStatusCode());
+
+        // Step 4: Verify with GET
+        HttpEntity<Void> getRequest = new HttpEntity<>(headers);
+        ResponseEntity<PatientViewDTO> getResponse = restTemplate.exchange(
+                getBaseUrl() + "woo_user", HttpMethod.GET, getRequest, PatientViewDTO.class);
+
+        Assertions.assertEquals(HttpStatus.OK, getResponse.getStatusCode());
+
+        PatientViewDTO patientView = getResponse.getBody();
+        Assertions.assertNotNull(patientView);
+        Assertions.assertEquals("UpdatedName", patientView.getName());
+        Assertions.assertEquals("UpdatedCity", patientView.getCity());
+        Assertions.assertEquals(180f, patientView.getPatientDataDTO().getHeight());
+        Assertions.assertEquals("Updated Emergency Contact", patientView.getPatientDataDTO().getEmergencyContactName());
+
+        // Assert one patient additional entry
+        Assertions.assertFalse(patientView.getPatientDataDTO().getPatientAdditionalSet().isEmpty());
+        Assertions.assertEquals("Child1", patientView.getPatientDataDTO().getPatientAdditionalSet().get(0).getName());
     }
 
     @Test
@@ -134,11 +204,14 @@ public class AxSaludUserControllerTest extends WoowBaseTest {
         updateDTO.setUserUpdateDto(userUpdateDto);
 
         PatientDataUpdateDTO patientDataUpdateDTO = new PatientDataUpdateDTO();
-        patientDataUpdateDTO.setHeight(180f);
-        patientDataUpdateDTO.setWeight(75f);
-        patientDataUpdateDTO.setPreexistences("Updated Preexistences");
-        patientDataUpdateDTO.setEmergencyContactName("Updated Emergency Contact");
-        patientDataUpdateDTO.setEmergencyContactNumber("9999999999");
+        PatientDataDTO patientDataDTO = new PatientDataDTO();
+        patientDataDTO.setHeight(180f);
+        patientDataDTO.setWeight(75f);
+        patientDataDTO.setPreexistences("Updated Preexistences");
+        patientDataDTO.setEmergencyContactName("Updated Emergency Contact");
+        patientDataDTO.setEmergencyContactNumber("9999999999");
+        patientDataDTO.setAlcohol("Alcahol");
+        patientDataUpdateDTO.setPatientDataDTO(patientDataDTO);
         updateDTO.setPatientDataUpdateDTO(patientDataUpdateDTO);
 
         addAuthorizationHeader(axSaludUserDTO.getUserDtoCreate(), headers);
@@ -160,11 +233,11 @@ public class AxSaludUserControllerTest extends WoowBaseTest {
                 getBaseUrl() + "woo_user", HttpMethod.GET, getRequest, PatientViewDTO.class);
 
         Assertions.assertEquals(HttpStatus.OK, getResponse.getStatusCode());
+        Assertions.assertEquals("Alcahol", getResponse.getBody().getPatientDataDTO().getAlcohol());
         Assertions.assertEquals("UpdatedName", getResponse.getBody().getName());
         Assertions.assertEquals("UpdatedCity", getResponse.getBody().getCity());
-        Assertions.assertEquals(180f, getResponse.getBody().getPatientData().getHeight());
-        Assertions.assertEquals("Updated Emergency Contact", getResponse.getBody().getPatientData().getEmergencyContactName());
+        Assertions.assertEquals(180f, getResponse.getBody().getPatientDataDTO().getHeight());
+        Assertions.assertEquals("Updated Emergency Contact", getResponse.getBody().getPatientDataDTO().getEmergencyContactName());
     }
-
 
 }

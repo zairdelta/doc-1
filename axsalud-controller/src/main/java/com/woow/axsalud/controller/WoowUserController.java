@@ -3,10 +3,7 @@ package com.woow.axsalud.controller;
 import com.woow.axsalud.controller.exception.WooBoHttpError;
 import com.woow.axsalud.data.client.PatientData;
 import com.woow.axsalud.service.api.AxSaludService;
-import com.woow.axsalud.service.api.dto.AxSaludUserDTO;
-import com.woow.axsalud.service.api.dto.AxSaludUserUpdateDTO;
-import com.woow.axsalud.service.api.dto.ConsultationDTO;
-import com.woow.axsalud.service.api.dto.PatientViewDTO;
+import com.woow.axsalud.service.api.dto.*;
 import com.woow.core.service.api.exception.WooUserServiceException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -136,9 +133,9 @@ public class WoowUserController {
             @ApiResponse(responseCode = "301", description = "Forbidden")
     })
     public ResponseEntity<Void> addPatientData(@AuthenticationPrincipal UserDetails userDetails,
-                                               @RequestBody PatientData patientData) {
+                                               @RequestBody PatientDataDTO patientDataDTO) {
         try {
-            axSaludService.updatePatientData(userDetails.getUsername(), patientData);
+            axSaludService.updatePatientData(userDetails.getUsername(), patientDataDTO);
             return ResponseEntity.ok().build();
         } catch (WooUserServiceException e) {
             log.error("Error while updating patient data: {}", e.getMessage(), e);
@@ -160,7 +157,6 @@ public class WoowUserController {
                                  @AuthenticationPrincipal UserDetails userDetails) {
         String userName = userDetails.getUsername();
         try {
-            // captchaService.processResponse(request, gRecaptchaResponse);
             userName = axSaludService.update(userName, axSaludUserUpdateDTO);
         } catch (final WooUserServiceException e) {
             return WooBoHttpError.of(e).toResponseEntity();

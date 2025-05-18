@@ -601,6 +601,29 @@ public class ConsultationServiceImpl implements ConsultationService {
         consultationSession.getClosedBy().add(sender);
         consultationSessionRepository.save(consultationSession);
 
+        String patientUserName = consultationSession
+                .getConsultation()
+                .getPatient().getCoreUser().getUserName();
+        String doctorUserName = consultationSession.getDoctor().getCoreUser().getUserName();
+
+        String receiver = doctorUserName.equalsIgnoreCase(sender) ?
+                patientUserName : doctorUserName;
+
+        ConsultationMessageDTO endSessionMessageDTO = new ConsultationMessageDTO();
+        endSessionMessageDTO.setSender(patientUserName);
+        endSessionMessageDTO.setReceiver(receiver);
+        endSessionMessageDTO.setConsultationId(consultationId);
+        endSessionMessageDTO.setConsultationSessionId(consultationSession.getConsultationSessionId().toString());
+        endSessionMessageDTO.setContent(" ");
+        endSessionMessageDTO.setMessageType(ConsultationMessgeTypeEnum.SESSION_END);
+        addMessage(endSessionMessageDTO);
+
+        messagingTemplate.convertAndSendToUser(
+                receiver,
+                "/queue/messages",
+                endSessionMessageDTO
+        );
+
     }
 
     @Override

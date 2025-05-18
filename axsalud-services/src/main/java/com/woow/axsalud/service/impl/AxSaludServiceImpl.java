@@ -2,6 +2,7 @@ package com.woow.axsalud.service.impl;
 
 import com.woow.axsalud.common.AXSaludUserRoles;
 import com.woow.axsalud.data.client.AxSaludWooUser;
+import com.woow.axsalud.data.client.PatientAdditional;
 import com.woow.axsalud.data.client.PatientData;
 import com.woow.axsalud.data.client.WoowUserType;
 import com.woow.axsalud.data.consultation.Consultation;
@@ -23,9 +24,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -105,8 +105,13 @@ public class AxSaludServiceImpl implements AxSaludService {
 
         modelMapper.map(woowUser, patientViewDTO);
         modelMapper.map(axSaludWooUser, patientViewDTO);
+        PatientDataDTO patientDataDTO = new PatientDataDTO();
+
+        if(axSaludWooUser.getPatientData() != null) {
+            modelMapper.map(axSaludWooUser.getPatientData(), patientDataDTO);
+        }
         patientViewDTO.setDni(axSaludWooUser.getDni());
-        patientViewDTO.setPatientData(axSaludWooUser.getPatientData());
+        patientViewDTO.setPatientDataDTO(patientDataDTO);
 
         return patientViewDTO;
     }
@@ -166,32 +171,52 @@ public class AxSaludServiceImpl implements AxSaludService {
     }
 
     @Override
-    public void updatePatientData(String userName, PatientData patientData)
+    public void updatePatientData(String userName,
+                                  PatientDataDTO patientDataDTO)
             throws WooUserServiceException {
 
-        WoowUser woowUser =
-                woowUserRepository.findByUserName(userName);
+        if(patientDataDTO != null) {
 
-        if(woowUser == null) {
-            throw new WooUserServiceException("User Not found: " + userName, 404);
+            WoowUser woowUser =
+                    woowUserRepository.findByUserName(userName);
+
+            if (woowUser == null) {
+                throw new WooUserServiceException("User Not found: " + userName, 404);
+            }
+
+            Optional<AxSaludWooUser> axSaludWooUserOptional =
+                    axSaludUserRepository.findByCoreUser_UserId(woowUser.getUserId());
+
+            if (axSaludWooUserOptional.isEmpty()) {
+                throw new WooUserServiceException("User Not found, HID: " + userName, 404);
+            }
+
+            AxSaludWooUser axSaludWooUser = axSaludWooUserOptional.get();
+
+            PatientData existingPatientData = axSaludWooUser.getPatientData();
+
+            if (existingPatientData == null) {
+                PatientData newPatientData = new PatientData();
+                modelMapper.map(patientDataDTO, newPatientData);
+                axSaludWooUser.setPatientData(newPatientData);
+            } else {
+                modelMapper.map(patientDataDTO, existingPatientData);
+            }
+
+            axSaludWooUser.getPatientData().getPatientAdditionalSet().clear();
+
+            Set<PatientAdditional> patientAdditionals =
+                    patientDataDTO.getPatientAdditionalSet()
+                            .stream()
+                            .map(PatientAdditionalDTO::from)
+                            .collect(Collectors.toSet());
+            axSaludWooUser
+                    .getPatientData()
+                    .setPatientAdditionalSet(patientAdditionals);
+
+
+            axSaludUserRepository.save(axSaludWooUser);
         }
-
-        Optional<AxSaludWooUser> axSaludWooUserOptional =
-                axSaludUserRepository.findByCoreUser_UserId(woowUser.getUserId());
-
-        if(axSaludWooUserOptional.isEmpty()) {
-            throw new WooUserServiceException("User Not found, HID: " + userName, 404);
-        }
-
-        AxSaludWooUser axSaludWooUser = axSaludWooUserOptional.get();
-
-        patientData.setId(0);
-        PatientData patientDataNew = new PatientData();
-        modelMapper.map(patientData, patientDataNew);
-        log.info("patientData: {}", patientDataNew);
-        patientDataRepository.save(patientDataNew);
-        axSaludWooUser.setPatientData(patientDataNew);
-        axSaludUserRepository.save(axSaludWooUser);
     }
 
     @Override
@@ -204,12 +229,11 @@ public class AxSaludServiceImpl implements AxSaludService {
                 axSaludWooUserOptional.orElseThrow(() -> new WooUserServiceException("Error trying to update user: " +
                         userName, 402));
 
-        PatientData patientData = new PatientData();
-
-        modelMapper.map(axSaludUserUpdateDTO.getPatientDataUpdateDTO(), patientData);
-        patientDataRepository.save(patientData);
-        axSaludWooUser.setPatientData(patientData);
         axSaludWooUser.setDni(axSaludUserUpdateDTO.getDni());
+
+        updatePatientData(userName,axSaludUserUpdateDTO
+                .getPatientDataUpdateDTO().getPatientDataDTO());
+
         axSaludUserRepository.save(axSaludWooUser);
         return userName;
     }
