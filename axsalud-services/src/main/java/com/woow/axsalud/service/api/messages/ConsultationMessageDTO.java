@@ -8,15 +8,12 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class ConsultationMessageDTO {
-    private long id;
+public class ConsultationMessageDTO extends ConsultationEventDTO {
     private String sender;
     private String receiver;
     private String content;
     private String consultationId;
     private String consultationSessionId;
-    private LocalDateTime timeProcessed;
-    private ConsultationMessgeTypeEnum messageType;
 
     public static ConsultationMessageDTO from(ConsultationMessageEntity consultationMessageEntity) {
         ConsultationMessageDTO consultationMessageDTO = new ConsultationMessageDTO();

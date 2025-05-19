@@ -2,7 +2,6 @@ package com.woow.axsalud.data.consultation;
 
 import com.woow.axsalud.data.client.AxSaludWooUser;
 import com.woow.axsalud.data.client.WoowUserType;
-import com.woow.axsalud.data.consultation.Consultation;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

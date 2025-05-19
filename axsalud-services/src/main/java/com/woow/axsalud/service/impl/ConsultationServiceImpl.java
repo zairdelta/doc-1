@@ -203,7 +203,7 @@ public class ConsultationServiceImpl implements ConsultationService {
         consultationDTO.setCurrentSessionIdIfExists(consultationSession.getConsultationSessionId().toString());
 
         log.info("Sending consultationDTO to topic/new-patient: {}", consultationDTO);
-        messagingTemplate.convertAndSend("/topic/new-patient", consultationDTO);
+        messagingTemplate.convertAndSend("/topic/doctor-events", consultationDTO);
 
         return consultationDTO;
     }
