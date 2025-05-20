@@ -126,18 +126,17 @@ public class AxSaludUserControllerTest extends WoowBaseTest {
         userUpdateDto.setName("UpdatedName");
         userUpdateDto.setLastName("UpdatedLastName");
         userUpdateDto.setEmail(axSaludUserDTO.getUserDtoCreate().getEmail());
-        userUpdateDto.setUserName(axSaludUserDTO.getUserDtoCreate().getUserName());
         userUpdateDto.setCity("UpdatedCity");
         updateDTO.setUserUpdateDto(userUpdateDto);
 
         // Prepare updated patient data
         PatientDataUpdateDTO patientDataUpdateDTO = new PatientDataUpdateDTO();
         PatientDataDTO patientDataDTO = new PatientDataDTO();
-        patientDataDTO.setHeight(180f);
-        patientDataDTO.setWeight(75f);
+        patientDataDTO.setHeight(18000f);
+        patientDataDTO.setWeight(75000f);
         patientDataDTO.setPreexistences("Updated Preexistences");
         patientDataDTO.setEmergencyContactName("Updated Emergency Contact");
-        patientDataDTO.setEmergencyContactNumber("9999999999");
+        patientDataDTO.setEmergencyContactNumber("updated contact number 9999999999");
 
         // Include patient additional
         PatientAdditionalDTO additional = new PatientAdditionalDTO();
@@ -172,7 +171,7 @@ public class AxSaludUserControllerTest extends WoowBaseTest {
         Assertions.assertNotNull(patientView);
         Assertions.assertEquals("UpdatedName", patientView.getName());
         Assertions.assertEquals("UpdatedCity", patientView.getCity());
-        Assertions.assertEquals(180f, patientView.getPatientDataDTO().getHeight());
+        Assertions.assertEquals(18000f, patientView.getPatientDataDTO().getHeight());
         Assertions.assertEquals("Updated Emergency Contact", patientView.getPatientDataDTO().getEmergencyContactName());
 
         // Assert one patient additional entry
@@ -199,7 +198,6 @@ public class AxSaludUserControllerTest extends WoowBaseTest {
         userUpdateDto.setName("UpdatedName");
         userUpdateDto.setLastName("UpdatedLastName");
         userUpdateDto.setEmail(axSaludUserDTO.getUserDtoCreate().getEmail());  // keep the same
-        userUpdateDto.setUserName(axSaludUserDTO.getUserDtoCreate().getUserName()); // same
         userUpdateDto.setCity("UpdatedCity");
         updateDTO.setUserUpdateDto(userUpdateDto);
 

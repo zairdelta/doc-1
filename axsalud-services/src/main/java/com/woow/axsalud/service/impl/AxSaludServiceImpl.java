@@ -175,6 +175,7 @@ public class AxSaludServiceImpl implements AxSaludService {
                                   PatientDataDTO patientDataDTO)
             throws WooUserServiceException {
 
+        log.info("Saving patientData: {}, userName: {}", patientDataDTO, userName);
         if(patientDataDTO != null) {
 
             WoowUser woowUser =

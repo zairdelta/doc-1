@@ -10,7 +10,6 @@ public class UserUpdateDto {
 
     private Date birth;
     private String name;
-    private String userName;
     private String lastName;
     private String country;
     private String password;

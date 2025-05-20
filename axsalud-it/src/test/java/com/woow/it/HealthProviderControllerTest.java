@@ -63,7 +63,6 @@ public class HealthProviderControllerTest extends WoowBaseTest {
         userUpdateDto.setLastName("UpdatedLastName");
         userUpdateDto.setCity("UpdatedCity");
         userUpdateDto.setEmail(healthServiceProviderDTO.getUserDtoCreate().getEmail());
-        userUpdateDto.setUserName(healthServiceProviderDTO.getUserDtoCreate().getUserName());
         updateDTO.setUserUpdateDto(userUpdateDto);
 
         updateDTO.setWelcomeMessage("Welcome to my updated health service!");
