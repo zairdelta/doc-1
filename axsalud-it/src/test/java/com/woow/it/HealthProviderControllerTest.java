@@ -71,6 +71,8 @@ public class HealthProviderControllerTest extends WoowBaseTest {
         doctorDataDTO.setLicenseNumber("UPDATED-123");
         doctorDataDTO.setSpeciality("UpdatedSpeciality");
         doctorDataDTO.setUniversity("UpdatedUniversity");
+        doctorDataDTO.setMatriculaNacional("updatedMatriculaNacional");
+        doctorDataDTO.setMatriculaProvincial("updatedMatriculaProvinsial");
         updateDTO.setDoctorDataDTO(doctorDataDTO);
 
         // Step 3: Login as the new health provider user

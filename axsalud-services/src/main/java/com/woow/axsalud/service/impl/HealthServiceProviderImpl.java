@@ -147,6 +147,7 @@ public class HealthServiceProviderImpl implements HealthServiceProvider {
         dto.setDoctorData(DoctorDataDTO.from(axSaludWooUser.getDoctorData()));
         dto.setWelcomeMessage(axSaludWooUser.getDoctorWelcomeMessage());
         dto.setDni(axSaludWooUser.getDni());
+
         UserDtoCreate userDtoCreate = new UserDtoCreate();
         modelMapper.map(woowUser, userDtoCreate);
         dto.setUserDtoCreate(userDtoCreate);
