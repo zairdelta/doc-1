@@ -202,7 +202,7 @@ public class ConsultationServiceImpl implements ConsultationService {
         ConsultationDTO consultationDTO = modelMapper.map(consultation, ConsultationDTO.class);
         consultationDTO.setCurrentSessionIdIfExists(consultationSession.getConsultationSessionId().toString());
 
-        log.info("Sending consultationDTO to topic/new-patient: {}", consultationDTO);
+        log.info("Sending consultationDTO to topic/doctor-events: {}", consultationDTO);
         messagingTemplate.convertAndSend("/topic/doctor-events", consultationDTO);
 
         return consultationDTO;

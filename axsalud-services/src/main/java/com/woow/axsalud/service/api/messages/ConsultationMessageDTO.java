@@ -8,7 +8,8 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class ConsultationMessageDTO extends ConsultationEventDTO {
+public class ConsultationMessageDTO extends
+        ConsultationEventDTO<ConsultationMessageDTO> {
     private String sender;
     private String receiver;
     private String content;
