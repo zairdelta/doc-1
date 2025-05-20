@@ -22,7 +22,8 @@ public class WoowServiceConfiguration {
                 .setMatchingStrategy(org.modelmapper.convention.MatchingStrategies.STRICT);
 
         modelMapper.typeMap(UserUpdateDto.class, WoowUser.class)
-                .addMappings(mapper -> mapper.skip(WoowUser::setUserId));
+                .addMappings(mapper -> mapper.skip(WoowUser::setUserId))
+                .addMappings(mapper -> mapper.skip(WoowUser::setPassword));
 
 
         return modelMapper;
