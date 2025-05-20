@@ -90,6 +90,10 @@ public class HealthServiceProviderImpl implements HealthServiceProvider {
     public String update(String userName, HealthServiceProviderUpdateDTO healthServiceProviderDTO)
             throws WooUserServiceException {
 
+        if(healthServiceProviderDTO == null) {
+            throw new WooUserServiceException("healthServiceProviderUpdateDTO cannot be empty", 403);
+        }
+
         log.debug("Doctor userName to be updated: {}, new Data: {}", userName, healthServiceProviderDTO);
         WoowUser woowUser = wooWUserService.updateWooUserByUserName(userName, healthServiceProviderDTO.getUserUpdateDto());
 
@@ -106,12 +110,18 @@ public class HealthServiceProviderImpl implements HealthServiceProvider {
             axSaludWooUser.setDoctorData(new DoctorData());
         }
 
-        DoctorData doctorData = axSaludWooUser.getDoctorData();
-        doctorData.setUniversity(healthServiceProviderDTO.getDoctorDataDTO().getUniversity());
-        doctorData.setLicenseNumber(healthServiceProviderDTO.getDoctorDataDTO().getLicenseNumber());
-        doctorData.setSpeciality(healthServiceProviderDTO.getDoctorDataDTO().getSpeciality());
-        doctorData.setMatriculaNacional(healthServiceProviderDTO.getDoctorDataDTO().getMatriculaNacional());
-        doctorData.setMatriculaProvincial(healthServiceProviderDTO.getDoctorDataDTO().getMatriculaProvincial());
+        if(healthServiceProviderDTO.getDoctorDataDTO() != null) {
+            DoctorData doctorData = axSaludWooUser.getDoctorData();
+            if(doctorData == null) {
+                doctorData = new DoctorData();
+            }
+            doctorData.setUniversity(healthServiceProviderDTO.getDoctorDataDTO().getUniversity());
+            doctorData.setLicenseNumber(healthServiceProviderDTO.getDoctorDataDTO().getLicenseNumber());
+            doctorData.setSpeciality(healthServiceProviderDTO.getDoctorDataDTO().getSpeciality());
+            doctorData.setMatriculaNacional(healthServiceProviderDTO.getDoctorDataDTO().getMatriculaNacional());
+            doctorData.setMatriculaProvincial(healthServiceProviderDTO.getDoctorDataDTO().getMatriculaProvincial());
+            axSaludWooUser.setDoctorData(doctorData);
+        }
 
         axSaludUserRepository.save(axSaludWooUser);
 
@@ -137,6 +147,7 @@ public class HealthServiceProviderImpl implements HealthServiceProvider {
         dto.setDoctorData(DoctorDataDTO.from(axSaludWooUser.getDoctorData()));
         dto.setWelcomeMessage(axSaludWooUser.getDoctorWelcomeMessage());
         dto.setDni(axSaludWooUser.getDni());
+
         UserDtoCreate userDtoCreate = new UserDtoCreate();
         modelMapper.map(woowUser, userDtoCreate);
         dto.setUserDtoCreate(userDtoCreate);

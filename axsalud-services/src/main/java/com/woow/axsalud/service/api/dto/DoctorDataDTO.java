@@ -16,8 +16,8 @@ public class DoctorDataDTO {
         doctorDataDTO.setUniversity(doctorData.getUniversity());
         doctorDataDTO.setLicenseNumber(doctorData.getLicenseNumber());
         doctorDataDTO.setSpeciality(doctorData.getSpeciality());
-        doctorDataDTO.setMatriculaNacional(doctorDataDTO.getMatriculaNacional());
-        doctorDataDTO.setMatriculaProvincial(doctorDataDTO.getMatriculaProvincial());
+        doctorDataDTO.setMatriculaNacional(doctorData.getMatriculaNacional());
+        doctorDataDTO.setMatriculaProvincial(doctorData.getMatriculaProvincial());
         return doctorDataDTO;
     }
 

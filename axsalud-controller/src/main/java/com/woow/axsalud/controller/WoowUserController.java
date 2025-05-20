@@ -1,7 +1,6 @@
 package com.woow.axsalud.controller;
 
 import com.woow.axsalud.controller.exception.WooBoHttpError;
-import com.woow.axsalud.data.client.PatientData;
 import com.woow.axsalud.service.api.AxSaludService;
 import com.woow.axsalud.service.api.dto.*;
 import com.woow.core.service.api.exception.WooUserServiceException;
