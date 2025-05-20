@@ -110,13 +110,17 @@ public class HealthServiceProviderImpl implements HealthServiceProvider {
             axSaludWooUser.setDoctorData(new DoctorData());
         }
 
-        if(healthServiceProviderDTO.getDoctorDataDTO() == null) {
+        if(healthServiceProviderDTO.getDoctorDataDTO() != null) {
             DoctorData doctorData = axSaludWooUser.getDoctorData();
+            if(doctorData == null) {
+                doctorData = new DoctorData();
+            }
             doctorData.setUniversity(healthServiceProviderDTO.getDoctorDataDTO().getUniversity());
             doctorData.setLicenseNumber(healthServiceProviderDTO.getDoctorDataDTO().getLicenseNumber());
             doctorData.setSpeciality(healthServiceProviderDTO.getDoctorDataDTO().getSpeciality());
             doctorData.setMatriculaNacional(healthServiceProviderDTO.getDoctorDataDTO().getMatriculaNacional());
             doctorData.setMatriculaProvincial(healthServiceProviderDTO.getDoctorDataDTO().getMatriculaProvincial());
+            axSaludWooUser.setDoctorData(doctorData);
         }
 
         axSaludUserRepository.save(axSaludWooUser);
