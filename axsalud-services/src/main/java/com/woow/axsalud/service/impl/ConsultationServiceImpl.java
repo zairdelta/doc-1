@@ -6,6 +6,7 @@ import com.woow.axsalud.data.repository.*;
 import com.woow.axsalud.service.api.ConsultationService;
 import com.woow.axsalud.service.api.dto.*;
 import com.woow.axsalud.service.api.exception.ConsultationServiceException;
+import com.woow.axsalud.service.api.messages.ConsultationEventDTO;
 import com.woow.axsalud.service.api.messages.ConsultationMessageDTO;
 import com.woow.core.data.repository.WoowUserRepository;
 import com.woow.core.data.user.WoowUser;
@@ -74,27 +75,48 @@ public class ConsultationServiceImpl implements ConsultationService {
     @Override
     @Transactional
     public void handledConsultationMessage(final ConsultationMessageDTO consultationMessage) {
+
+        long eventId = 0;
         try {
             log.debug("Validating Message: {}", consultationMessage);
             validateOnSend(consultationMessage);
             validate(consultationMessage.getConsultationId(),
                     consultationMessage.getConsultationSessionId(),
                     consultationMessage.getReceiver(), consultationMessage.getSender());
-            addMessage(consultationMessage);
+            eventId = addMessage(consultationMessage);
+
+            ConsultationEventDTO<ConsultationMessageDTO> consultationEventDTO = new ConsultationEventDTO<>();
+            consultationEventDTO.setMessageType(ConsultationMessgeTypeEnum.ERROR);
+            consultationEventDTO.setTimeProcessed(LocalDateTime.now());
+            consultationEventDTO.setPayload(consultationMessage);
+            consultationEventDTO.setId(eventId);
+
+            messagingTemplate.convertAndSendToUser(
+                    consultationMessage.getReceiver(),
+                    "/queue/messages",
+                    consultationEventDTO
+            );
+
         } catch (ConsultationServiceException e) {
 
+            log.error("Error Sending consultationMessage DTO: {}", e.getMessage());
             ConsultationMessageDTO errorMessage = new ConsultationMessageDTO();
             errorMessage.setConsultationId(consultationMessage.getConsultationId());
             errorMessage.setSender(SYSTEM_USER);
             errorMessage.setReceiver(consultationMessage.getSender());
             errorMessage.setContent("❌ Failed to send message: " + e.getMessage());
-            errorMessage.setMessageType(ConsultationMessgeTypeEnum.ERROR);
+
+            ConsultationEventDTO<ConsultationMessageDTO> consultationEventDTO = new ConsultationEventDTO<>();
+            consultationEventDTO.setMessageType(ConsultationMessgeTypeEnum.ERROR);
+            consultationEventDTO.setTimeProcessed(LocalDateTime.now());
+            consultationEventDTO.setPayload(errorMessage);
 
             log.error("Error validating or adding message for consultationMessage: {}, errorMessage:{}, reporting to system user: {}",
                     consultationMessage, errorMessage, SYSTEM_USER);
 
             try {
-                addMessage(errorMessage);
+                eventId = addMessage(errorMessage);
+                consultationEventDTO.setId(eventId);
             } catch (ConsultationServiceException ex) {
                 log.error("There was an error processing errorMessage: {}", e.getMessage());
             }
@@ -102,14 +124,10 @@ public class ConsultationServiceImpl implements ConsultationService {
             messagingTemplate.convertAndSendToUser(
                     consultationMessage.getSender(),
                     "/queue/errors",
-                    errorMessage
+                    consultationEventDTO
             );
         }
-        messagingTemplate.convertAndSendToUser(
-                consultationMessage.getReceiver(),
-                "/queue/messages",
-                consultationMessage
-        );
+
     }
 
     private void validateOnSend(final ConsultationMessageDTO consultationMessage) throws ConsultationServiceException {
@@ -152,8 +170,6 @@ public class ConsultationServiceImpl implements ConsultationService {
 
         consultation.getSessions().add(consultationSession);
 
-
-
         consultation = consultationRepository.save(consultation);
 
         ConsultationDTO consultationDTO = ConsultationDTO.from(consultation);
@@ -162,9 +178,17 @@ public class ConsultationServiceImpl implements ConsultationService {
         consultationDTO.setCurrentSessionIdIfExists(consultationSession.getConsultationSessionId().toString());
         consultationDTO.setConsultationId(consultation.getConsultationId().toString());
         consultation.setCurrentSessionIdIfExists(consultationSession.getConsultationSessionId().toString());
+
         consultationRepository.save(consultation);
-        log.info("Sending consultationDTO to topic/new-patient: {}", consultationDTO);
-        messagingTemplate.convertAndSend("/topic/new-patient", consultationDTO);
+
+        ConsultationEventDTO<ConsultationDTO> consultationEventDTO = new ConsultationEventDTO<>();
+        consultationEventDTO.setMessageType(ConsultationMessgeTypeEnum.NEW_CONSULTATION_CREATED);
+        consultationEventDTO.setTimeProcessed(LocalDateTime.now());
+        consultationEventDTO.setPayload(consultationDTO);
+        consultationEventDTO.setId(0);
+
+        log.info("Sending consultationDTO to topic/new-patient: {}", consultationEventDTO);
+        messagingTemplate.convertAndSend("/topic/doctor-events", consultationEventDTO);
 
         return consultationDTO;
     }
@@ -324,31 +348,39 @@ public class ConsultationServiceImpl implements ConsultationService {
         consultationDTO.setCurrentSessionIdIfExists(consultationSessionId);
         consultationDTO.setConsultationId(consultation.getConsultationId().toString());
 
+        ConsultationEventDTO<ConsultationMessageDTO> consultationEventDTO = new ConsultationEventDTO<>();
+        consultationEventDTO.setMessageType(ConsultationMessgeTypeEnum.WELCOME);
+        consultationEventDTO.setTimeProcessed(LocalDateTime.now());
+
+
         ConsultationMessageDTO welcomeMessage = new ConsultationMessageDTO();
         welcomeMessage.setSender(doctor);
         welcomeMessage.setReceiver(consultationDTO.getPatient());
         welcomeMessage.setConsultationId(consultationId);
         welcomeMessage.setConsultationSessionId(consultationSession.getConsultationSessionId().toString());
         welcomeMessage.setContent("👋 " + consultationDTO.getWelcomeMessage());
-        welcomeMessage.setMessageType(ConsultationMessgeTypeEnum.WELCOME);
 
         log.info("Sending Welcome message:{} ", welcomeMessage);
-        addMessage(welcomeMessage);
+        long eventId = addMessage(welcomeMessage);
+        consultationEventDTO.setId(eventId);
+        consultationEventDTO.setPayload(welcomeMessage);
 
         messagingTemplate.convertAndSendToUser(
                 consultationDTO.getPatient(),
                 "/queue/messages",
-                welcomeMessage
+                consultationEventDTO
         );
 
         consultationRepository.save(consultation);
 
+        consultationEventDTO.setMessageType(ConsultationMessgeTypeEnum.CONSULTATION_ASSIGNED);
+        log.info("new consultationDTO assigned to topic/doctor-events: {}", consultationEventDTO);
+        messagingTemplate.convertAndSend("/topic/doctor-events", consultationEventDTO);
         return consultationDTO;
-
     }
 
     @Override
-    public void addMessage(ConsultationMessageDTO consultationMessage) throws ConsultationServiceException {
+    public long addMessage(ConsultationMessageDTO consultationMessage) throws ConsultationServiceException {
 
         log.info("AddMessage received at service layer: {}", consultationMessage);
         ConsultationSession consultationSession =
@@ -375,7 +407,7 @@ public class ConsultationServiceImpl implements ConsultationService {
 
         consultationMessageRepository.save(consultationMessageEntity);
         consultationSession.getMessages().add(consultationMessageEntity);
-        consultationSessionRepository.save(consultationSession);
+        return consultationSessionRepository.save(consultationSession).getId();
     }
 
     @Override
@@ -429,9 +461,9 @@ public class ConsultationServiceImpl implements ConsultationService {
             fileResponseDTO.setConsultationSessionId(consultationSessionId);
             fileResponseDTO.setConsultationId(
                     consultationSession.getConsultation().getConsultationId().toString());
-            ConsultationMessageDTO consultationMessageDTO =
+            ConsultationEventDTO<ConsultationMessageDTO> consultationMessageDTO =
                     ConsultationMessageDTO.from(fileResponseDTO, userName);
-            addMessage(consultationMessageDTO);
+            addMessage(consultationMessageDTO.getPayload());
             return fileResponseDTO;
         } catch (StorageServiceException e) {
             throw new ConsultationServiceException(e.getMessage(), 301);
@@ -615,14 +647,23 @@ public class ConsultationServiceImpl implements ConsultationService {
         endSessionMessageDTO.setConsultationId(consultationId);
         endSessionMessageDTO.setConsultationSessionId(consultationSession.getConsultationSessionId().toString());
         endSessionMessageDTO.setContent(" ");
-        endSessionMessageDTO.setMessageType(ConsultationMessgeTypeEnum.SESSION_END);
-        addMessage(endSessionMessageDTO);
+
+
+        long eventId = addMessage(endSessionMessageDTO);
+
+        ConsultationEventDTO<ConsultationMessageDTO> consultationEventDTO = new ConsultationEventDTO<>();
+        consultationEventDTO.setMessageType(ConsultationMessgeTypeEnum.SESSION_END);
+        consultationEventDTO.setTimeProcessed(LocalDateTime.now());
+        consultationEventDTO.setPayload(endSessionMessageDTO);
+        consultationEventDTO.setId(eventId);
 
         messagingTemplate.convertAndSendToUser(
                 receiver,
                 "/queue/messages",
-                endSessionMessageDTO
+                consultationEventDTO
         );
+
+        messagingTemplate.convertAndSend("/topic/doctor-events", consultationEventDTO);
 
     }
 

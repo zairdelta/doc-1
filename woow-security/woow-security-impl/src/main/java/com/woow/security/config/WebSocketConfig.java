@@ -81,8 +81,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                             return null;
 
                         }}})
-                .setAllowedOriginPatterns("*")
-                .withSockJS();
+                .setAllowedOriginPatterns("*");
+              //  .withSockJS();
     }
 
     @Bean
@@ -115,7 +115,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
 
-        config.enableStompBrokerRelay("/topic", "/queue") // Estos destinos serán enviados al broker externo (RabbitMQ)
+        config.enableStompBrokerRelay("/topic", "/queue")
                 .setRelayHost(rabbitMQStompBrokerProperties.getRelayHost())
                 .setRelayPort(rabbitMQStompBrokerProperties.getRelayPort())
                 .setClientLogin(rabbitMQStompBrokerProperties.getClientLogin())

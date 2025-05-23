@@ -19,7 +19,7 @@ public interface ConsultationService {
     void validate(String consultationId, String consultationSessionId,
                   String receiver, String sender) throws ConsultationServiceException;
     ConsultationDTO assign(String doctor, String consultationId, String consultationSessionId) throws ConsultationServiceException;
-    void addMessage(ConsultationMessageDTO consultationMessage)
+    long addMessage(ConsultationMessageDTO consultationMessage)
             throws ConsultationServiceException;
 
     FileResponseDTO appendDocument(String userName, String consultationSessionId, MultipartFile file) throws ConsultationServiceException;

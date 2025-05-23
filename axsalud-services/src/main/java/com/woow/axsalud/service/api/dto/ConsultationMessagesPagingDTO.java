@@ -1,5 +1,6 @@
 package com.woow.axsalud.service.api.dto;
 
+import com.woow.axsalud.service.api.messages.ConsultationEventDTO;
 import com.woow.axsalud.service.api.messages.ConsultationMessageDTO;
 import lombok.Data;
 
@@ -8,7 +9,7 @@ import java.util.List;
 
 @Data
 public class ConsultationMessagesPagingDTO {
-    private List<ConsultationMessageDTO> messages = new ArrayList();
+    private List<ConsultationEventDTO> messages = new ArrayList();
     private long totalElements;
     private long totalPages;
 

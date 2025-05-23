@@ -2,6 +2,7 @@ package com.woow.axsalud.service.api.dto;
 
 import com.woow.axsalud.data.consultation.ConsultationSession;
 import com.woow.axsalud.data.consultation.ConsultationSessionStatus;
+import com.woow.axsalud.service.api.messages.ConsultationEventDTO;
 import com.woow.axsalud.service.api.messages.ConsultationMessageDTO;
 import lombok.Data;
 
@@ -21,7 +22,7 @@ public class ConsultationSessionIdDTO {
     private LocalDateTime startAt;
     private LocalDateTime finishedAt;
     private ConsultationSessionStatus status;
-    private List<ConsultationMessageDTO> messages = new ArrayList<>();
+    private List<ConsultationEventDTO> messages = new ArrayList<>();
     private List<ConsultationDocumentDTO> consultationDocumentDTOS = new ArrayList<>();
     private List<LaboratoryPrescriptionDTO> laboratoryPrescriptionDTO = new ArrayList<>();
     private List<DoctorPrescriptionDTO> doctorPrescriptionDTO = new ArrayList<>();

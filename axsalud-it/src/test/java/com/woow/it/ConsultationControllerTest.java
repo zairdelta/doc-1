@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.woow.WoowBaseTest;
 import com.woow.axsalud.common.WoowConstants;
 import com.woow.axsalud.service.api.dto.*;
+import com.woow.axsalud.service.api.messages.ConsultationEventDTO;
 import com.woow.axsalud.service.api.messages.ConsultationMessageDTO;
 import com.woow.it.data.HealthProviderFactory;
 import com.woow.it.data.UserFactory;
@@ -141,7 +142,7 @@ public class ConsultationControllerTest extends WoowBaseTest {
         WebSocketStompClient stompClient = new WebSocketStompClient(standardWebSocketClient);
         stompClient.setMessageConverter(new MappingJackson2MessageConverter());
 
-        BlockingQueue<ConsultationMessageDTO> patientQueue = new ArrayBlockingQueue<>(5);
+        BlockingQueue<ConsultationEventDTO> patientQueue = new ArrayBlockingQueue<>(5);
 
         CompletableFuture<StompSession> futureSession = stompClient
                 .connectAsync(WS_URI, httpHeaders, connectPatientnHeaders, sessionHandler);
@@ -151,12 +152,12 @@ public class ConsultationControllerTest extends WoowBaseTest {
         session.subscribe("/user/queue/messages", new StompFrameHandler() {
             @Override
             public Type getPayloadType(StompHeaders headers) {
-                return ConsultationMessageDTO.class;
+                return ConsultationEventDTO.class;
             }
 
             @Override
             public void handleFrame(StompHeaders headers, Object payload) {
-                patientQueue.offer((ConsultationMessageDTO) payload);
+                patientQueue.offer((ConsultationEventDTO) payload);
             }
         });
 
@@ -211,17 +212,17 @@ public class ConsultationControllerTest extends WoowBaseTest {
                 .connectAsync(WS_URI, doctorHeaders, doctorStompHeaders, doctorSessionHandler);
         StompSession doctorSession = futureDoctorSession.get(100, TimeUnit.SECONDS);
 
-        BlockingQueue<ConsultationMessageDTO> doctorMessages = new ArrayBlockingQueue<>(5);
+        BlockingQueue<ConsultationEventDTO> doctorMessages = new ArrayBlockingQueue<>(5);
 
         doctorSession.subscribe("/user/queue/messages", new StompFrameHandler() {
             @Override
             public Type getPayloadType(StompHeaders headers) {
-                return ConsultationMessageDTO.class;
+                return ConsultationEventDTO.class;
             }
 
             @Override
             public void handleFrame(StompHeaders headers, Object payload) {
-                doctorMessages.offer((ConsultationMessageDTO) payload);
+                doctorMessages.offer((ConsultationEventDTO) payload);
             }
         });
 
@@ -270,20 +271,20 @@ public class ConsultationControllerTest extends WoowBaseTest {
 
         Thread.sleep(5000);
 
-        List<ConsultationMessageDTO> patientMessagesList = new ArrayList<>();
+        List<ConsultationEventDTO> patientMessagesList = new ArrayList<>();
         patientQueue.drainTo(patientMessagesList, 10);
 
-        List<ConsultationMessageDTO> doctorMessagesList = new ArrayList<>();
+        List<ConsultationEventDTO> doctorMessagesList = new ArrayList<>();
         doctorMessages.drainTo(doctorMessagesList, 10);
 
         patientMessagesList.stream()
-                .anyMatch(msg -> "WELCOME".equalsIgnoreCase(msg.getContent()));
+                .anyMatch(msg -> "WELCOME".equalsIgnoreCase(((ConsultationMessageDTO)msg.getPayload()).getContent()));
         doctorMessagesList.stream()
-                .anyMatch(msg -> "Hello from patient".equalsIgnoreCase(msg.getContent()));
+                .anyMatch(msg -> "Hello from patient".equalsIgnoreCase(((ConsultationMessageDTO)msg.getPayload()).getContent()));
 
 
-        patientMessagesList.forEach(consultationMessage -> System.out.println("PatientMessages: " + consultationMessage.getContent()));
-        doctorMessagesList.forEach(consultationMessage -> System.out.println("Doctor Messages: " + consultationMessage.getContent()));
+        patientMessagesList.forEach(consultationMessage -> System.out.println("PatientMessages: " + consultationMessage.getPayload()));
+        doctorMessagesList.forEach(consultationMessage -> System.out.println("Doctor Messages: " + consultationMessage.getPayload()));
 
     }
 
