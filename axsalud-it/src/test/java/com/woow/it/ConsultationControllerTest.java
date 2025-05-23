@@ -1,6 +1,8 @@
 package com.woow.it;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.woow.WoowBaseTest;
 import com.woow.axsalud.common.WoowConstants;
 import com.woow.axsalud.service.api.dto.*;
@@ -13,23 +15,20 @@ import org.apache.hc.core5.ssl.TrustStrategy;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.*;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.simp.stomp.*;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
 
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.socket.sockjs.client.SockJsClient;
-import org.springframework.web.socket.sockjs.client.Transport;
-import org.springframework.web.socket.sockjs.client.WebSocketTransport;
-
-import javax.net.ssl.*;
+import javax.net.ssl.SSLContext;
 import java.io.File;
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -80,6 +79,7 @@ public class ConsultationControllerTest extends WoowBaseTest {
 
     }
 
+
     @Test
     void shouldReceivePrivateMessage() throws Exception {
 
@@ -115,7 +115,7 @@ public class ConsultationControllerTest extends WoowBaseTest {
         System.out.println("JWT_TOKEN_PATIENT: " + JWT_TOKEN_PATIENT);
 
         StompHeaders connectPatientnHeaders = new StompHeaders();
-       // connectPatientnHeaders.add(WoowConstants.AUTHORIZATION_HEADER, JWT_TOKEN_PATIENT);
+        // connectPatientnHeaders.add(WoowConstants.AUTHORIZATION_HEADER, JWT_TOKEN_PATIENT);
 
         WebSocketHttpHeaders httpHeaders = new WebSocketHttpHeaders();
         httpHeaders.add(WoowConstants.AUTHORIZATION_HEADER, JWT_TOKEN_PATIENT);
@@ -142,7 +142,7 @@ public class ConsultationControllerTest extends WoowBaseTest {
         WebSocketStompClient stompClient = new WebSocketStompClient(standardWebSocketClient);
         stompClient.setMessageConverter(new MappingJackson2MessageConverter());
 
-        BlockingQueue<ConsultationEventDTO> patientQueue = new ArrayBlockingQueue<>(5);
+        BlockingQueue<ConsultationMessageDTO> patientQueue = new ArrayBlockingQueue<>(5);
 
         CompletableFuture<StompSession> futureSession = stompClient
                 .connectAsync(WS_URI, httpHeaders, connectPatientnHeaders, sessionHandler);
@@ -152,12 +152,31 @@ public class ConsultationControllerTest extends WoowBaseTest {
         session.subscribe("/user/queue/messages", new StompFrameHandler() {
             @Override
             public Type getPayloadType(StompHeaders headers) {
-                return ConsultationEventDTO.class;
+                return Object.class;
             }
 
             @Override
             public void handleFrame(StompHeaders headers, Object payload) {
-                patientQueue.offer((ConsultationEventDTO) payload);
+
+                try {
+                    ObjectMapper mapper = new ObjectMapper();
+                    mapper.registerModule(new JavaTimeModule());
+
+                    // Raw JSON string (only if Spring gave you a byte[])
+                    String json = new String((byte[]) payload, StandardCharsets.UTF_8);
+
+                    ConsultationEventDTO<ConsultationMessageDTO> event =
+                            mapper.readValue(json, new TypeReference<ConsultationEventDTO<ConsultationMessageDTO>>() {});
+
+                    System.out.println("Deserialized message: " + event.getPayload().getContent());
+                    // Add to your queue or process further
+                    patientQueue.offer(event.getPayload());
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Assertions.fail("Failed to deserialize WebSocket message: " + e.getMessage());
+                }
+
             }
         });
 
@@ -200,7 +219,7 @@ public class ConsultationControllerTest extends WoowBaseTest {
         System.out.println("DOCTOR: " + JWT_TOKEN_DOCTOR);
 
         StompHeaders doctorStompHeaders = new StompHeaders();
-       // doctorStompHeaders.add(WoowConstants.AUTHORIZATION_HEADER, JWT_TOKEN_DOCTOR);
+        // doctorStompHeaders.add(WoowConstants.AUTHORIZATION_HEADER, JWT_TOKEN_DOCTOR);
 
         WebSocketHttpHeaders doctorHeaders = new WebSocketHttpHeaders();
         doctorHeaders.add(WoowConstants.AUTHORIZATION_HEADER, JWT_TOKEN_DOCTOR);
@@ -212,17 +231,35 @@ public class ConsultationControllerTest extends WoowBaseTest {
                 .connectAsync(WS_URI, doctorHeaders, doctorStompHeaders, doctorSessionHandler);
         StompSession doctorSession = futureDoctorSession.get(100, TimeUnit.SECONDS);
 
-        BlockingQueue<ConsultationEventDTO> doctorMessages = new ArrayBlockingQueue<>(5);
+        BlockingQueue<ConsultationMessageDTO> doctorMessages = new ArrayBlockingQueue<>(5);
 
         doctorSession.subscribe("/user/queue/messages", new StompFrameHandler() {
             @Override
             public Type getPayloadType(StompHeaders headers) {
-                return ConsultationEventDTO.class;
+                return Object.class;
             }
 
             @Override
             public void handleFrame(StompHeaders headers, Object payload) {
-                doctorMessages.offer((ConsultationEventDTO) payload);
+
+                try {
+                    ObjectMapper mapper = new ObjectMapper();
+                    mapper.registerModule(new JavaTimeModule());
+
+                    // Raw JSON string (only if Spring gave you a byte[])
+                    String json = new String((byte[]) payload, StandardCharsets.UTF_8);
+
+                    ConsultationEventDTO<ConsultationMessageDTO> event =
+                            mapper.readValue(json, new TypeReference<ConsultationEventDTO<ConsultationMessageDTO>>() {});
+
+                    System.out.println("Deserialized message: " + event.getPayload().getContent());
+                    // Add to your queue or process further
+                    doctorMessages.offer(event.getPayload());
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Assertions.fail("Failed to deserialize WebSocket message: " + e.getMessage());
+                }
             }
         });
 
@@ -271,20 +308,20 @@ public class ConsultationControllerTest extends WoowBaseTest {
 
         Thread.sleep(5000);
 
-        List<ConsultationEventDTO> patientMessagesList = new ArrayList<>();
+        List<ConsultationMessageDTO> patientMessagesList = new ArrayList<>();
         patientQueue.drainTo(patientMessagesList, 10);
 
-        List<ConsultationEventDTO> doctorMessagesList = new ArrayList<>();
+        List<ConsultationMessageDTO> doctorMessagesList = new ArrayList<>();
         doctorMessages.drainTo(doctorMessagesList, 10);
 
         patientMessagesList.stream()
-                .anyMatch(msg -> "WELCOME".equalsIgnoreCase(((ConsultationMessageDTO)msg.getPayload()).getContent()));
+                .anyMatch(msg -> "WELCOME".equalsIgnoreCase(msg.getContent()));
         doctorMessagesList.stream()
-                .anyMatch(msg -> "Hello from patient".equalsIgnoreCase(((ConsultationMessageDTO)msg.getPayload()).getContent()));
+                .anyMatch(msg -> "Hello from patient".equalsIgnoreCase(msg.getContent()));
 
 
-        patientMessagesList.forEach(consultationMessage -> System.out.println("PatientMessages: " + consultationMessage.getPayload()));
-        doctorMessagesList.forEach(consultationMessage -> System.out.println("Doctor Messages: " + consultationMessage.getPayload()));
+        patientMessagesList.forEach(consultationMessage -> System.out.println("PatientMessages: " + consultationMessage.getContent()));
+        doctorMessagesList.forEach(consultationMessage -> System.out.println("Doctor Messages: " + consultationMessage.getContent()));
 
     }
 

@@ -86,7 +86,7 @@ public class ConsultationServiceImpl implements ConsultationService {
             eventId = addMessage(consultationMessage);
 
             ConsultationEventDTO<ConsultationMessageDTO> consultationEventDTO = new ConsultationEventDTO<>();
-            consultationEventDTO.setMessageType(ConsultationMessgeTypeEnum.ERROR);
+            consultationEventDTO.setMessageType(ConsultationMessgeTypeEnum.TEXT_MESSAGE);
             consultationEventDTO.setTimeProcessed(LocalDateTime.now());
             consultationEventDTO.setPayload(consultationMessage);
             consultationEventDTO.setId(eventId);
@@ -187,7 +187,7 @@ public class ConsultationServiceImpl implements ConsultationService {
         consultationEventDTO.setPayload(consultationDTO);
         consultationEventDTO.setId(0);
 
-        log.info("Sending consultationDTO to topic/new-patient: {}", consultationEventDTO);
+        log.info("Sending consultationDTO to topic/doctor-events: {}", consultationEventDTO);
         messagingTemplate.convertAndSend("/topic/doctor-events", consultationEventDTO);
 
         return consultationDTO;

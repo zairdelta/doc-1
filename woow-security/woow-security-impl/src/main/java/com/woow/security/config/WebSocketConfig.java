@@ -81,8 +81,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                             return null;
 
                         }}})
-                .setAllowedOriginPatterns("*");
-              //  .withSockJS();
+                .setAllowedOriginPatterns("*")
+                .withSockJS();
     }
 
     @Bean
@@ -112,7 +112,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         return new ReactorNettyTcpClient<>(client -> sslClient, new StompReactorNettyCodec());
     }
 
-    @Override
+ /*   @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
 
         config.enableStompBrokerRelay("/topic", "/queue")
@@ -126,6 +126,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
         config.setApplicationDestinationPrefixes("/app");
         config.setUserDestinationPrefix("/user");
+    }*/
+
+    @Override
+    public void configureMessageBroker(MessageBrokerRegistry registry) {
+        registry.setApplicationDestinationPrefixes("/app");
+        registry.enableSimpleBroker("/queue", "/topic");
     }
 
     @Override
