@@ -19,7 +19,6 @@ public class WebSocketObservabilityServiceImpl implements WebSocketObservability
 
     }
     @Override
-    @Scheduled(fixedRate = 2000)
     public void logConnectedSessions() {
         for (SimpUser user : simpUserRegistry.getUsers()) {
             log.debug("User: {}", user.getName());
