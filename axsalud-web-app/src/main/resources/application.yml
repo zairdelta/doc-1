@@ -80,11 +80,12 @@ stomp:
   broker:
     relay-host: 0rbjt9.stackhero-network.com
     relay-port: 63338
+    admin-port: 5909
     client-login: admin
     client-passcode: 9KLwnaP17gIdi8CoDetZIlHMgaaVxkqf
     system-login: admin
     system-passcode: 9KLwnaP17gIdi8CoDetZIlHMgaaVxkqf
     max-connections: 10
-    pending-acquire-max-count: -1 #infinite
+    pending-acquire-max-count: -1
     pending-acquire-timeout-in-seconds: 30
     connection-pool-name: rabbitmq-pool

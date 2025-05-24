@@ -116,6 +116,7 @@ stomp:
   broker:
     relay-host: 0rbjt9.stackhero-network.com
     relay-port: 63338
+    admin-port: 5909
     client-login: admin
     client-passcode: 9KLwnaP17gIdi8CoDetZIlHMgaaVxkqf
     system-login: admin

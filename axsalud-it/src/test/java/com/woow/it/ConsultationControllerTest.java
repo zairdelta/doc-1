@@ -323,6 +323,8 @@ public class ConsultationControllerTest extends WoowBaseTest {
         patientMessagesList.forEach(consultationMessage -> System.out.println("PatientMessages: " + consultationMessage.getContent()));
         doctorMessagesList.forEach(consultationMessage -> System.out.println("Doctor Messages: " + consultationMessage.getContent()));
 
+        session.disconnect();
+        doctorSession.disconnect();
     }
 
     @Test

@@ -1,6 +1,6 @@
-package com.woow.security.config;
+package com.woow.security;
 
-import com.woow.security.config.interceptor.JwtWebSocketInterceptor;
+import com.woow.security.interceptor.JwtWebSocketInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

@@ -1,8 +1,9 @@
-package com.woow.security.config;
+package com.woow.security;
 
 import com.woow.security.api.JwtTokenUtil;
-import com.woow.security.config.interceptor.JwtWebSocketInterceptor;
-import com.woow.security.config.interceptor.OutBoundIInterceptor;
+import com.woow.security.rabbitmq.RabbitMQStompBrokerProperties;
+import com.woow.security.interceptor.JwtWebSocketInterceptor;
+import com.woow.security.interceptor.OutBoundIInterceptor;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import lombok.extern.slf4j.Slf4j;
@@ -81,8 +82,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                             return null;
 
                         }}})
-                .setAllowedOriginPatterns("*")
-                .withSockJS();
+                .setAllowedOriginPatterns("*");
+                //.withSockJS();
     }
 
     @Bean
@@ -112,7 +113,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         return new ReactorNettyTcpClient<>(client -> sslClient, new StompReactorNettyCodec());
     }
 
- /*   @Override
+    @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
 
         config.enableStompBrokerRelay("/topic", "/queue")
@@ -125,14 +126,15 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 .setTcpClient(stompTcpClient());
 
         config.setApplicationDestinationPrefixes("/app");
-        config.setUserDestinationPrefix("/user");
-    }*/
+        config.setUserDestinationPrefix("/user/");
+    }
 
-    @Override
+    /*@Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
         registry.setApplicationDestinationPrefixes("/app");
         registry.enableSimpleBroker("/queue", "/topic");
     }
+     */
 
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {

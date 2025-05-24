@@ -1,4 +1,4 @@
-package com.woow.security.config.interceptor;
+package com.woow.security.interceptor;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.Message;

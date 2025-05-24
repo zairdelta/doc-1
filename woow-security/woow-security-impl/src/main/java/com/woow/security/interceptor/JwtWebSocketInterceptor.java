@@ -1,4 +1,4 @@
-package com.woow.security.config.interceptor;
+package com.woow.security.interceptor;
 
 import com.woow.security.api.JwtTokenUtil;
 import com.woow.security.api.JwtUserDetailsService;
