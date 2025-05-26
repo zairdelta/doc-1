@@ -68,6 +68,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                         });
 
                         if (request.getHeaders().get("Authorization") == null) {
+                            log.info("Authorization header is not present in web socket call");
                             return null;
 
                         } else {

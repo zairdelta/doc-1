@@ -2,6 +2,7 @@ package com.woow.security.interceptor;
 
 import com.woow.security.api.JwtTokenUtil;
 import com.woow.security.api.JwtUserDetailsService;
+import com.woow.security.api.WebSocketUserPrincipal;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.Message;
@@ -13,6 +14,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 @Component
 @Slf4j
@@ -62,7 +64,6 @@ public class JwtWebSocketInterceptor implements ChannelInterceptor {
 
 
                 if (username != null && jwtTokenUtil.validateToken(jwtToken, userDetails)) {
-
                     accessor.setUser(new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
                             userDetails, null, userDetails.getAuthorities()));
                 }

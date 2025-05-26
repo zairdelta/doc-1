@@ -12,8 +12,13 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Controller;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+
 
 import java.security.Principal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @Controller
@@ -62,17 +67,17 @@ public class ConsultationWebSocket {
     }
 
     /**
-         Patient starts a new consultation, patient subscribe to topic:
-        topic/consultation/{consultationId}/session/{sessionId}/control
+     Patient starts a new consultation, patient subscribe to topic:
+     topic/consultation/{consultationId}/session/{sessionId}/control
      2.- patient waits to get an event Doctor assigned
      3.- Patient send PARTY_READY to server from clients to backend:
-         /app/consultation/{consultationId}/session/{sessionId}/control
+     /app/consultation/{consultationId}/session/{sessionId}/control
      4.- DOCTOR send PARTY_READY to server
-        /app/consultation/{consultationId}/session/{sessionId}/control
+     /app/consultation/{consultationId}/session/{sessionId}/control
      5.- both patient and doctor create subscriptions to /user/queue/messages
      6.- Server send CHAT_READY to patient and Doctor, chat can start
 
-        /topic/consultation/{consultationId}/session/{sessionId}/control → from backend to clients (broadcast)
+     /topic/consultation/{consultationId}/session/{sessionId}/control → from backend to clients (broadcast)
      **/
 
     @MessageMapping("/consultation/{consultationId}/session/{consultationSessionId}/control")
@@ -80,28 +85,27 @@ public class ConsultationWebSocket {
                               @DestinationVariable String consultationSessionId,
                               @Payload ControlMessageDTO controlMessageDTO,
                               Principal principal) {
-        log.debug("handledControl webSocket consultationId: {}, consultationSessionId: {}",
-                consultationId, consultationSessionId);
-        WebSocketUserPrincipal webSocketUserPrincipal = null;
-        if(principal instanceof WebSocketUserPrincipal) {
+        log.debug("handledControl webSocket consultationId: {}, consultationSessionId: {}, principal's userName: {}",
+                consultationId, consultationSessionId, principal.getName());
+        List<String> roles = new ArrayList<>();
+
+        if (principal instanceof UsernamePasswordAuthenticationToken authentication) {
+            roles = authentication.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .toList();
+        } else  if(principal instanceof WebSocketUserPrincipal webSocketUserPrincipal) {
             webSocketUserPrincipal = (WebSocketUserPrincipal) principal;
+            roles = webSocketUserPrincipal.getRoles();
         }
 
-        if(webSocketUserPrincipal != null) {
-
-            log.debug("Getting controll message,: {}, user: {}", controlMessageDTO,
-                    webSocketUserPrincipal.getName());
-            ControlMessage controlMessage = new ControlMessage();
-            controlMessage.setConsultationId(consultationId);
-            controlMessage.setConsultationSessionId(consultationSessionId);
-            controlMessage.setControlMessageDTO(controlMessageDTO);
-            controlMessage.setRoles(webSocketUserPrincipal.getRoles());
-            controlMessage.setUserName(webSocketUserPrincipal.getName());
-            controlMessageDispatcher.dispatch(controlMessage);
-
-        } else {
-            log.error("UserPrincipal is not an instance of WebSocketUserPrincipal: {} ", principal);
-        }
-
+        log.debug("Getting control message,: {}, user: {}, roles: {}", controlMessageDTO,
+                principal.getName(), roles);
+        ControlMessage controlMessage = new ControlMessage();
+        controlMessage.setConsultationId(consultationId);
+        controlMessage.setConsultationSessionId(consultationSessionId);
+        controlMessage.setControlMessageDTO(controlMessageDTO);
+        controlMessage.setRoles(roles);
+        controlMessage.setUserName(principal.getName());
+        controlMessageDispatcher.dispatch(controlMessage);
     }
 }
