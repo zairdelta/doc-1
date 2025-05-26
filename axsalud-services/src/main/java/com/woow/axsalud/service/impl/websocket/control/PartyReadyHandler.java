@@ -12,12 +12,16 @@ import com.woow.axsalud.service.api.websocket.ControlMessageHandler;
 import com.woow.core.data.repository.WoowUserRepository;
 import com.woow.security.api.WooWRoleType;
 import com.woow.storage.api.StorageService;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Component
+@Slf4j
 public class PartyReadyHandler implements ControlMessageHandler {
 
     private ConsultationRepository consultationRepository;
@@ -57,6 +61,7 @@ public class PartyReadyHandler implements ControlMessageHandler {
 
     @Override
     public void handledControlMessage(final ControlMessage message) {
+        log.info("Processing PARTY_READY message: {} ", message);
         if(message.getControlMessageDTO().getMessageType() == ControlMessageType.PARTY_READY) {
             ConsultationSession consultationSession = consultationSessionRepository
                     .findByConsultationSessionId(UUID.fromString(message.getConsultationSessionId()));

@@ -16,9 +16,11 @@ public class ControlMessageDispatcher {
 
     public ControlMessageDispatcher(List<ControlMessageHandler> controMessageHandlers) {
         this.controMessageHandlers = controMessageHandlers;
+        log.debug("Dispatcher handlers found: {}", controMessageHandlers);
     }
 
     public void dispatch(ControlMessage message) {
+        log.debug("Finding correct hanblder for message: {}", message);
         controMessageHandlers.stream()
                 .filter(controlMessageHandler -> controlMessageHandler.supports(message.getControlMessageDTO().getMessageType()))
                 .findFirst()
