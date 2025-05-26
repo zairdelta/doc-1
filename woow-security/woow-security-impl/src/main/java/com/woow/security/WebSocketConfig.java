@@ -1,6 +1,7 @@
 package com.woow.security;
 
 import com.woow.security.api.JwtTokenUtil;
+import com.woow.security.api.WebSocketUserPrincipal;
 import com.woow.security.rabbitmq.RabbitMQStompBrokerProperties;
 import com.woow.security.interceptor.JwtWebSocketInterceptor;
 import com.woow.security.interceptor.OutBoundIInterceptor;
@@ -27,6 +28,7 @@ import javax.net.ssl.SSLException;
 import java.net.InetSocketAddress;
 import java.security.Principal;
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 
 @Configuration
@@ -59,7 +61,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                                                       WebSocketHandler wsHandler,
                                                       Map<String, Object> attributes) {
 
-
                         log.info("DetermineUser getting request");
                         HttpHeaders headers = request.getHeaders();
                         headers.forEach((key, value) -> {
@@ -70,13 +71,13 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                             return null;
 
                         } else {
-
                             String authHeader = request.getHeaders().get("Authorization").get(0);
                             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                                 String jwtToken = authHeader.substring(7);
                                 String username = jwtTokenUtil.getUsernameFromToken(jwtToken);
+                                List<String> roles = jwtTokenUtil.getRoles(jwtToken);
                                 log.info("UserName ConnectedTo Socket from token: {}", username);
-                                return () -> username;
+                                return new WebSocketUserPrincipal(username, roles);
                             }
 
                             return null;

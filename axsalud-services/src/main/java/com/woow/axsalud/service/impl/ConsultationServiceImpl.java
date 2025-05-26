@@ -8,6 +8,8 @@ import com.woow.axsalud.service.api.dto.*;
 import com.woow.axsalud.service.api.exception.ConsultationServiceException;
 import com.woow.axsalud.service.api.messages.ConsultationEventDTO;
 import com.woow.axsalud.service.api.messages.ConsultationMessageDTO;
+import com.woow.axsalud.service.api.messages.control.ControlMessageDTO;
+import com.woow.axsalud.service.api.messages.control.ControlMessageType;
 import com.woow.core.data.repository.WoowUserRepository;
 import com.woow.core.data.user.WoowUser;
 import com.woow.core.service.api.exception.WooUserServiceException;
@@ -347,6 +349,7 @@ public class ConsultationServiceImpl implements ConsultationService {
         consultationDTO.getConsultationSessionIdDTOList().add(consultationSessionIdDTO);
         consultationDTO.setCurrentSessionIdIfExists(consultationSessionId);
         consultationDTO.setConsultationId(consultation.getConsultationId().toString());
+        consultationDTO.setDoctor(consultationSession.getDoctor().getCoreUser().getUserName());
 
         ConsultationEventDTO<ConsultationMessageDTO> consultationEventDTO = new ConsultationEventDTO<>();
         consultationEventDTO.setMessageType(ConsultationMessgeTypeEnum.WELCOME);
@@ -376,6 +379,18 @@ public class ConsultationServiceImpl implements ConsultationService {
         consultationEventDTO.setMessageType(ConsultationMessgeTypeEnum.CONSULTATION_ASSIGNED);
         log.info("new consultationDTO assigned to topic/doctor-events: {}", consultationEventDTO);
         messagingTemplate.convertAndSend("/topic/doctor-events", consultationEventDTO);
+
+        ControlMessageDTO controlMessageDTO = new ControlMessageDTO();
+        controlMessageDTO.setMessageType(ControlMessageType.DOCTOR_ASSIGNED);
+        controlMessageDTO.setTimeProcessed(LocalDateTime.now());
+        controlMessageDTO.setDoctor(consultationSession.getDoctor().getCoreUser().getUserName());
+        controlMessageDTO.setPatient(consultationSession.getConsultation()
+                .getPatient().getCoreUser().getUserName());
+
+        String controlComunicationTopic = "/topic/consultation/" + consultationSession.getConsultation().getConsultationId() + "" +
+                "/session/" + consultationSession.getId() + "/control";
+        messagingTemplate.convertAndSend(controlComunicationTopic, controlMessageDTO);
+
         return consultationDTO;
     }
 

@@ -54,4 +54,8 @@ public class ConsultationSession {
 
     @OneToOne(mappedBy = "consultationSession")
     private ComentariosMedicos comentariosMedicos;
+    @Enumerated(EnumType.STRING)
+    private PartyConsultationStatus patientStatus;
+    @Enumerated(EnumType.STRING)
+    private PartyConsultationStatus doctorStatus;
 }

@@ -16,6 +16,7 @@ public class ConsultationDTO {
     private String consultationId;
     private String currentSessionIdIfExists;
     private String patient;
+    private String doctor;
     private LocalDateTime createdAt;
     private LocalDateTime finishedAt;
     private String symptoms = "";

@@ -50,7 +50,7 @@ CREATE TABLE `ax_salud_woo_user` (
 
 LOCK TABLES `ax_salud_woo_user` WRITE;
 /*!40000 ALTER TABLE `ax_salud_woo_user` DISABLE KEYS */;
-INSERT INTO `ax_salud_woo_user` VALUES (1,'dni',NULL,'HID-123',NULL,21,'OFFLINE','PATIENT',1,NULL,NULL),(2,NULL,NULL,'HID-123',NULL,2,'OFFLINE','PATIENT',2,NULL,NULL);
+INSERT INTO `ax_salud_woo_user` VALUES (1,'dni',NULL,'HID-123',NULL,21,'OFFLINE','PATIENT',1,NULL,NULL),(2,NULL,NULL,'HID-123',NULL,1,'OFFLINE','PATIENT',2,NULL,NULL);
 /*!40000 ALTER TABLE `ax_salud_woo_user` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -186,7 +186,7 @@ CREATE TABLE `consultation_message_entity` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `content` text,
   `message_type` varchar(255) DEFAULT NULL,
-  `status` enum('DELIVERED','SENT_TO_RECEIVER','SERVER_RECEIVED') DEFAULT NULL,
+  `status` enum('DELIVERED','SENT_TO_BROKER','SENT_TO_RECEIVER','SERVER_RECEIVED') DEFAULT NULL,
   `timestamp` datetime(6) NOT NULL,
   `consultation_session_id` bigint DEFAULT NULL,
   `sent_by_user_id` bigint NOT NULL,
@@ -218,9 +218,11 @@ CREATE TABLE `consultation_session` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `consultation_session_id` binary(16) DEFAULT NULL,
   `created_at` datetime(6) DEFAULT NULL,
+  `doctor_status` enum('OFFLINE','ONLINE','READY') DEFAULT NULL,
   `finished_at` datetime(6) DEFAULT NULL,
+  `patient_status` enum('OFFLINE','ONLINE','READY') DEFAULT NULL,
   `start_at` datetime(6) DEFAULT NULL,
-  `status` enum('FINISHED','ON_GOING','SUSPENDED','WAITING_FOR_DOCTOR') DEFAULT NULL,
+  `status` enum('CONFIRMING_PARTIES','CONNECTING','FINISHED','ON_GOING','SUSPENDED','WAITING_FOR_DOCTOR') DEFAULT NULL,
   `consultation_id` bigint DEFAULT NULL,
   `doctor_id` bigint DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -501,7 +503,7 @@ CREATE TABLE `service_provider` (
   `name` varchar(255) DEFAULT NULL,
   `service_expiration` date DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -510,7 +512,7 @@ CREATE TABLE `service_provider` (
 
 LOCK TABLES `service_provider` WRITE;
 /*!40000 ALTER TABLE `service_provider` DISABLE KEYS */;
-INSERT INTO `service_provider` VALUES (2,'2025-05-09 10:03:16.000000','https://localhost:8080/external_provider','HealthConnect','2025-12-31');
+INSERT INTO `service_provider` VALUES (1,'2025-05-26 16:11:22.000000','https://localhost:8080/external_provider','HealthConnect','2025-12-31');
 /*!40000 ALTER TABLE `service_provider` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -582,7 +584,7 @@ CREATE TABLE `woow_user` (
 
 LOCK TABLES `woow_user` WRITE;
 /*!40000 ALTER TABLE `woow_user` DISABLE KEYS */;
-INSERT INTO `woow_user` VALUES (1,'yes','Av Reforma 123','Int 5','1995-06-15','CDMX','MX','01234','2025-05-09 10:03:16.000000','master@example.com',_binary '',NULL,0,'masterLastName',0,1,'5551234567','master@example.com',NULL,'$2a$10$nOyz3qX1lLYv9GOZcwBieeO1KSYDT6funrQx322uHIuX8LWY9XQQW',_binary '\0',NULL,'CDMX',_binary '','master@example.com'),(2,'yes','Street 1','Street 2',NULL,'CDMX','MX','12345','2025-05-09 09:03:18.180011','realuser@woow.com',_binary '\0',NULL,0,'User',0,0,'1234567890','Real',NULL,'$2a$10$CreCikUwkiRwnAqY5SUki.gA/P2fZyxuiFLFOf6dVtuae2Qc7.19a',_binary '\0',NULL,'CDMX',_binary '','realuser@woow.com');
+INSERT INTO `woow_user` VALUES (1,'yes','Av Reforma 123','Int 5','1995-06-15','CDMX','MX','01234','2025-05-26 16:11:22.000000','master@example.com',_binary '',NULL,0,'masterLastName',0,1,'5551234567','master@example.com',NULL,'$2a$10$nOyz3qX1lLYv9GOZcwBieeO1KSYDT6funrQx322uHIuX8LWY9XQQW',_binary '\0',NULL,'CDMX',_binary '','master@example.com'),(2,'yes','Street 1','Street 2',NULL,'CDMX','MX','12345','2025-05-26 15:11:23.877020','realuser@woow.com',_binary '\0',NULL,0,'User',0,0,'1234567890','Real',NULL,'$2a$10$ZhUrWBCZQ0eT/07nR1cQEu8vzVhjqKC2LCbSsbW7iHlwVT6b2aBue',_binary '\0',NULL,'CDMX',_binary '','realuser@woow.com');
 /*!40000 ALTER TABLE `woow_user` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -595,4 +597,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-09 10:04:11
+-- Dump completed on 2025-05-26 16:12:20

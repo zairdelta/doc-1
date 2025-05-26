@@ -3,6 +3,9 @@ package com.woow.axsalud.data.consultation;
 public enum ConsultationSessionStatus {
 
     WAITING_FOR_DOCTOR("WAITING_FOR_DOCTOR"),
+    CONFIRMING_PARTIES("CONFIRMING_PARTIES"),
+
+    CONNECTING("CONNECTING"),
     ON_GOING("ON_GOING"),
     SUSPENDED("SUSPENDED"),
     FINISHED("FINISHED");
