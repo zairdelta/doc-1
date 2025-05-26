@@ -65,9 +65,8 @@ public class PartyReadyHandler implements ControlMessageHandler {
         if(message.getControlMessageDTO().getMessageType() == ControlMessageType.PARTY_READY) {
             ConsultationSession consultationSession = consultationSessionRepository
                     .findByConsultationSessionId(UUID.fromString(message.getConsultationSessionId()));
-
-        //    if(consultationSession.getStatus() == ConsultationSessionStatus.CONFIRMING_PARTIES) {
-            log.info("running hand check process");
+            if(consultationSession.getStatus() == ConsultationSessionStatus.CONFIRMING_PARTIES) {
+                log.info("running hand check process");
                 if (message.getRoles().contains(AXSaludUserRoles.DOCTOR)) {
                     consultationSession.setDoctorStatus(PartyConsultationStatus.READY);
                 } else if (message.getRoles().contains(AXSaludUserRoles.USER)) {
@@ -75,7 +74,7 @@ public class PartyReadyHandler implements ControlMessageHandler {
                 }
 
                 if(consultationSession.getDoctorStatus() == PartyConsultationStatus.READY &&
-                    consultationSession.getPatientStatus() == PartyConsultationStatus.READY) {
+                        consultationSession.getPatientStatus() == PartyConsultationStatus.READY) {
                     consultationSession.setStatus(ConsultationSessionStatus.CONNECTING);
                     consultationSessionRepository.save(consultationSession);
 
@@ -90,7 +89,7 @@ public class PartyReadyHandler implements ControlMessageHandler {
                             ".session." + consultationSession.getConsultationSessionId() + ".control";
                     messagingTemplate.convertAndSend(controlComunicationTopic, controlMessageDTO);
                 }
-         //   }
+            }
         }
     }
 }

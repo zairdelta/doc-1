@@ -324,7 +324,7 @@ public class ConsultationServiceImpl implements ConsultationService {
 
         consultationSession.setDoctor(axSaludWooUser);
         consultationSession.setStartAt(LocalDateTime.now());
-        consultationSession.setStatus(ConsultationSessionStatus.ON_GOING);
+        consultationSession.setStatus(ConsultationSessionStatus.CONFIRMING_PARTIES);
         consultationSessionRepository.save(consultationSession);
 
         consultation.setStatus(ConsultationStatus.ON_GOING);
