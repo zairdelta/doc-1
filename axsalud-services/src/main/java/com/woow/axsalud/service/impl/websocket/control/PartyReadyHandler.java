@@ -80,8 +80,8 @@ public class PartyReadyHandler implements ControlMessageHandler {
                     controlMessageDTO.setPatient(consultationSession.getConsultation()
                             .getPatient().getCoreUser().getUserName());
 
-                    String controlComunicationTopic = "/topic/consultation/" + consultationSession.getConsultation().getConsultationId() + "" +
-                            "/session/" + consultationSession.getId() + "/control";
+                    String controlComunicationTopic = "/topic/consultation." + consultationSession.getConsultation().getConsultationId() + "" +
+                            ".session." + consultationSession.getId() + ".control";
                     messagingTemplate.convertAndSend(controlComunicationTopic, controlMessageDTO);
                 }
             }
