@@ -388,7 +388,7 @@ public class ConsultationServiceImpl implements ConsultationService {
                 .getPatient().getCoreUser().getUserName());
 
         String controlComunicationTopic = "/topic/consultation." + consultationSession.getConsultation().getConsultationId() +
-                ".session." + consultationSession.getId() + ".control";
+                ".session." + consultationSession.getConsultationSessionId() + ".control";
         log.debug("Sending controleMessage to topic: {} ", controlComunicationTopic);
         messagingTemplate.convertAndSend(controlComunicationTopic, controlMessageDTO);
         log.debug("ControlMessage sent to topic: {}, message: {} ", controlComunicationTopic, controlMessageDTO);
