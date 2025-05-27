@@ -35,6 +35,7 @@ public class WebSocketDisconnectListener {
         String queueName = userQueuePrefix + sessionId;
         try {
             rabbitMQAdminClient.deleteQueue(queueName);
+            log.debug("deleting queue: {}", queueName);
         } catch (Exception e) {
             log.error("Error while trying to delete queue: {}, error: {}",
                     queueName, e);
