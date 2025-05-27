@@ -4,17 +4,18 @@ import com.woow.axsalud.common.AXSaludUserRoles;
 import com.woow.axsalud.data.consultation.ConsultationSession;
 import com.woow.axsalud.data.consultation.ConsultationSessionStatus;
 import com.woow.axsalud.data.consultation.PartyConsultationStatus;
-import com.woow.axsalud.data.repository.*;
+import com.woow.axsalud.data.repository.ConsultationSessionRepository;
 import com.woow.axsalud.service.api.messages.control.ControlMessage;
 import com.woow.axsalud.service.api.messages.control.ControlMessageDTO;
 import com.woow.axsalud.service.api.messages.control.ControlMessageType;
 import com.woow.axsalud.service.api.websocket.ControlMessageHandler;
-import com.woow.core.data.repository.WoowUserRepository;
-import com.woow.storage.api.StorageService;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -40,11 +41,17 @@ public class PartyReadyHandler implements ControlMessageHandler {
     }
 
     @Override
+    @Transactional
+    @Retryable(
+            value = {OptimisticLockingFailureException.class, Exception.class},
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 100, multiplier = 2)
+    )
     public void handledControlMessage(final ControlMessage message) {
-        log.info("Processing PARTY_READY message: {} ", message);
+        log.info("Processing PARTY_READY message: {}, reading DB with lock ", message);
         if(message.getControlMessageDTO().getMessageType() == ControlMessageType.PARTY_READY) {
             ConsultationSession consultationSession = consultationSessionRepository
-                    .findByConsultationSessionId(UUID.fromString(message.getConsultationSessionId()));
+                    .findWithLock(UUID.fromString(message.getConsultationSessionId()));
             if(consultationSession.getStatus() == ConsultationSessionStatus.CONFIRMING_PARTIES) {
                 log.info("running hand check process");
                 if (message.getRoles().contains(AXSaludUserRoles.DOCTOR.getRole())) {
