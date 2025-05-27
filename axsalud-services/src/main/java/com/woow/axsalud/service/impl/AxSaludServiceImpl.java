@@ -208,16 +208,18 @@ public class AxSaludServiceImpl implements AxSaludService {
                 modelMapper.map(patientDataDTO, existingPatientData);
             }
 
-            axSaludWooUser.getPatientData().getPatientAdditionalSet().clear();
 
             Set<PatientAdditional> patientAdditionals =
                     patientDataDTO.getPatientAdditionalSet()
                             .stream()
                             .map(PatientAdditionalDTO::from)
                             .collect(Collectors.toSet());
+
+            axSaludWooUser.getPatientData().getPatientAdditionalSet().clear();
+
             axSaludWooUser
                     .getPatientData()
-                    .setPatientAdditionalSet(patientAdditionals);
+                    .getPatientAdditionalSet().addAll(patientAdditionals);
 
 
             axSaludUserRepository.save(axSaludWooUser);
