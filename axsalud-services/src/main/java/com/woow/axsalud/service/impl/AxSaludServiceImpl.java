@@ -109,9 +109,12 @@ public class AxSaludServiceImpl implements AxSaludService {
 
         if(axSaludWooUser.getPatientData() != null) {
             modelMapper.map(axSaludWooUser.getPatientData(), patientDataDTO);
+            patientDataDTO.setEmergencyContactName(axSaludWooUser.getPatientData().getEmergencyContactName());
+            patientDataDTO.setEmergencyContactNumber(axSaludWooUser.getPatientData().getEmergencyContactNumber());
         }
         patientViewDTO.setDni(axSaludWooUser.getDni());
         patientViewDTO.setPatientDataDTO(patientDataDTO);
+
 
         return patientViewDTO;
     }
@@ -218,6 +221,7 @@ public class AxSaludServiceImpl implements AxSaludService {
 
 
             axSaludUserRepository.save(axSaludWooUser);
+            log.debug("patientData was updated for: {}", userName);
         }
     }
 
