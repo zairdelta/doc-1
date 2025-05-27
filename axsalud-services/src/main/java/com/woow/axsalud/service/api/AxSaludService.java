@@ -9,6 +9,9 @@ import java.util.List;
 public interface AxSaludService {
     String save(AxSaludUserDTO axSaludUserDTO) throws WooUserServiceException;
     PatientViewDTO get(String userName) throws WooUserServiceException;
+
+    List<DoctorPrescriptionViewDTO>  getDoctorPrescriptions(String userName) throws WooUserServiceException;
+    List<LabPrescriptionViewDTO>  getLabPrescriptions(String userName) throws WooUserServiceException;
     List<ConsultationDTO> getConsultation(String userName) throws WooUserServiceException;
 
     void updatePatientData(String userName,  PatientDataDTO patientDataDTO) throws WooUserServiceException;

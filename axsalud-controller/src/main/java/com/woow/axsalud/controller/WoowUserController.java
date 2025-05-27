@@ -171,6 +171,38 @@ public class WoowUserController {
                 .build();
     }
 
+    @GetMapping("/docPrescriptions")
+    @Operation(summary = "Get patient Prescriptions")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Patient found"),
+            @ApiResponse(responseCode = "301", description = "Forbidden")
+    })
+    public ResponseEntity<List<DoctorPrescriptionViewDTO>>
+    getPatientPrescriptions(@AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            return ResponseEntity.ok(axSaludService.getDoctorPrescriptions(userDetails.getUsername()));
+        } catch (WooUserServiceException e) {
+            log.error("Error while getting user data: {}", e.getMessage(), e);
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/labPrescription")
+    @Operation(summary = "Get patient labPrescription")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Patient found"),
+            @ApiResponse(responseCode = "301", description = "Forbidden")
+    })
+    public ResponseEntity<List<LabPrescriptionViewDTO>>
+    getLabPrescriptions(@AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            return ResponseEntity.ok(axSaludService.getLabPrescriptions(userDetails.getUsername()));
+        } catch (WooUserServiceException e) {
+            log.error("Error while getting user data: {}", e.getMessage(), e);
+            return ResponseEntity.notFound().build();
+        }
+    }
+
 
 
 }

@@ -5,10 +5,7 @@ import com.woow.axsalud.data.consultation.ComentariosMedicos;
 import com.woow.axsalud.data.repository.ComentariosMedicosRepository;
 import com.woow.axsalud.service.api.AxSaludService;
 import com.woow.axsalud.service.api.ConsultationService;
-import com.woow.axsalud.service.api.dto.ConsultationDTO;
-import com.woow.axsalud.service.api.dto.ConsultationMessagesPagingDTO;
-import com.woow.axsalud.service.api.dto.DoctorCommentsDTO;
-import com.woow.axsalud.service.api.dto.PatientViewDTO;
+import com.woow.axsalud.service.api.dto.*;
 import com.woow.axsalud.service.api.exception.ConsultationServiceException;
 import com.woow.core.service.api.exception.WooUserServiceException;
 import io.swagger.v3.oas.annotations.Operation;
@@ -122,6 +119,38 @@ public class DoctorController {
                                                          @AuthenticationPrincipal UserDetails userDetails) {
         try {
             return ResponseEntity.ok(axSaludService.get(userName));
+        } catch (WooUserServiceException e) {
+            log.error("Error while getting user data: {}", e.getMessage(), e);
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/patient/{userName}/docPrescriptions")
+    @Operation(summary = "Get patient Prescriptions")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Patient found"),
+            @ApiResponse(responseCode = "301", description = "Forbidden")
+    })
+    public ResponseEntity<List<DoctorPrescriptionViewDTO>> getPatientPrescriptions(@PathVariable String userName,
+                                                                             @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            return ResponseEntity.ok(axSaludService.getDoctorPrescriptions(userName));
+        } catch (WooUserServiceException e) {
+            log.error("Error while getting user data: {}", e.getMessage(), e);
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/patient/{userName}/labPrescription")
+    @Operation(summary = "Get patient labPrescription")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Patient found"),
+            @ApiResponse(responseCode = "301", description = "Forbidden")
+    })
+    public ResponseEntity<List<LabPrescriptionViewDTO>> getLabPrescriptions(@PathVariable String userName,
+                                                                                   @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            return ResponseEntity.ok(axSaludService.getLabPrescriptions(userName));
         } catch (WooUserServiceException e) {
             log.error("Error while getting user data: {}", e.getMessage(), e);
             return ResponseEntity.notFound().build();

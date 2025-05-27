@@ -7,7 +7,11 @@ import com.woow.axsalud.data.client.PatientData;
 import com.woow.axsalud.data.client.WoowUserType;
 import com.woow.axsalud.data.consultation.Consultation;
 import com.woow.axsalud.data.consultation.ConsultationSession;
+import com.woow.axsalud.data.consultation.DoctorPrescription;
+import com.woow.axsalud.data.consultation.LaboratoryPrescription;
 import com.woow.axsalud.data.repository.AxSaludUserRepository;
+import com.woow.axsalud.data.repository.DoctorPrescriptionRepository;
+import com.woow.axsalud.data.repository.LaboratoryPrescriptionsRepository;
 import com.woow.axsalud.data.repository.PatientDataRepository;
 import com.woow.axsalud.data.serviceprovider.ServiceProvider;
 import com.woow.axsalud.service.api.AxSaludService;
@@ -38,6 +42,8 @@ public class AxSaludServiceImpl implements AxSaludService {
     private WooWUserService wooWUserService;
     private WoowUserRepository woowUserRepository;
     private ServiceProviderService serviceProviderService;
+    private DoctorPrescriptionRepository doctorPrescriptionRepository;
+    private LaboratoryPrescriptionsRepository laboratoryPrescriptionsRepository;
     private ServiceProviderClient serviceProviderClient;
 
     public AxSaludServiceImpl(final AxSaludUserRepository axSaludUserRepository,
@@ -46,7 +52,9 @@ public class AxSaludServiceImpl implements AxSaludService {
                               final WoowUserRepository woowUserRepository,
                               final ServiceProviderService serviceProviderService,
                               final ServiceProviderClient serviceProviderClient,
-                              final PatientDataRepository patientDataRepository) {
+                              final PatientDataRepository patientDataRepository,
+                              final DoctorPrescriptionRepository doctorPrescriptionRepository,
+                              final LaboratoryPrescriptionsRepository laboratoryPrescriptionsRepository) {
         this.axSaludUserRepository = axSaludUserRepository;
         this.modelMapper = modelMapper;
         this.wooWUserService = wooWUserService;
@@ -54,6 +62,8 @@ public class AxSaludServiceImpl implements AxSaludService {
         this.serviceProviderService = serviceProviderService;
         this.serviceProviderClient = serviceProviderClient;
         this.patientDataRepository = patientDataRepository;
+        this.doctorPrescriptionRepository = doctorPrescriptionRepository;
+        this.laboratoryPrescriptionsRepository = laboratoryPrescriptionsRepository;
     }
     @Override
     public String save(AxSaludUserDTO axSaludUserDTO)
@@ -119,6 +129,104 @@ public class AxSaludServiceImpl implements AxSaludService {
 
         return patientViewDTO;
     }
+
+    @Override
+    public List<LabPrescriptionViewDTO>  getLabPrescriptions(String userName) throws WooUserServiceException {
+        log.debug("Getting Laboratory prescriptions for userName: {}", userName);
+
+        List<LaboratoryPrescription> laboratoryPrescriptions =
+                laboratoryPrescriptionsRepository.findAllByDoctorUserName(userName);
+
+        return laboratoryPrescriptions.stream()
+                .filter(dp -> {
+                    if (dp.getConsultationSession() == null) {
+                        log.warn("Skipping DoctorPrescription with null ConsultationSession");
+                        return false;
+                    }
+                    if (dp.getConsultationSession().getDoctor() == null ||
+                            dp.getConsultationSession().getDoctor().getCoreUser() == null) {
+                        log.warn("Skipping DoctorPrescription with incomplete doctor information");
+                        return false;
+                    }
+                    return true;
+                })
+                .map(dp -> {
+                    LabPrescriptionViewDTO labPrescriptionViewDTO = new LabPrescriptionViewDTO();
+                    DoctorPrescriptionOwnerDTO doctorPrescriptionOwnerDTO = new DoctorPrescriptionOwnerDTO();
+                    doctorPrescriptionOwnerDTO.setCreatedAt(dp.getConsultationSession().getCreatedAt());
+
+                    LaboratoryPrescriptionDTO dto = new LaboratoryPrescriptionDTO();
+                    dto.setNotasDeRecomendaciones(dp.getNotasDeRecomendaciones());
+                    dto.setObservacionesMedicas(dp.getObservacionesMedicas());
+                    dto.setPosibleDiagnostico(dp.getPosibleDiagnostico());
+                    dto.setOrdenDeLaboratorio(dp.getOrdenDeLaboratorio());
+
+                    labPrescriptionViewDTO.setLaboratoryPrescriptionDTO(dto);
+
+
+                    AxSaludWooUser doctor = dp.getConsultationSession().getDoctor();
+                    WoowUser coreUser = doctor.getCoreUser();
+
+                    doctorPrescriptionOwnerDTO.setDoctorFullName(coreUser.getName() + " " + coreUser.getLastName());
+                    doctorPrescriptionOwnerDTO.setDoctorDNI(doctor.getDni());
+                    doctorPrescriptionOwnerDTO.setDoctorEmail(coreUser.getEmail());
+                    labPrescriptionViewDTO.setDoctorPrescriptionOwnerDTO(doctorPrescriptionOwnerDTO);
+
+                    return labPrescriptionViewDTO;
+                })
+                .collect(Collectors.toList());
+    }
+    @Override
+    public List<DoctorPrescriptionViewDTO> getDoctorPrescriptions(String userName) {
+        log.debug("Getting Doctor prescriptions for userName: {}", userName);
+
+        List<DoctorPrescription> doctorPrescriptions =
+                doctorPrescriptionRepository.findAllByDoctorUserName(userName);
+
+        return doctorPrescriptions.stream()
+                .filter(dp -> {
+                    if (dp.getConsultationSession() == null) {
+                        log.warn("Skipping DoctorPrescription with null ConsultationSession");
+                        return false;
+                    }
+                    if (dp.getConsultationSession().getDoctor() == null ||
+                            dp.getConsultationSession().getDoctor().getCoreUser() == null) {
+                        log.warn("Skipping DoctorPrescription with incomplete doctor information");
+                        return false;
+                    }
+                    return true;
+                })
+                .map(dp -> {
+                    DoctorPrescriptionViewDTO viewDTO = new DoctorPrescriptionViewDTO();
+                    DoctorPrescriptionOwnerDTO doctorPrescriptionOwnerDTO = new DoctorPrescriptionOwnerDTO();
+                    doctorPrescriptionOwnerDTO.setCreatedAt(dp.getConsultationSession().getCreatedAt());
+
+                    DoctorPrescriptionDTO dto = new DoctorPrescriptionDTO();
+                    dto.setDiagnostico(dp.getDiagnostico());
+                    dto.setRecetaMedica(dp.getRecetaMedica());
+                    dto.setNotasDeRecomendaciones(dp.getNotasDeRecomendaciones());
+
+                    if (dp.getConsultationSession().getComentariosMedicos() != null) {
+                        dto.setComentariosMedicos(
+                                dp.getConsultationSession().getComentariosMedicos().getObservacionesMedicas()
+                        );
+                    }
+
+                    viewDTO.setDoctorPrescriptionDTO(dto);
+
+                    AxSaludWooUser doctor = dp.getConsultationSession().getDoctor();
+                    WoowUser coreUser = doctor.getCoreUser();
+
+                    doctorPrescriptionOwnerDTO.setDoctorFullName(coreUser.getName() + " " + coreUser.getLastName());
+                    doctorPrescriptionOwnerDTO.setDoctorDNI(doctor.getDni());
+                    doctorPrescriptionOwnerDTO.setDoctorEmail(coreUser.getEmail());
+                    viewDTO.setDoctorPrescriptionOwnerDTO(doctorPrescriptionOwnerDTO);
+
+                    return viewDTO;
+                })
+                .collect(Collectors.toList());
+    }
+
 
     @Override
     public List<ConsultationDTO> getConsultation(String userName) throws WooUserServiceException {
