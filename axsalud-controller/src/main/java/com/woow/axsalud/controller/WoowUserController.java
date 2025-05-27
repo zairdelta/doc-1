@@ -134,6 +134,7 @@ public class WoowUserController {
     public ResponseEntity<Void> addPatientData(@AuthenticationPrincipal UserDetails userDetails,
                                                @RequestBody PatientDataDTO patientDataDTO) {
         try {
+            log.debug("update patient data received, patientData:{}", patientDataDTO);
             axSaludService.updatePatientData(userDetails.getUsername(), patientDataDTO);
             return ResponseEntity.ok().build();
         } catch (WooUserServiceException e) {

@@ -175,9 +175,10 @@ public class AxSaludServiceImpl implements AxSaludService {
                                   PatientDataDTO patientDataDTO)
             throws WooUserServiceException {
 
-        log.info("Saving patientData: {}, userName: {}", patientDataDTO, userName);
+        log.info("updating patientData: {}, userName: {}", patientDataDTO, userName);
         if(patientDataDTO != null) {
 
+            log.info("updating patient data, patientData is present");
             WoowUser woowUser =
                     woowUserRepository.findByUserName(userName);
 
