@@ -223,7 +223,7 @@ public class AxSaludServiceImpl implements AxSaludService {
 
 
             axSaludUserRepository.save(axSaludWooUser);
-            log.debug("patientData was updated for: {}", userName);
+            log.debug("patientData was updated for: {}...", userName);
         }
     }
 
