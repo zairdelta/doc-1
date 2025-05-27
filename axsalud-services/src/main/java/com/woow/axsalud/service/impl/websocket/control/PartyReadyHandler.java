@@ -47,10 +47,10 @@ public class PartyReadyHandler implements ControlMessageHandler {
                     .findByConsultationSessionId(UUID.fromString(message.getConsultationSessionId()));
             if(consultationSession.getStatus() == ConsultationSessionStatus.CONFIRMING_PARTIES) {
                 log.info("running hand check process");
-                if (message.getRoles().contains(AXSaludUserRoles.DOCTOR)) {
+                if (message.getRoles().contains(AXSaludUserRoles.DOCTOR.getRole())) {
                     consultationSession.setDoctorStatus(PartyConsultationStatus.READY);
                     log.info("setting Doctor to READY");
-                } else if (message.getRoles().contains(AXSaludUserRoles.USER)) {
+                } else if (message.getRoles().contains(AXSaludUserRoles.USER.getRole())) {
                     consultationSession.setPatientStatus(PartyConsultationStatus.READY);
                     log.info("setting Patient to READY");
                 }
@@ -66,9 +66,9 @@ public class PartyReadyHandler implements ControlMessageHandler {
                     controlMessageDTO.setPatient(consultationSession.getConsultation()
                             .getPatient().getCoreUser().getUserName());
 
-                    String controlComunicationTopic = "/topic/consultation." + consultationSession.getConsultation().getConsultationId() +
+                    String controlCommunicationTopic = "/topic/consultation." + consultationSession.getConsultation().getConsultationId() +
                             ".session." + consultationSession.getConsultationSessionId() + ".control";
-                    messagingTemplate.convertAndSend(controlComunicationTopic, controlMessageDTO);
+                    messagingTemplate.convertAndSend(controlCommunicationTopic, controlMessageDTO);
                 }
                 consultationSessionRepository.save(consultationSession);
             }
