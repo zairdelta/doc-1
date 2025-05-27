@@ -58,7 +58,7 @@ public class PartyReadyHandler implements ControlMessageHandler {
                 if(consultationSession.getDoctorStatus() == PartyConsultationStatus.READY &&
                         consultationSession.getPatientStatus() == PartyConsultationStatus.READY) {
                     consultationSession.setStatus(ConsultationSessionStatus.CONNECTING);
-
+                    log.info("Both parties are ready, sending CHAT_READY event, sessionID: {}", message.getConsultationSessionId());
                     ControlMessageDTO controlMessageDTO = new ControlMessageDTO();
                     controlMessageDTO.setMessageType(ControlMessageType.CHAT_READY);
                     controlMessageDTO.setTimeProcessed(LocalDateTime.now());
@@ -71,6 +71,7 @@ public class PartyReadyHandler implements ControlMessageHandler {
                     messagingTemplate.convertAndSend(controlCommunicationTopic, controlMessageDTO);
                 }
                 consultationSessionRepository.save(consultationSession);
+                log.info("ConsultationSession updated");
             }
         }
     }
