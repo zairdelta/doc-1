@@ -205,6 +205,8 @@ public class AxSaludServiceImpl implements AxSaludService {
                 modelMapper.map(patientDataDTO, newPatientData);
                 axSaludWooUser.setPatientData(newPatientData);
             } else {
+                modelMapper.typeMap(PatientDataDTO.class, PatientData.class)
+                        .addMappings(mapper -> mapper.skip(PatientData::setPatientAdditionalSet));
                 modelMapper.map(patientDataDTO, existingPatientData);
             }
 
