@@ -112,6 +112,7 @@ public class AxSaludServiceImpl implements AxSaludService {
             patientDataDTO.setEmergencyContactName(axSaludWooUser.getPatientData().getEmergencyContactName());
             patientDataDTO.setEmergencyContactNumber(axSaludWooUser.getPatientData().getEmergencyContactNumber());
         }
+        patientViewDTO.setEmail(woowUser.getEmail());
         patientViewDTO.setDni(axSaludWooUser.getDni());
         patientViewDTO.setPatientDataDTO(patientDataDTO);
 
