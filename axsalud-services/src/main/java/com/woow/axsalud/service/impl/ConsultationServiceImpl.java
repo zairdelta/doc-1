@@ -368,12 +368,12 @@ public class ConsultationServiceImpl implements ConsultationService {
         consultationEventDTO.setId(eventId);
         consultationEventDTO.setPayload(welcomeMessage);
 
-        messagingTemplate.convertAndSendToUser(
+      /*  messagingTemplate.convertAndSendToUser(
                 consultationDTO.getPatient(),
                 "/queue/messages",
                 consultationEventDTO
         );
-
+*/
         consultationRepository.save(consultation);
 
         consultationEventDTO.setMessageType(ConsultationMessgeTypeEnum.CONSULTATION_ASSIGNED);
