@@ -10,7 +10,6 @@ import com.woow.axsalud.service.api.messages.control.ControlMessageDTO;
 import com.woow.axsalud.service.api.messages.control.ControlMessageType;
 import com.woow.axsalud.service.api.websocket.ControlMessageHandler;
 import com.woow.core.data.repository.WoowUserRepository;
-import com.woow.security.api.WooWRoleType;
 import com.woow.storage.api.StorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -24,33 +23,14 @@ import java.util.UUID;
 @Slf4j
 public class PartyReadyHandler implements ControlMessageHandler {
 
-    private ConsultationRepository consultationRepository;
-    private WoowUserRepository woowUserRepository;
-    private AxSaludUserRepository axSaludUserRepository;
-    private ConsultationMessageRepository consultationMessageRepository;
-    private ModelMapper modelMapper;
+
     private SimpMessagingTemplate messagingTemplate;
-    private StorageService storageService;
-    private ConsultationDocumentRepository consultationDocumentRepository;
     private ConsultationSessionRepository consultationSessionRepository;
 
-    public PartyReadyHandler(ConsultationRepository consultationRepository,
-                             WoowUserRepository woowUserRepository,
-                             AxSaludUserRepository axSaludUserRepository,
-                             ModelMapper modelMapper,
-                             SimpMessagingTemplate messagingTemplate,
-                             ConsultationMessageRepository consultationMessageRepository,
-                             final ConsultationDocumentRepository consultationDocumentRepository,
-                             final StorageService storageService,
+    public PartyReadyHandler(final SimpMessagingTemplate messagingTemplate,
                              final ConsultationSessionRepository consultationSessionRepository) {
-        this.consultationRepository = consultationRepository;
-        this.woowUserRepository = woowUserRepository;
-        this.axSaludUserRepository = axSaludUserRepository;
-        this.modelMapper = modelMapper;
-        this.consultationMessageRepository = consultationMessageRepository;
+
         this.messagingTemplate = messagingTemplate;
-        this.consultationDocumentRepository = consultationDocumentRepository;
-        this.storageService = storageService;
         this.consultationSessionRepository = consultationSessionRepository;
     }
 
@@ -69,14 +49,15 @@ public class PartyReadyHandler implements ControlMessageHandler {
                 log.info("running hand check process");
                 if (message.getRoles().contains(AXSaludUserRoles.DOCTOR)) {
                     consultationSession.setDoctorStatus(PartyConsultationStatus.READY);
+                    log.info("setting Doctor to READY");
                 } else if (message.getRoles().contains(AXSaludUserRoles.USER)) {
                     consultationSession.setPatientStatus(PartyConsultationStatus.READY);
+                    log.info("setting Patient to READY");
                 }
 
                 if(consultationSession.getDoctorStatus() == PartyConsultationStatus.READY &&
                         consultationSession.getPatientStatus() == PartyConsultationStatus.READY) {
                     consultationSession.setStatus(ConsultationSessionStatus.CONNECTING);
-                    consultationSessionRepository.save(consultationSession);
 
                     ControlMessageDTO controlMessageDTO = new ControlMessageDTO();
                     controlMessageDTO.setMessageType(ControlMessageType.CHAT_READY);
@@ -89,6 +70,7 @@ public class PartyReadyHandler implements ControlMessageHandler {
                             ".session." + consultationSession.getConsultationSessionId() + ".control";
                     messagingTemplate.convertAndSend(controlComunicationTopic, controlMessageDTO);
                 }
+                consultationSessionRepository.save(consultationSession);
             }
         }
     }
