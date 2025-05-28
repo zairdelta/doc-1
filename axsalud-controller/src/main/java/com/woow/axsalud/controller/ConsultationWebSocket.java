@@ -36,7 +36,8 @@ public class ConsultationWebSocket {
 
     @MessageMapping("/ping")
     public void gettingPingMessageFromClient(
-            Principal principal
+            Principal principal,
+            @Payload ControlMessageDTO controlMessageDTO
     ) {
         log.debug("getting ping frame from user: {}", principal.getName());
     }
