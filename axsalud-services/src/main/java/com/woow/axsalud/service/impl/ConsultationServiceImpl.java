@@ -23,6 +23,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -72,6 +73,12 @@ public class ConsultationServiceImpl implements ConsultationService {
         this.storageService = storageService;
         this.consultationSessionRepository = consultationSessionRepository;
         this.comentariosMedicosRepository = comentariosMedicosRepository;
+    }
+
+    @Scheduled(fixedRate = 30000)
+    public void sendPing() {
+        log.info("new consultationDTO assigned to topic/doctor-events: {}",Map.of("messageType", "ping"));
+        messagingTemplate.convertAndSend("/topic/doctor-events", Map.of("messageType", "ping"));
     }
 
     @Override
