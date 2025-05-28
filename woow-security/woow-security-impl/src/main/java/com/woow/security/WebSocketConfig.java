@@ -94,7 +94,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 .withSockJS();
     }
 
-    /*
+
     @Bean
     public ReactorNettyTcpClient<byte[]> stompTcpClient() {
         SslContext sslContext;
@@ -127,9 +127,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                                 rabbitMQStompBrokerProperties.getRelayPort()));
 
         return new ReactorNettyTcpClient<>(client -> sslClient, new StompReactorNettyCodec());
-    }*/
+    }
 
-    @Bean
+    /*@Bean
     public ReactorNettyTcpClient<byte[]> stompTcpClient() {
         SslContext sslContext;
         try {
@@ -174,13 +174,13 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                                 rabbitMQStompBrokerProperties.getRelayPort()));
 
         return new ReactorNettyTcpClient<>(client -> sslClient, new StompReactorNettyCodec());
-    }
+    }*/
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
 
         config.enableStompBrokerRelay("/topic", "/queue")
-                .setSystemHeartbeatSendInterval(20000)
+                .setSystemHeartbeatSendInterval(10000)
                 .setSystemHeartbeatReceiveInterval(20000)
                 .setRelayHost(rabbitMQStompBrokerProperties.getRelayHost())
                 .setRelayPort(rabbitMQStompBrokerProperties.getRelayPort())
