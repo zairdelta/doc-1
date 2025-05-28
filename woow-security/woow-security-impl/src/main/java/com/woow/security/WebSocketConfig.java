@@ -127,8 +127,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void configureMessageBroker(MessageBrokerRegistry config) {
 
         config.enableStompBrokerRelay("/topic", "/queue")
-                .setSystemHeartbeatSendInterval(5000)
-                .setSystemHeartbeatReceiveInterval(12000)
+                .setSystemHeartbeatSendInterval(20000)
+                .setSystemHeartbeatReceiveInterval(20000)
                 .setRelayHost(rabbitMQStompBrokerProperties.getRelayHost())
                 .setRelayPort(rabbitMQStompBrokerProperties.getRelayPort())
                 .setClientLogin(rabbitMQStompBrokerProperties.getClientLogin())
