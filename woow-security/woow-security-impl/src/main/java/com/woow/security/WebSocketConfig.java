@@ -142,8 +142,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
         ConnectionProvider connectionProvider =
                 ConnectionProvider.builder(rabbitMQStompBrokerProperties.getConnectionPoolName())
-                        .maxIdleTime(Duration.ofSeconds(60000000))
-                        .maxLifeTime(Duration.ofSeconds(60000000))
+                        .maxIdleTime(Duration.ofSeconds(360))
+                        .maxLifeTime(Duration.ofSeconds(360))
                         .maxConnections(rabbitMQStompBrokerProperties.getMaxConnections())
                         .pendingAcquireMaxCount(rabbitMQStompBrokerProperties.getPendingAcquireMaxCount())
                         .pendingAcquireTimeout(Duration.ofSeconds(rabbitMQStompBrokerProperties.getPendingAcquireTimeoutInSeconds()))
@@ -166,7 +166,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                                         log.info("❌ [HEARTBEAT] Failed to send manual heartbeat: " + e.getMessage())
                                 )
                                 .subscribe();
-                    }, 5, 5, TimeUnit.SECONDS);
+                    }, 10, 10, TimeUnit.SECONDS);
                 })
                 .remoteAddress(() ->
                         new InetSocketAddress(
@@ -180,7 +180,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void configureMessageBroker(MessageBrokerRegistry config) {
 
         config.enableStompBrokerRelay("/topic", "/queue")
-                .setSystemHeartbeatSendInterval(10000)
+                .setSystemHeartbeatSendInterval(20000)
                 .setSystemHeartbeatReceiveInterval(20000)
                 .setRelayHost(rabbitMQStompBrokerProperties.getRelayHost())
                 .setRelayPort(rabbitMQStompBrokerProperties.getRelayPort())
