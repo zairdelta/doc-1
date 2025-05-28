@@ -166,7 +166,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                                         log.info("❌ [HEARTBEAT] Failed to send manual heartbeat: " + e.getMessage())
                                 )
                                 .subscribe();
-                    }, 10, 10, TimeUnit.SECONDS);
+                    }, 5, 5, TimeUnit.SECONDS);
                 })
                 .remoteAddress(() ->
                         new InetSocketAddress(
