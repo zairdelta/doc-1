@@ -196,6 +196,22 @@ public class ConsultationController {
         }
     }
 
+    @PutMapping("{consultationId}/sessionId/{consultationSessionId}/comentarios")
+    public ResponseEntity addComentariosMedicos
+            (@PathVariable String consultationId,
+             @PathVariable String consultationSessionId,
+             @AuthenticationPrincipal UserDetails userDetails,
+             @RequestBody DoctorCommentsDTO doctorCommentsDTO) {
+        try {
+            consultationService
+                    .addComentariosMedicos(doctorCommentsDTO, consultationSessionId);
+            return ResponseEntity.ok().build();
+        }  catch (Exception e) {
+            e.printStackTrace();
+            log.error("Errror while creating laboratory Prescription:{} ", e.getMessage());
+            return WooBoHttpError.of(e).toResponseEntity();
+        }
+    }
 
 
 }

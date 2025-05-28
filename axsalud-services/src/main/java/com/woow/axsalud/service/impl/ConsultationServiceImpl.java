@@ -196,6 +196,31 @@ public class ConsultationServiceImpl implements ConsultationService {
     }
 
     @Override
+    public void addComentariosMedicos(DoctorCommentsDTO doctorCommentsDTO,
+                                      String consultationSessionId) {
+
+        ConsultationSession consultationSession = consultationSessionRepository
+                .findByConsultationSessionId(UUID.fromString(consultationSessionId));
+
+         if(consultationSession != null) {
+
+             ComentariosMedicos comentariosMedicos = consultationSession.getComentariosMedicos() ;
+
+             if(comentariosMedicos == null) {
+                 comentariosMedicos = new ComentariosMedicos();
+                 comentariosMedicos
+                         .setAxSaludWooUser(consultationSession.getConsultation().getPatient());
+                 comentariosMedicos.setConsultationSession(consultationSession);
+             }
+
+             comentariosMedicos.setObservacionesMedicas(doctorCommentsDTO.getComment());
+             comentariosMedicos = comentariosMedicosRepository.save(comentariosMedicos);
+             consultationSession.setComentariosMedicos(comentariosMedicos);
+             consultationSessionRepository.save(consultationSession);
+         }
+    }
+
+    @Override
     public ConsultationDTO continueWithConsultation(String userName, String consultationId)
             throws WooUserServiceException {
 
@@ -738,19 +763,7 @@ public class ConsultationServiceImpl implements ConsultationService {
 
                                 modelMapper.map(doctorPrescription, doctorPrescription1);
                                 doctorPrescription1.setConsultationSession(consultationSession);
-
-                                if(!ObjectUtils.isEmpty(doctorPrescription.getComentariosMedicos())) {
-                                    ComentariosMedicos comentariosMedicos = new ComentariosMedicos();
-                                    comentariosMedicos.setObservacionesMedicas(doctorPrescription.getComentariosMedicos());
-                                    comentariosMedicos
-                                            .setAxSaludWooUser(consultationSession.getConsultation().getPatient());
-                                    comentariosMedicos.setConsultationSession(consultationSession);
-                                    comentariosMedicos = comentariosMedicosRepository.save(comentariosMedicos);
-                                    consultationSession.setComentariosMedicos(comentariosMedicos);
-                                    consultationSessionRepository.save(consultationSession);
-
-                                }
-
+                                doctorPrescription1.setComentariosMedicos(doctorPrescription.getComentariosMedicos());
                                 return doctorPrescription1;
                             })
                             .collect(Collectors.toSet());
