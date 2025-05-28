@@ -16,4 +16,10 @@ public interface DoctorPrescriptionRepository extends JpaRepository<DoctorPrescr
         WHERE dp.consultationSession.doctor.coreUser.userName = :userName
     """)
     List<DoctorPrescription> findAllByDoctorUserName(@Param("userName") String userName);
+
+    @Query("""
+        SELECT dp FROM DoctorPrescription dp
+        WHERE dp.consultationSession.consultation.patient.coreUser.userName = :userName
+    """)
+    List<DoctorPrescription> findAllByPatientUserName(@Param("userName") String userName);
 }

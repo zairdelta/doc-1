@@ -135,7 +135,7 @@ public class AxSaludServiceImpl implements AxSaludService {
         log.debug("Getting Laboratory prescriptions for userName: {}", userName);
 
         List<LaboratoryPrescription> laboratoryPrescriptions =
-                laboratoryPrescriptionsRepository.findAllByDoctorUserName(userName);
+                laboratoryPrescriptionsRepository.findAllByPatientUserName(userName);
 
         return laboratoryPrescriptions.stream()
                 .filter(dp -> {
@@ -181,7 +181,7 @@ public class AxSaludServiceImpl implements AxSaludService {
         log.debug("Getting Doctor prescriptions for userName: {}", userName);
 
         List<DoctorPrescription> doctorPrescriptions =
-                doctorPrescriptionRepository.findAllByDoctorUserName(userName);
+                doctorPrescriptionRepository.findAllByPatientUserName(userName);
 
         return doctorPrescriptions.stream()
                 .filter(dp -> {

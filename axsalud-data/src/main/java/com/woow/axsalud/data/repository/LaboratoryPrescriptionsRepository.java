@@ -13,6 +13,11 @@ public interface LaboratoryPrescriptionsRepository extends JpaRepository<Laborat
 
     @Query("""
         SELECT lp FROM LaboratoryPrescription lp
+        WHERE lp.consultationSession.consultation.patient.coreUser.userName = :userName
+    """)
+    List<LaboratoryPrescription> findAllByPatientUserName(@Param("userName") String userName);
+    @Query("""
+        SELECT lp FROM LaboratoryPrescription lp
         WHERE lp.consultationSession.doctor.coreUser.userName = :userName
     """)
     List<LaboratoryPrescription> findAllByDoctorUserName(@Param("userName") String userName);
