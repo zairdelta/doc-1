@@ -95,7 +95,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     }
 
 
-    @Bean
+   /* @Bean
     public ReactorNettyTcpClient<byte[]> stompTcpClient() {
         SslContext sslContext;
         try {
@@ -127,9 +127,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                                 rabbitMQStompBrokerProperties.getRelayPort()));
 
         return new ReactorNettyTcpClient<>(client -> sslClient, new StompReactorNettyCodec());
-    }
+    }*/
 
-    /*@Bean
+    @Bean
     public ReactorNettyTcpClient<byte[]> stompTcpClient() {
         SslContext sslContext;
         try {
@@ -174,7 +174,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                                 rabbitMQStompBrokerProperties.getRelayPort()));
 
         return new ReactorNettyTcpClient<>(client -> sslClient, new StompReactorNettyCodec());
-    }*/
+    }
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
