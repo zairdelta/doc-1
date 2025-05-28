@@ -787,11 +787,13 @@ public class ConsultationServiceImpl implements ConsultationService {
                                 LaboratoryPrescription laboratoryPrescription1 = new LaboratoryPrescription();
                                 laboratoryPrescription.setId(0);
                                 modelMapper.map(laboratoryPrescription, laboratoryPrescription1);
+                                laboratoryPrescription1.setConsultationSession(consultationSession);
                                 return laboratoryPrescription1;
                             })
                             .collect(Collectors.toSet());
             consultationSession.getLaboratoryPrescriptions().addAll(laboratoryPrescriptionsSet);
         }
+        consultationSessionRepository.save(consultationSession);
     }
 
 }
