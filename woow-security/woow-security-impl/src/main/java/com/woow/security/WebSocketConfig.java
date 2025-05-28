@@ -102,8 +102,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
         ConnectionProvider connectionProvider =
                 ConnectionProvider.builder(rabbitMQStompBrokerProperties.getConnectionPoolName())
-                        .maxIdleTime(Duration.ofSeconds(600)) // 10 minutes
-                        .maxLifeTime(Duration.ofSeconds(600)) // 10 minutes
+                        .maxIdleTime(Duration.ofSeconds(60000000)) // 10 minutes
+                        .maxLifeTime(Duration.ofSeconds(60000000)) // 10 minutes
                 .maxConnections(rabbitMQStompBrokerProperties.getMaxConnections())
                 .pendingAcquireMaxCount(rabbitMQStompBrokerProperties.getPendingAcquireMaxCount())
                 .pendingAcquireTimeout(Duration.ofSeconds(rabbitMQStompBrokerProperties.getPendingAcquireTimeoutInSeconds()))
