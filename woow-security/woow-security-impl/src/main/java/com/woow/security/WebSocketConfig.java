@@ -95,7 +95,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     }
 
 
-    @Bean
+  /*  @Bean
     public ReactorNettyTcpClient<byte[]> stompTcpClient() {
         SslContext sslContext;
         try {
@@ -128,7 +128,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
         return new ReactorNettyTcpClient<>(client -> sslClient, new StompReactorNettyCodec());
     }
-/*
+
+   */
+
     @Bean
     public ReactorNettyTcpClient<byte[]> stompTcpClient() {
         SslContext sslContext;
@@ -166,7 +168,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                                         log.info("❌ [HEARTBEAT] Failed to send manual heartbeat: " + e.getMessage())
                                 )
                                 .subscribe();
-                    }, 5, 5, TimeUnit.SECONDS);
+                    }, 3, 3, TimeUnit.SECONDS);
                 })
                 .remoteAddress(() ->
                         new InetSocketAddress(
@@ -175,7 +177,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
         return new ReactorNettyTcpClient<>(client -> sslClient, new StompReactorNettyCodec());
     }
-*/
+
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
 
