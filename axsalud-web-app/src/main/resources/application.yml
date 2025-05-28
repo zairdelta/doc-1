@@ -21,7 +21,7 @@ spring:
     stomp:
       relay:
         heartbeat:
-          send-interval: 5000 # in miliseconds
+          send-interval: 10000 # in miliseconds
           receive-interval: 20000
   config:
     import: classpath:banner-config.yml
@@ -96,5 +96,5 @@ stomp:
     pending-acquire-timeout-in-seconds: 30
     connection-pool-name: rabbitmq-pool
     heartbeat:
-      send-interval: 5000  # milliseconds
+      send-interval: 10000  # milliseconds
       receive-interval: 20000
