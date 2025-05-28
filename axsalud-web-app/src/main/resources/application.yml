@@ -22,7 +22,7 @@ spring:
       relay:
         heartbeat:
           send-interval: 5000 # in miliseconds
-          receive-interval: 5000
+          receive-interval: 40000
   config:
     import: classpath:banner-config.yml
   flyway:
@@ -97,4 +97,4 @@ stomp:
     connection-pool-name: rabbitmq-pool
     heartbeat:
       send-interval: 5000  # milliseconds
-      receive-interval: 5000
+      receive-interval: 40000
