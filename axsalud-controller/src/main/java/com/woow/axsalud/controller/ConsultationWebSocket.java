@@ -34,6 +34,13 @@ public class ConsultationWebSocket {
         this.controlMessageDispatcher = controlMessageDispatcher;
     }
 
+    @MessageMapping("/ping")
+    public void gettingPingMessageFromClient(
+            Principal principal
+    ) {
+        log.debug("getting ping frame from user: {}", principal.getName());
+    }
+
     @MessageMapping("/consultation/{consultationId}/session/{consultationSessionId}/private")
     public void sendPrivateMessage(
             @DestinationVariable String consultationId,
