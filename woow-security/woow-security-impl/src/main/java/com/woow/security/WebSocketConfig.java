@@ -130,7 +130,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     }
 
    */
-
+/*
     @Bean
     public ReactorNettyTcpClient<byte[]> stompTcpClient() {
         SslContext sslContext;
@@ -178,6 +178,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         return new ReactorNettyTcpClient<>(client -> sslClient, new StompReactorNettyCodec());
     }
 
+ */
+
+    /*
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
 
@@ -195,13 +198,13 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         config.setApplicationDestinationPrefixes("/app");
         config.setUserDestinationPrefix("/user/");
     }
-
-    /*@Override
+*/
+    @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
         registry.setApplicationDestinationPrefixes("/app");
         registry.enableSimpleBroker("/queue", "/topic");
     }
-     */
+
 
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
