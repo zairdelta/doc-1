@@ -96,5 +96,5 @@ stomp:
     pending-acquire-timeout-in-seconds: 30
     connection-pool-name: rabbitmq-pool
     heartbeat:
-      send-interval: 10000  # milliseconds
-      receive-interval: 10000
+      send-interval: 5000  # milliseconds
+      receive-interval: 5000
