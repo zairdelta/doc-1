@@ -22,15 +22,19 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import reactor.netty.resources.ConnectionProvider;
 import reactor.netty.tcp.TcpClient;
 
 import javax.net.ssl.SSLException;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Configuration
 @EnableWebSocketMessageBroker
@@ -89,6 +93,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 .withSockJS();
     }
 
+    /*
     @Bean
     public ReactorNettyTcpClient<byte[]> stompTcpClient() {
         SslContext sslContext;
@@ -118,6 +123,53 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                // )
                 .remoteAddress(() ->
                         new InetSocketAddress(rabbitMQStompBrokerProperties.getRelayHost(),
+                                rabbitMQStompBrokerProperties.getRelayPort()));
+
+        return new ReactorNettyTcpClient<>(client -> sslClient, new StompReactorNettyCodec());
+    }*/
+
+    @Bean
+    public ReactorNettyTcpClient<byte[]> stompTcpClient() {
+        SslContext sslContext;
+        try {
+            sslContext = SslContextBuilder
+                    .forClient()
+                    .build();
+        } catch (SSLException e) {
+            throw new IllegalStateException("Failed to create SSL context", e);
+        }
+
+        ConnectionProvider connectionProvider =
+                ConnectionProvider.builder(rabbitMQStompBrokerProperties.getConnectionPoolName())
+                        .maxIdleTime(Duration.ofSeconds(60000000))
+                        .maxLifeTime(Duration.ofSeconds(60000000))
+                        .maxConnections(rabbitMQStompBrokerProperties.getMaxConnections())
+                        .pendingAcquireMaxCount(rabbitMQStompBrokerProperties.getPendingAcquireMaxCount())
+                        .pendingAcquireTimeout(Duration.ofSeconds(rabbitMQStompBrokerProperties.getPendingAcquireTimeoutInSeconds()))
+                        .build();
+
+        TcpClient sslClient = TcpClient.create(connectionProvider)
+                .secure(ssl -> ssl.sslContext(sslContext))
+                .option(ChannelOption.SO_KEEPALIVE, true)
+                .doOnConnected(conn -> {
+                    // 🔁 Manual heartbeat every 5 seconds
+                    Schedulers.parallel().schedulePeriodically(() -> {
+                        byte[] heartbeat = "\n".getBytes(StandardCharsets.UTF_8);
+                        conn.outbound()
+                                .sendByteArray(Mono.just(heartbeat))
+                                .then()
+                                .doOnSuccess(unused ->
+                                        log.info("✅ [HEARTBEAT] Manual STOMP heartbeat sent at: " + Instant.now())
+                                )
+                                .doOnError(e ->
+                                        log.info("❌ [HEARTBEAT] Failed to send manual heartbeat: " + e.getMessage())
+                                )
+                                .subscribe();
+                    }, 5, 5, TimeUnit.SECONDS);
+                })
+                .remoteAddress(() ->
+                        new InetSocketAddress(
+                                rabbitMQStompBrokerProperties.getRelayHost(),
                                 rabbitMQStompBrokerProperties.getRelayPort()));
 
         return new ReactorNettyTcpClient<>(client -> sslClient, new StompReactorNettyCodec());
