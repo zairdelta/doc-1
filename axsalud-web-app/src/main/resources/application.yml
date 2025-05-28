@@ -17,6 +17,12 @@ logging:
     com.woow: DEBUG
 
 spring:
+  messaging:
+    stomp:
+      relay:
+        heartbeat:
+          send-interval: 5000 # in miliseconds
+          receive-interval: 5000
   config:
     import: classpath:banner-config.yml
   flyway:
@@ -89,3 +95,6 @@ stomp:
     pending-acquire-max-count: -1
     pending-acquire-timeout-in-seconds: 30
     connection-pool-name: rabbitmq-pool
+    heartbeat:
+      send-interval: 10000  # milliseconds
+      receive-interval: 10000

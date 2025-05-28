@@ -75,6 +75,12 @@ public class ConsultationServiceImpl implements ConsultationService {
         this.comentariosMedicosRepository = comentariosMedicosRepository;
     }
 
+    @Scheduled(fixedRate = 30000)
+    public void sendPing() {
+        log.info("sending ping message to topic/doctor-events: {}", Map.of("messageType", "ping"));
+        messagingTemplate.convertAndSend("/topic/doctor-events", Map.of("messageType", "ping"));
+    }
+
     @Override
     @Transactional
     public void handledConsultationMessage(final ConsultationMessageDTO consultationMessage) {

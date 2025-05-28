@@ -5,6 +5,7 @@ import com.woow.security.api.WebSocketUserPrincipal;
 import com.woow.security.rabbitmq.RabbitMQStompBrokerProperties;
 import com.woow.security.interceptor.JwtWebSocketInterceptor;
 import com.woow.security.interceptor.OutBoundIInterceptor;
+import io.netty.channel.ChannelOption;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import lombok.extern.slf4j.Slf4j;
@@ -101,6 +102,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
         ConnectionProvider connectionProvider =
                 ConnectionProvider.builder(rabbitMQStompBrokerProperties.getConnectionPoolName())
+                        .maxIdleTime(Duration.ofSeconds(600)) // 10 minutes
+                        .maxLifeTime(Duration.ofSeconds(600)) // 10 minutes
                 .maxConnections(rabbitMQStompBrokerProperties.getMaxConnections())
                 .pendingAcquireMaxCount(rabbitMQStompBrokerProperties.getPendingAcquireMaxCount())
                 .pendingAcquireTimeout(Duration.ofSeconds(rabbitMQStompBrokerProperties.getPendingAcquireTimeoutInSeconds()))
@@ -108,6 +111,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
         TcpClient sslClient = TcpClient.create(connectionProvider)
                 .secure(ssl -> ssl.sslContext(sslContext))
+                .option(ChannelOption.SO_KEEPALIVE, true)
+              //  .doOnConnected(conn ->
+               //         conn.addHandlerLast(new ReadTimeoutHandler(60))
+                //                .addHandlerLast(new WriteTimeoutHandler(60))
+               // )
                 .remoteAddress(() ->
                         new InetSocketAddress(rabbitMQStompBrokerProperties.getRelayHost(),
                                 rabbitMQStompBrokerProperties.getRelayPort()));
