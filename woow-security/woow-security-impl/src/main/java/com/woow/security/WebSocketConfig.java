@@ -22,6 +22,7 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
+import reactor.core.Disposable;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import reactor.netty.resources.ConnectionProvider;
@@ -136,49 +137,51 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public ReactorNettyTcpClient<byte[]> stompTcpClient() {
         SslContext sslContext;
         try {
-            sslContext = SslContextBuilder
-                    .forClient()
-                    .build();
+            sslContext = SslContextBuilder.forClient().build();
         } catch (SSLException e) {
             throw new IllegalStateException("Failed to create SSL context", e);
         }
 
-        ConnectionProvider connectionProvider =
-                ConnectionProvider.builder(rabbitMQStompBrokerProperties.getConnectionPoolName())
-                        .maxIdleTime(Duration.ofSeconds(360))
-                        .maxLifeTime(Duration.ofSeconds(360))
-                        .maxConnections(rabbitMQStompBrokerProperties.getMaxConnections())
-                        .pendingAcquireMaxCount(rabbitMQStompBrokerProperties.getPendingAcquireMaxCount())
-                        .pendingAcquireTimeout(Duration.ofSeconds(rabbitMQStompBrokerProperties.getPendingAcquireTimeoutInSeconds()))
-                        .build();
+        ConnectionProvider connectionProvider = ConnectionProvider.builder(rabbitMQStompBrokerProperties.getConnectionPoolName())
+                .maxIdleTime(Duration.ofSeconds(360))
+                .maxLifeTime(Duration.ofSeconds(360))
+                .maxConnections(rabbitMQStompBrokerProperties.getMaxConnections())
+                .pendingAcquireMaxCount(rabbitMQStompBrokerProperties.getPendingAcquireMaxCount())
+                .pendingAcquireTimeout(Duration.ofSeconds(rabbitMQStompBrokerProperties.getPendingAcquireTimeoutInSeconds()))
+                .build();
 
         TcpClient sslClient = TcpClient.create(connectionProvider)
                 .secure(ssl -> ssl.sslContext(sslContext))
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .doOnConnected(conn -> {
-                    // 🔁 Manual heartbeat every 5 seconds
-                    Schedulers.parallel().schedulePeriodically(() -> {
-                        byte[] heartbeat = "\n".getBytes(StandardCharsets.UTF_8);
-                        conn.outbound()
-                                .sendByteArray(Mono.just(heartbeat))
-                                .then()
-                                .doOnSuccess(unused ->
-                                        log.info("✅ [HEARTBEAT] Manual STOMP heartbeat sent at: " + Instant.now())
-                                )
-                                .doOnError(e ->
-                                        log.info("❌ [HEARTBEAT] Failed to send manual heartbeat: " + e.getMessage())
-                                )
-                                .subscribe();
-                    }, 3, 3, TimeUnit.SECONDS);
+                    // 🔁 Schedule heartbeat and keep the Disposable
+                    Disposable heartbeatTask = Schedulers.parallel().schedulePeriodically(() -> {
+                        if (!conn.isDisposed()) {
+                            byte[] heartbeat = "\n".getBytes(StandardCharsets.UTF_8);
+                            conn.outbound()
+                                    .sendByteArray(Mono.just(heartbeat))
+                                    .then()
+                                    .doOnSuccess(unused ->
+                                            log.info("✅ [HEARTBEAT] Manual STOMP heartbeat sent at: {}", Instant.now()))
+                                    .doOnError(e ->
+                                            log.warn("❌ [HEARTBEAT] Failed to send manual heartbeat: {}", e.getMessage()))
+                                    .subscribe();
+                        } else {
+                            log.warn("💀 Skipping heartbeat — connection is disposed");
+                        }
+                    }, 6, 6, TimeUnit.SECONDS);
+
+                    conn.onDispose(() -> {
+                        log.info("🔌 Connection disposed, cancelling heartbeat");
+                        heartbeatTask.dispose();
+                    });
                 })
-                .remoteAddress(() ->
-                        new InetSocketAddress(
-                                rabbitMQStompBrokerProperties.getRelayHost(),
-                                rabbitMQStompBrokerProperties.getRelayPort()));
+                .remoteAddress(() -> new InetSocketAddress(
+                        rabbitMQStompBrokerProperties.getRelayHost(),
+                        rabbitMQStompBrokerProperties.getRelayPort()));
 
         return new ReactorNettyTcpClient<>(client -> sslClient, new StompReactorNettyCodec());
     }
-
 
 
     @Override
