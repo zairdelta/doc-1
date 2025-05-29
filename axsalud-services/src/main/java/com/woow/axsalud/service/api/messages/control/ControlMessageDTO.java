@@ -11,4 +11,5 @@ public class ControlMessageDTO {
     private ControlMessageType messageType;
     private String doctor;
     private String patient;
+    private String sender;
 }
