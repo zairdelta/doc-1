@@ -42,6 +42,8 @@ public class ConsultationServiceImpl implements ConsultationService {
 
     @Value("${woow.system.user:master@example.com}")
     private String SYSTEM_USER;
+
+    private static final String CHAT_PING_MESSAGE = "<messageType>ping</messageType>";
     private ConsultationRepository consultationRepository;
     private WoowUserRepository woowUserRepository;
     private AxSaludUserRepository axSaludUserRepository;
@@ -88,11 +90,15 @@ public class ConsultationServiceImpl implements ConsultationService {
         long eventId = 0;
         try {
             log.debug("Validating Message: {}", consultationMessage);
-            validateOnSend(consultationMessage);
-            validate(consultationMessage.getConsultationId(),
-                    consultationMessage.getConsultationSessionId(),
-                    consultationMessage.getReceiver(), consultationMessage.getSender());
-            eventId = addMessage(consultationMessage);
+
+            if(consultationMessage.getContent() != null &
+            !consultationMessage.getContent().equalsIgnoreCase(CHAT_PING_MESSAGE)) {
+                validateOnSend(consultationMessage);
+                validate(consultationMessage.getConsultationId(),
+                        consultationMessage.getConsultationSessionId(),
+                        consultationMessage.getReceiver(), consultationMessage.getSender());
+                eventId = addMessage(consultationMessage);
+            }
 
             ConsultationEventDTO<ConsultationMessageDTO> consultationEventDTO = new ConsultationEventDTO<>();
             consultationEventDTO.setMessageType(ConsultationMessgeTypeEnum.TEXT_MESSAGE);
