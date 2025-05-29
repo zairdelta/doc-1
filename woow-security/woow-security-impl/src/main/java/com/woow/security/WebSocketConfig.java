@@ -169,7 +169,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                         } else {
                             log.warn("💀 Skipping heartbeat — connection is disposed");
                         }
-                    }, 6, 6, TimeUnit.SECONDS);
+                    }, 3, 3, TimeUnit.SECONDS);
 
                     conn.onDispose(() -> {
                         log.info("🔌 Connection disposed, cancelling heartbeat");
