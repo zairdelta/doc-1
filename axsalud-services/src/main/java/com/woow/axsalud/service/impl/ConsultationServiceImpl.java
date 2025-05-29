@@ -98,6 +98,8 @@ public class ConsultationServiceImpl implements ConsultationService {
                         consultationMessage.getConsultationSessionId(),
                         consultationMessage.getReceiver(), consultationMessage.getSender());
                 eventId = addMessage(consultationMessage);
+            } else {
+                log.debug("Receiving messagetype ping, keep alive send to other party in chat topic");
             }
 
             ConsultationEventDTO<ConsultationMessageDTO> consultationEventDTO = new ConsultationEventDTO<>();
