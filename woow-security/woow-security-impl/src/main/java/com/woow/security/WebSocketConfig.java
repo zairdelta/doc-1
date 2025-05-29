@@ -94,6 +94,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 .withSockJS();
     }
 
+    /*
 
     @Bean
     public ReactorNettyTcpClient<byte[]> stompTcpClient() {
@@ -128,9 +129,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
         return new ReactorNettyTcpClient<>(client -> sslClient, new StompReactorNettyCodec());
     }
+*/
 
 
-/*
     @Bean
     public ReactorNettyTcpClient<byte[]> stompTcpClient() {
         SslContext sslContext;
@@ -177,7 +178,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
         return new ReactorNettyTcpClient<>(client -> sslClient, new StompReactorNettyCodec());
     }
-*/
+
 
 
     @Override
