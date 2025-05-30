@@ -79,7 +79,7 @@ public class WoowUserController {
                 .build();
     }
 
-    @GetMapping("/consultations")
+    @GetMapping("/history")
     @Operation(
             summary = "Get the user's consultations (Patient)",
             description = "Fetch all consultations for the authenticated user. User must have the PATIENT or USER role."

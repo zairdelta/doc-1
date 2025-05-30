@@ -21,7 +21,7 @@ public class JwtTokenUtil implements Serializable {
 
     private static final long serialVersionUID = -2550185165626007488L;
 
-    public static final long JWT_TOKEN_VALIDITY = 5 * 60 * 60;
+    public static final long JWT_TOKEN_VALIDITY = 18 * 60 * 60;
     public static final long JWT_TOKEN_VALIDITY_ONE_HOUR = 1 * 60 * 60;
 
     private static final String TENANT_ID = "X-TenantID";

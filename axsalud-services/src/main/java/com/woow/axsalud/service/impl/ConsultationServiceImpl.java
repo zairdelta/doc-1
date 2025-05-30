@@ -757,8 +757,6 @@ public class ConsultationServiceImpl implements ConsultationService {
         patientViewDTO.setLastName(patientWoowUser.getLastName());
         consultationSessionViewDTO.setDoctorViewDTO(doctorViewDTO);
         consultationSessionViewDTO.setPatientViewDTO(patientViewDTO);
-        consultationSessionViewDTO.setDoctorPrescriptions(consultationSession.getDoctorPrescriptions());
-        consultationSessionViewDTO.setLaboratoryPrescriptions(consultationSession.getLaboratoryPrescriptions());
         return consultationSessionViewDTO;
     }
 
