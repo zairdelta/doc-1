@@ -5,6 +5,7 @@ import com.woow.axsalud.data.consultation.ConsultationSessionStatus;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -36,4 +37,13 @@ public interface ConsultationSessionRepository extends JpaRepository<Consultatio
     List<ConsultationSession> findByPatientLastTimeSeen(
             @Param("patientLastTimePing") LocalDateTime patientLastTimePing,
             @Param("statuses") List<ConsultationSessionStatus> statuses);
+
+    @Modifying
+    @Query("UPDATE ConsultationSession c SET c.doctorLastTimePing = :time WHERE c.consultationSessionId = :sessionId")
+    void updateDoctorLastPing(@Param("sessionId") UUID sessionId, @Param("time") LocalDateTime time);
+
+    @Modifying
+    @Query("UPDATE ConsultationSession c SET c.patientLastTimePing = :time WHERE c.consultationSessionId = :sessionId")
+    void updatePatientLastPing(@Param("sessionId") UUID sessionId, @Param("time") LocalDateTime time);
+
 }

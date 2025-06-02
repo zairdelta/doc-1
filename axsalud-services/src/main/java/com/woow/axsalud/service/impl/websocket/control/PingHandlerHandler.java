@@ -43,17 +43,16 @@ public class PingHandlerHandler implements ControlMessageHandler {
         controlMessageDTO.setMessageType(ControlMessageType.PONG);
         controlMessageDTO.setTimeProcessed(LocalDateTime.now());
         controlMessageDTO.setSender(message.getUserName());
-
-        ConsultationSession consultationSession = consultationSessionRepository
-                .findByConsultationSessionId(UUID.fromString(message.getConsultationSessionId()));
+        UUID sessionId = UUID.fromString(message.getConsultationSessionId());
 
         if(message.getRoles().contains(AXSaludUserRoles.DOCTOR.getRole())) {
-            consultationSession.setDoctorLastTimePing(LocalDateTime.now());
-        } else {
-            consultationSession.setPatientLastTimePing(LocalDateTime.now());
-        }
+            log.info("updating Doctor lastPing, not intrusive query");
+            consultationSessionRepository.updateDoctorLastPing(sessionId, LocalDateTime.now());
 
-        consultationSessionRepository.save(consultationSession);
+        } else {
+            log.info("updating Patient lastPing, not intrusive query");
+            consultationSessionRepository.updatePatientLastPing(sessionId, LocalDateTime.now());
+        }
 
         String controlCommunicationTopic = "/topic/consultation." + message.getConsultationId() +
                 ".session." + message.getConsultationSessionId() + ".control";
