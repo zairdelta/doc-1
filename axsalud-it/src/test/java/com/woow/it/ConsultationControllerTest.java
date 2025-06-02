@@ -337,7 +337,7 @@ public class ConsultationControllerTest extends WoowBaseTest {
         HttpEntity<Void> fetchConsultationsRequest = new HttpEntity<>(consultationFetchHeaders);
 
         ResponseEntity<ConsultationDTO[]> consultationsResponse = restTemplate.exchange(
-                getBaseUrl() + "woo_user/consultations",
+                getBaseUrl() + "woo_user/history",
                 HttpMethod.GET,
                 fetchConsultationsRequest,
                 ConsultationDTO[].class

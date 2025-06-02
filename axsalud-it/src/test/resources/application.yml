@@ -20,7 +20,13 @@ logging:
 
     # OPTIONAL: your custom package if you want to see your own logs
     com.woow: DEBUG
-
+woow:
+  app:
+    telemedicine:
+      consultation:
+        session:
+          connected:
+            idleTimeoutInSeconds: 30
 spring:
   datasource:
     url: jdbc:mysql://localhost:3306/t_dev?useSSL=false&serverTimezone=UTC

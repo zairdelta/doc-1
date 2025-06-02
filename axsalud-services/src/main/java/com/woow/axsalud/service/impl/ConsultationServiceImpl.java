@@ -77,11 +77,6 @@ public class ConsultationServiceImpl implements ConsultationService {
         this.comentariosMedicosRepository = comentariosMedicosRepository;
     }
 
-    @Scheduled(fixedRate = 30000)
-    public void sendPing() {
-        log.info("sending ping message to topic/doctor-events: {}", Map.of("messageType", "ping"));
-        messagingTemplate.convertAndSend("/topic/doctor-events", Map.of("messageType", "ping"));
-    }
 
     @Override
     @Transactional
@@ -97,7 +92,7 @@ public class ConsultationServiceImpl implements ConsultationService {
                 validate(consultationMessage.getConsultationId(),
                         consultationMessage.getConsultationSessionId(),
                         consultationMessage.getReceiver(), consultationMessage.getSender());
-                eventId = addMessage(consultationMessage);
+                eventId = addMessage(consultationMessage, ConsultationMessgeTypeEnum.TEXT_MESSAGE);
             } else {
                 log.debug("Receiving messagetype ping, keep alive send to other party in chat topic");
             }
@@ -132,7 +127,7 @@ public class ConsultationServiceImpl implements ConsultationService {
                     consultationMessage, errorMessage, SYSTEM_USER);
 
             try {
-                eventId = addMessage(errorMessage);
+                eventId = addMessage(errorMessage, ConsultationMessgeTypeEnum.ERROR);
                 consultationEventDTO.setId(eventId);
             } catch (ConsultationServiceException ex) {
                 log.error("There was an error processing errorMessage: {}", e.getMessage());
@@ -404,7 +399,7 @@ public class ConsultationServiceImpl implements ConsultationService {
         welcomeMessage.setContent("👋 " + consultationDTO.getWelcomeMessage());
 
         log.info("Sending Welcome message:{} ", welcomeMessage);
-        long eventId = addMessage(welcomeMessage);
+        long eventId = addMessage(welcomeMessage, ConsultationMessgeTypeEnum.WELCOME);
         consultationEventDTO.setId(eventId);
         consultationEventDTO.setPayload(welcomeMessage);
 
@@ -437,7 +432,9 @@ public class ConsultationServiceImpl implements ConsultationService {
     }
 
     @Override
-    public long addMessage(ConsultationMessageDTO consultationMessage) throws ConsultationServiceException {
+    public long addMessage(ConsultationMessageDTO consultationMessage,
+                           ConsultationMessgeTypeEnum consultationMessageType)
+            throws ConsultationServiceException {
 
         log.info("AddMessage received at service layer: {}", consultationMessage);
         ConsultationSession consultationSession =
@@ -448,6 +445,7 @@ public class ConsultationServiceImpl implements ConsultationService {
         ConsultationMessageEntity consultationMessageEntity = new ConsultationMessageEntity();
         consultationMessageEntity.setConsultationSession(consultationSession);
         consultationMessageEntity.setContent(consultationMessage.getContent());
+        consultationMessageEntity.setMessageType(consultationMessageType.getType().toString());
 
         log.info("Adding message to DB, sentBy: {}", consultationMessage.getSender());
 
@@ -520,7 +518,7 @@ public class ConsultationServiceImpl implements ConsultationService {
                     consultationSession.getConsultation().getConsultationId().toString());
             ConsultationEventDTO<ConsultationMessageDTO> consultationMessageDTO =
                     ConsultationMessageDTO.from(fileResponseDTO, userName);
-            addMessage(consultationMessageDTO.getPayload());
+            addMessage(consultationMessageDTO.getPayload(), ConsultationMessgeTypeEnum.FILE_UPLOADED);
             return fileResponseDTO;
         } catch (StorageServiceException e) {
             throw new ConsultationServiceException(e.getMessage(), 301);
@@ -706,7 +704,7 @@ public class ConsultationServiceImpl implements ConsultationService {
         endSessionMessageDTO.setContent(" ");
 
 
-        long eventId = addMessage(endSessionMessageDTO);
+        long eventId = addMessage(endSessionMessageDTO, ConsultationMessgeTypeEnum.SESSION_END);
 
         ConsultationEventDTO<ConsultationMessageDTO> consultationEventDTO = new ConsultationEventDTO<>();
         consultationEventDTO.setMessageType(ConsultationMessgeTypeEnum.SESSION_END);

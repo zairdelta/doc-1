@@ -2,9 +2,9 @@ package com.woow.security;
 
 import com.woow.security.api.JwtTokenUtil;
 import com.woow.security.api.WebSocketUserPrincipal;
+import com.woow.security.interceptor.inbound.*;
 import com.woow.security.rabbitmq.RabbitMQStompBrokerProperties;
-import com.woow.security.interceptor.JwtWebSocketInterceptor;
-import com.woow.security.interceptor.OutBoundIInterceptor;
+import com.woow.security.interceptor.outbound.OutBoundIInterceptor;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
@@ -44,15 +44,30 @@ import java.util.concurrent.TimeUnit;
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private JwtTokenUtil jwtTokenUtil;
-    private final JwtWebSocketInterceptor jwtWebSocketInterceptor;
+    private ConnectWsInterceptor connectWsInterceptor;
+    private DisconnectWsInterceptor disconnectWsInterceptor;
+    private InboundMessageLoggingWsInterceptor inboundMessageLoggingWsInterceptor;
+    private SendMessageWsInterceptor sendMessageWsInterceptor;
+    private SubscribeWsInterceptor subscribeWsInterceptor;
+    private UnsubscribeWsInterceptor unsubscribeWsInterceptor;
     private final OutBoundIInterceptor outBoundIInterceptor;
     private RabbitMQStompBrokerProperties rabbitMQStompBrokerProperties;
 
-    public WebSocketConfig(JwtWebSocketInterceptor jwtWebSocketInterceptor,
+    public WebSocketConfig(ConnectWsInterceptor connectWsInterceptor,
+                           DisconnectWsInterceptor disconnectWsInterceptor,
+                           InboundMessageLoggingWsInterceptor inboundMessageLoggingWsInterceptor,
+                           SendMessageWsInterceptor sendMessageWsInterceptor,
+                           SubscribeWsInterceptor subscribeWsInterceptor,
+                           UnsubscribeWsInterceptor unsubscribeWsInterceptor,
                            OutBoundIInterceptor outBoundIInterceptor,
                            JwtTokenUtil jwtTokenUtil,
                            RabbitMQStompBrokerProperties rabbitMQStompBrokerProperties) {
-        this.jwtWebSocketInterceptor = jwtWebSocketInterceptor;
+        this.connectWsInterceptor = connectWsInterceptor;
+        this.disconnectWsInterceptor = disconnectWsInterceptor;
+        this.inboundMessageLoggingWsInterceptor = inboundMessageLoggingWsInterceptor;
+        this.sendMessageWsInterceptor = sendMessageWsInterceptor;
+        this.subscribeWsInterceptor = subscribeWsInterceptor;
+        this.unsubscribeWsInterceptor = unsubscribeWsInterceptor;
         this.outBoundIInterceptor = outBoundIInterceptor;
         this.jwtTokenUtil = jwtTokenUtil;
         this.rabbitMQStompBrokerProperties = rabbitMQStompBrokerProperties;
@@ -91,8 +106,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                             return null;
 
                         }}})
-                .setAllowedOriginPatterns("*")
-                .withSockJS();
+                .setAllowedOriginPatterns("*");
+             //   .withSockJS();
     }
 
     /*
@@ -212,7 +227,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
-        registration.interceptors(jwtWebSocketInterceptor);
+        registration.interceptors(connectWsInterceptor, disconnectWsInterceptor,
+                inboundMessageLoggingWsInterceptor, sendMessageWsInterceptor, subscribeWsInterceptor,
+                unsubscribeWsInterceptor);
     }
 
     @Override

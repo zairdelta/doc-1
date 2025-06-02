@@ -1,13 +1,11 @@
 package com.woow.axsalud.service.api;
 
-import com.woow.axsalud.data.consultation.ComentariosMedicos;
 import com.woow.axsalud.data.consultation.ConsultationSession;
 import com.woow.axsalud.data.consultation.ConsultationStatus;
 import com.woow.axsalud.service.api.dto.*;
 import com.woow.axsalud.service.api.exception.ConsultationServiceException;
 import com.woow.axsalud.service.api.messages.ConsultationMessageDTO;
 import com.woow.core.service.api.exception.WooUserServiceException;
-import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -23,7 +21,7 @@ public interface ConsultationService {
     void validate(String consultationId, String consultationSessionId,
                   String receiver, String sender) throws ConsultationServiceException;
     ConsultationDTO assign(String doctor, String consultationId, String consultationSessionId) throws ConsultationServiceException;
-    long addMessage(ConsultationMessageDTO consultationMessage)
+    long addMessage(ConsultationMessageDTO consultationMessage, ConsultationMessgeTypeEnum consultationMessageType)
             throws ConsultationServiceException;
 
     FileResponseDTO appendDocument(String userName, String consultationSessionId, MultipartFile file) throws ConsultationServiceException;
