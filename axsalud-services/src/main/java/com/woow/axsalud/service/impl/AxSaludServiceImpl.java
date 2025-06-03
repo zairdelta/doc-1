@@ -388,7 +388,7 @@ public class AxSaludServiceImpl implements AxSaludService {
         Optional<AxSaludWooUser>
                 axSaludWooUserOptional = axSaludUserRepository.findByCoreUser_UserId(woowUser.getUserId());
 
-        if(axSaludWooUserOptional.isEmpty()) {
+        if(!axSaludWooUserOptional.isEmpty()) {
             AxSaludWooUser axSaludWooUser = axSaludWooUserOptional.get();
 
             log.info("Getting history for userId: {}, userName:{} ", axSaludWooUser.getId(), userName);
@@ -399,7 +399,7 @@ public class AxSaludServiceImpl implements AxSaludService {
             log.info("History content size: {}", patientConsultationSummaryList.size());
             return patientConsultationSummaryList;
         } else {
-            log.info("user not found in the system: {}", userName);
+            log.info("user not found in the system: {}, userId: {}", userName, woowUser.getUserId());
 
             return new ArrayList<>();
         }
