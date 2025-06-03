@@ -604,6 +604,7 @@ public class ConsultationServiceImpl implements ConsultationService {
                                                                                                      int pageNumber,
                                                                                                      int totalElementsPerPage)
             throws ConsultationServiceException {
+        log.info("getting messages for sessionId: {}", sessionId);
         Pageable pageable = PageRequest.of(pageNumber, totalElementsPerPage);
         Page<ConsultationMessageEntity> page = consultationMessageRepository
                 .findMessagesByConsultationSessionId(UUID.fromString(sessionId), pageable);
@@ -629,6 +630,7 @@ public class ConsultationServiceImpl implements ConsultationService {
                                                                                        int pageNumber, int totalElementsPerPage)
             throws ConsultationServiceException {
 
+        log.info("getting messages for consultationID: {}, sessionId: {}", consultationId, consultationSessionId);
         if(ObjectUtils.isEmpty(consultationSessionId)) {
             throw new ConsultationServiceException("consultationSessionId cannot be empty", 402);
         }
