@@ -17,10 +17,6 @@ public class SendMessageWsInterceptor   implements ChannelInterceptor {
 
             if (accessor != null && (accessor.getCommand() == StompCommand.SEND
                     || accessor.getCommand() == StompCommand.MESSAGE)) {
-                accessor.setNativeHeader("durable", "true");
-                accessor.setNativeHeader("auto-delete", "false");
-                accessor.setNativeHeader("x-expires", "120000");
-                log.info("Injected headers for SEND MESSAGE: " + accessor.toNativeHeaderMap());
                 log.info("INBOUND STOMP message to destination [{}], STOMP session [{}], payload: {}",
                         accessor.getDestination(),
                         accessor.getSessionId(),
