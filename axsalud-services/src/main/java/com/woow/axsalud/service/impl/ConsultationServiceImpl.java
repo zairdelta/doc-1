@@ -646,10 +646,16 @@ public class ConsultationServiceImpl implements ConsultationService {
         ConsultationMessagesPagingDTO consultationMessagesPagingDTO = new ConsultationMessagesPagingDTO();
         consultationMessagesPagingDTO.setMessages(messages.stream()
                 .filter(Objects::nonNull)
+                .filter(consultationMessageEntity ->
+                        ConsultationMessgeTypeEnum.TEXT_MESSAGE.getType().equalsIgnoreCase(consultationMessageEntity.getMessageType()))
                 .map(ConsultationMessageDTO::from)
                 .collect(Collectors.toList()));
         consultationMessagesPagingDTO.setTotalElements(totalElements);
         consultationMessagesPagingDTO.setTotalPages(totalPages);
+
+        for(ConsultationEventDTO eventDTO:consultationMessagesPagingDTO.getMessages()) {
+            log.info("Messages: {}", ((ConsultationMessageDTO)eventDTO.getPayload()).getContent());
+        }
 
         return consultationMessagesPagingDTO;
     }
