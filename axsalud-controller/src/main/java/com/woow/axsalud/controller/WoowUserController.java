@@ -1,6 +1,7 @@
 package com.woow.axsalud.controller;
 
 import com.woow.axsalud.controller.exception.WooBoHttpError;
+import com.woow.axsalud.data.repository.PatientConsultationSummary;
 import com.woow.axsalud.service.api.AxSaludService;
 import com.woow.axsalud.service.api.dto.*;
 import com.woow.core.service.api.exception.WooUserServiceException;
@@ -96,10 +97,11 @@ public class WoowUserController {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "403", description = "Forbidden")
     })
-    public ResponseEntity<List<ConsultationDTO>> getUserConsultations(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<List<PatientConsultationSummary>> getUserConsultations(@AuthenticationPrincipal UserDetails userDetails,
+                                                                                 @RequestParam int pageNumber, @RequestParam int elementsPerPage) {
         try {
-            return ResponseEntity.ok(axSaludService.getConsultation(userDetails.getUsername()));
-        } catch (WooUserServiceException e) {
+            return ResponseEntity.ok(axSaludService.getUserHistory(userDetails.getUsername(), pageNumber, elementsPerPage));
+        } catch (Exception e) {
             log.error("Error while getting user data: {}", e.getMessage(), e);
             return ResponseEntity.notFound().build();
         }

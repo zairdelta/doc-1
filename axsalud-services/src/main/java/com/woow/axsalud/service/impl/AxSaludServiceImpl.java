@@ -9,14 +9,12 @@ import com.woow.axsalud.data.consultation.Consultation;
 import com.woow.axsalud.data.consultation.ConsultationSession;
 import com.woow.axsalud.data.consultation.DoctorPrescription;
 import com.woow.axsalud.data.consultation.LaboratoryPrescription;
-import com.woow.axsalud.data.repository.AxSaludUserRepository;
-import com.woow.axsalud.data.repository.DoctorPrescriptionRepository;
-import com.woow.axsalud.data.repository.LaboratoryPrescriptionsRepository;
-import com.woow.axsalud.data.repository.PatientDataRepository;
+import com.woow.axsalud.data.repository.*;
 import com.woow.axsalud.data.serviceprovider.ServiceProvider;
 import com.woow.axsalud.service.api.AxSaludService;
 import com.woow.axsalud.service.api.ServiceProviderService;
 import com.woow.axsalud.service.api.dto.*;
+import com.woow.axsalud.service.api.exception.ConsultationServiceException;
 import com.woow.core.data.repository.WoowUserRepository;
 import com.woow.core.data.user.WoowUser;
 import com.woow.core.service.api.UserDtoCreate;
@@ -25,6 +23,9 @@ import com.woow.core.service.api.exception.WooUserServiceException;
 import com.woow.serviceprovider.api.ServiceProviderClient;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,6 +45,7 @@ public class AxSaludServiceImpl implements AxSaludService {
     private ServiceProviderService serviceProviderService;
     private DoctorPrescriptionRepository doctorPrescriptionRepository;
     private LaboratoryPrescriptionsRepository laboratoryPrescriptionsRepository;
+    private ConsultationRepository consultationRepository;
     private ServiceProviderClient serviceProviderClient;
 
     public AxSaludServiceImpl(final AxSaludUserRepository axSaludUserRepository,
@@ -54,7 +56,8 @@ public class AxSaludServiceImpl implements AxSaludService {
                               final ServiceProviderClient serviceProviderClient,
                               final PatientDataRepository patientDataRepository,
                               final DoctorPrescriptionRepository doctorPrescriptionRepository,
-                              final LaboratoryPrescriptionsRepository laboratoryPrescriptionsRepository) {
+                              final LaboratoryPrescriptionsRepository laboratoryPrescriptionsRepository,
+                              final ConsultationRepository consultationRepository) {
         this.axSaludUserRepository = axSaludUserRepository;
         this.modelMapper = modelMapper;
         this.wooWUserService = wooWUserService;
@@ -64,6 +67,7 @@ public class AxSaludServiceImpl implements AxSaludService {
         this.patientDataRepository = patientDataRepository;
         this.doctorPrescriptionRepository = doctorPrescriptionRepository;
         this.laboratoryPrescriptionsRepository = laboratoryPrescriptionsRepository;
+        this.consultationRepository = consultationRepository;
     }
     @Override
     public String save(AxSaludUserDTO axSaludUserDTO)
@@ -370,6 +374,29 @@ public class AxSaludServiceImpl implements AxSaludService {
 
         axSaludUserRepository.save(axSaludWooUser);
         return userName;
+    }
+
+    @Override
+    public List<PatientConsultationSummary> getUserHistory(String userName, int pageNumber,
+                                                           int totalElementsPerPage) {
+
+        Pageable pageable = PageRequest.of(pageNumber, totalElementsPerPage);
+
+        WoowUser woowUser = woowUserRepository.findByUserName(userName);
+
+        Optional<AxSaludWooUser>
+                axSaludWooUserOptional = axSaludUserRepository.findByCoreUser_UserId(woowUser.getUserId());
+
+        if(axSaludWooUserOptional.isEmpty()) {
+
+            Page<PatientConsultationSummary> consultations = consultationRepository
+                    .findConsultationsByPatientId(axSaludWooUserOptional.get().getId(), pageable);
+
+            return consultations.getContent();
+        } else {
+
+            return new ArrayList<>();
+        }
     }
 
 }
