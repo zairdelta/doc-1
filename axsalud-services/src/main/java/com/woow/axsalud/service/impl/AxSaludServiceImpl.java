@@ -380,6 +380,7 @@ public class AxSaludServiceImpl implements AxSaludService {
     public List<PatientConsultationSummary> getUserHistory(String userName, int pageNumber,
                                                            int totalElementsPerPage) {
 
+        log.info("getting history for patient: {}, pagenumber: {} , total Elements: {}", userName, pageNumber, totalElementsPerPage);
         Pageable pageable = PageRequest.of(pageNumber, totalElementsPerPage);
 
         WoowUser woowUser = woowUserRepository.findByUserName(userName);
@@ -388,12 +389,17 @@ public class AxSaludServiceImpl implements AxSaludService {
                 axSaludWooUserOptional = axSaludUserRepository.findByCoreUser_UserId(woowUser.getUserId());
 
         if(axSaludWooUserOptional.isEmpty()) {
+            AxSaludWooUser axSaludWooUser = axSaludWooUserOptional.get();
+
+            log.info("Getting history for userId: {}, userName:{} ", axSaludWooUser.getId(), userName);
 
             Page<PatientConsultationSummary> consultations = consultationRepository
-                    .findConsultationsByPatientId(axSaludWooUserOptional.get().getId(), pageable);
-
-            return consultations.getContent();
+                    .findConsultationsByPatientId(axSaludWooUser.getId(), pageable);
+            List<PatientConsultationSummary> patientConsultationSummaryList = consultations.getContent();
+            log.info("History content size: {}", patientConsultationSummaryList.size());
+            return patientConsultationSummaryList;
         } else {
+            log.info("user not found in the system: {}", userName);
 
             return new ArrayList<>();
         }
