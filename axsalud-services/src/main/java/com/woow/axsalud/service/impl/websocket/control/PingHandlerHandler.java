@@ -1,7 +1,7 @@
 package com.woow.axsalud.service.impl.websocket.control;
 
 import com.woow.axsalud.common.AXSaludUserRoles;
-import com.woow.axsalud.data.consultation.ConsultationSession;
+
 import com.woow.axsalud.data.repository.ConsultationSessionRepository;
 import com.woow.axsalud.service.api.messages.control.ControlMessage;
 import com.woow.axsalud.service.api.messages.control.ControlMessageDTO;

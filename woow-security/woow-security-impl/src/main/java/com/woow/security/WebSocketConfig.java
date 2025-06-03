@@ -110,44 +110,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 .withSockJS();
     }
 
-    /*
-
-    @Bean
-    public ReactorNettyTcpClient<byte[]> stompTcpClient() {
-        SslContext sslContext;
-        try {
-            sslContext = SslContextBuilder
-                    .forClient()
-                    .build();
-        } catch (SSLException e) {
-            throw new IllegalStateException("Failed to create SSL context", e);
-        }
-
-        ConnectionProvider connectionProvider =
-                ConnectionProvider.builder(rabbitMQStompBrokerProperties.getConnectionPoolName())
-                        .maxIdleTime(Duration.ofSeconds(60000000)) // 10 minutes
-                        .maxLifeTime(Duration.ofSeconds(60000000)) // 10 minutes
-                .maxConnections(rabbitMQStompBrokerProperties.getMaxConnections())
-                .pendingAcquireMaxCount(rabbitMQStompBrokerProperties.getPendingAcquireMaxCount())
-                .pendingAcquireTimeout(Duration.ofSeconds(rabbitMQStompBrokerProperties.getPendingAcquireTimeoutInSeconds()))
-                .build();
-
-        TcpClient sslClient = TcpClient.create(connectionProvider)
-                .secure(ssl -> ssl.sslContext(sslContext))
-                .option(ChannelOption.SO_KEEPALIVE, true)
-              //  .doOnConnected(conn ->
-               //         conn.addHandlerLast(new ReadTimeoutHandler(60))
-                //                .addHandlerLast(new WriteTimeoutHandler(60))
-               // )
-                .remoteAddress(() ->
-                        new InetSocketAddress(rabbitMQStompBrokerProperties.getRelayHost(),
-                                rabbitMQStompBrokerProperties.getRelayPort()));
-
-        return new ReactorNettyTcpClient<>(client -> sslClient, new StompReactorNettyCodec());
-    }
-*/
-
-
     @Bean
     public ReactorNettyTcpClient<byte[]> stompTcpClient() {
         SslContext sslContext;

@@ -1,9 +1,7 @@
 package com.woow.axsalud.service.impl.websocket.control;
 
 import com.woow.axsalud.service.api.messages.control.ControlMessage;
-import com.woow.axsalud.service.api.messages.control.ControlMessageDTO;
 import com.woow.axsalud.service.api.websocket.ControlMessageHandler;
-import com.woow.security.api.WebSocketUserPrincipal;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
