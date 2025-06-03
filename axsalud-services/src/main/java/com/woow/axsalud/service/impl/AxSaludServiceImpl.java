@@ -252,9 +252,10 @@ public class AxSaludServiceImpl implements AxSaludService {
         List<ConsultationDTO> consultationDTOS = new ArrayList<>();
 
         for(Consultation consultation:consultations) {
-            ConsultationDTO consultationDTO = new ConsultationDTO();
-            consultationDTO.setConsultationId(consultation.getConsultationId().toString());
+            ConsultationDTO consultationDTO =  ConsultationDTO.from(consultation);
+            /*consultationDTO.setConsultationId(consultation.getConsultationId().toString());
             consultationDTO.setId(consultation.getId());
+            consultationDTO.setConsultationId(consultation.getConsultationId().toString());
             consultationDTO.setCreatedAt(consultation.getCreatedAt());
             consultationDTO.setFinishedAt(consultation.getFinishedAt());
             consultationDTO.setSymptoms(consultation.getSymptoms());
@@ -270,13 +271,25 @@ public class AxSaludServiceImpl implements AxSaludService {
 
                 if(consultationSession.getDoctor() != null) {
                     DoctorViewDTO doctorViewDTO = new DoctorViewDTO();
-                    modelMapper.map(consultationSession.getDoctor(), doctorViewDTO);
+                    AxSaludWooUser axDoctor = consultationSession.getDoctor();
+                    WoowUser doctorCore = axDoctor.getCoreUser();
+                    doctorViewDTO.setLastName(doctorCore.getLastName());
+                    doctorViewDTO.setCp(doctorCore.getCp());
+                    doctorViewDTO.setName(doctorCore.getName());
+                    doctorViewDTO.setDni(axDoctor.getDni());
+
+                    DoctorDataDTO doctorDataDTO = new DoctorDataDTO();
+                    doctorDataDTO.setUniversity(axDoctor.getDoctorData().getUniversity());
+                    doctorDataDTO.setMatriculaNacional(axDoctor.getDoctorData().getMatriculaNacional());
+                    doctorDataDTO.setSpeciality(axDoctor.getDoctorData().getSpeciality());
+                    doctorViewDTO.setDoctorData(doctorDataDTO);
+
                     consultationSessionIdDTO.setDoctorViewDTO(doctorViewDTO);
                 }
                 consultationSessionIdDTOList.add(consultationSessionIdDTO);
             }
             consultationDTO.setConsultationSessionIdDTOList(consultationSessionIdDTOList);
-
+*/
             consultationDTOS.add(consultationDTO);
         }
 
