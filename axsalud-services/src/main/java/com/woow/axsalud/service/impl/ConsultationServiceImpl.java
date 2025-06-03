@@ -87,7 +87,7 @@ public class ConsultationServiceImpl implements ConsultationService {
             log.debug("Validating Message: {}", consultationMessage);
 
             if(consultationMessage.getContent() != null &
-            !consultationMessage.getContent().equalsIgnoreCase(CHAT_PING_MESSAGE)) {
+                    !consultationMessage.getContent().equalsIgnoreCase(CHAT_PING_MESSAGE)) {
                 validateOnSend(consultationMessage);
                 validate(consultationMessage.getConsultationId(),
                         consultationMessage.getConsultationSessionId(),
@@ -212,22 +212,22 @@ public class ConsultationServiceImpl implements ConsultationService {
         ConsultationSession consultationSession = consultationSessionRepository
                 .findByConsultationSessionId(UUID.fromString(consultationSessionId));
 
-         if(consultationSession != null) {
+        if(consultationSession != null) {
 
-             ComentariosMedicos comentariosMedicos = consultationSession.getComentariosMedicos() ;
+            ComentariosMedicos comentariosMedicos = consultationSession.getComentariosMedicos() ;
 
-             if(comentariosMedicos == null) {
-                 comentariosMedicos = new ComentariosMedicos();
-                 comentariosMedicos
-                         .setAxSaludWooUser(consultationSession.getConsultation().getPatient());
-                 comentariosMedicos.setConsultationSession(consultationSession);
-             }
+            if(comentariosMedicos == null) {
+                comentariosMedicos = new ComentariosMedicos();
+                comentariosMedicos
+                        .setAxSaludWooUser(consultationSession.getConsultation().getPatient());
+                comentariosMedicos.setConsultationSession(consultationSession);
+            }
 
-             comentariosMedicos.setObservacionesMedicas(doctorCommentsDTO.getComment());
-             comentariosMedicos = comentariosMedicosRepository.save(comentariosMedicos);
-             consultationSession.setComentariosMedicos(comentariosMedicos);
-             consultationSessionRepository.save(consultationSession);
-         }
+            comentariosMedicos.setObservacionesMedicas(doctorCommentsDTO.getComment());
+            comentariosMedicos = comentariosMedicosRepository.save(comentariosMedicos);
+            consultationSession.setComentariosMedicos(comentariosMedicos);
+            consultationSessionRepository.save(consultationSession);
+        }
     }
 
     @Override
@@ -579,7 +579,7 @@ public class ConsultationServiceImpl implements ConsultationService {
                                                      int pageNumber,
                                                      int totalElementsPerPage)
             throws ConsultationServiceException {
-
+        log.info("getting messages by userName: {}", userName);
         Pageable pageable = PageRequest.of(pageNumber, totalElementsPerPage);
         Page<ConsultationMessageEntity> page = consultationMessageRepository
                 .findMessagesByPatientUserNameOrdered(userName, pageable);
@@ -601,8 +601,8 @@ public class ConsultationServiceImpl implements ConsultationService {
 
     @Override
     public ConsultationMessagesPagingDTO getAllMessageBySessionIdUsingPaginationPagination(String sessionId,
-                                                                                                     int pageNumber,
-                                                                                                     int totalElementsPerPage)
+                                                                                           int pageNumber,
+                                                                                           int totalElementsPerPage)
             throws ConsultationServiceException {
         log.info("getting messages for sessionId: {}", sessionId);
         Pageable pageable = PageRequest.of(pageNumber, totalElementsPerPage);
