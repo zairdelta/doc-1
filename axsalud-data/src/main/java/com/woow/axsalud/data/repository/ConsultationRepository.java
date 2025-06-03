@@ -25,7 +25,7 @@ public interface ConsultationRepository extends JpaRepository<Consultation, Long
             c.id AS id,
             c.consultationId AS consultationId,
             s.consultationSessionId AS consultationSessionId,
-            CONCAT(d.coreUser.firstName, ' ', d.coreUser.lastName) AS doctorName,
+            CONCAT(d.coreUser.name, ' ', d.coreUser.lastName) AS doctorName,
             c.symptoms AS symptoms,
             c.status AS status,
             c.createdAt AS createdAt
