@@ -20,7 +20,7 @@ public class SubscribeWsInterceptor implements ChannelInterceptor {
         if (accessor != null && StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
             accessor.setNativeHeader("durable", "true");
             accessor.setNativeHeader("auto-delete", "false");
-            accessor.setNativeHeader("x-expires", "900000"); // must match frontend
+            accessor.setNativeHeader("x-expires", "120000"); // must match frontend
             log.info("Injected headers for subscription: " + accessor.toNativeHeaderMap());
         }
 
