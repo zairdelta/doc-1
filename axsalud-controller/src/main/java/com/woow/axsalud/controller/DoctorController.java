@@ -3,6 +3,7 @@ package com.woow.axsalud.controller;
 import com.woow.axsalud.controller.exception.WooBoHttpError;
 import com.woow.axsalud.data.consultation.ComentariosMedicos;
 import com.woow.axsalud.data.repository.ComentariosMedicosRepository;
+import com.woow.axsalud.data.repository.PatientConsultationSummary;
 import com.woow.axsalud.service.api.AxSaludService;
 import com.woow.axsalud.service.api.ConsultationService;
 import com.woow.axsalud.service.api.dto.*;
@@ -98,12 +99,13 @@ public class DoctorController {
             @ApiResponse(responseCode = "400", description = "Invalid status parameter"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    public ResponseEntity<List<ConsultationDTO>>
+    public ResponseEntity<List<PatientConsultationSummary>>
     getPatientHistory(@PathVariable String userName,
+                      @RequestParam int pageNumber, @RequestParam int elementsPerPage,
                      @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            return ResponseEntity.ok().body(axSaludService.getConsultation(userName));
-        } catch (WooUserServiceException e) {
+            return ResponseEntity.ok().body(axSaludService.getUserHistory(userName, pageNumber, elementsPerPage));
+        } catch (Exception e) {
             return WooBoHttpError.of(e).toResponseEntity();
         }
     }
