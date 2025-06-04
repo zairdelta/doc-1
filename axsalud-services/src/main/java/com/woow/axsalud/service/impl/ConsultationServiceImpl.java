@@ -399,8 +399,9 @@ public class ConsultationServiceImpl implements ConsultationService {
         welcomeMessage.setContent("👋 " + consultationDTO.getWelcomeMessage());
 
         log.info("Sending Welcome message:{} ", welcomeMessage);
-        long eventId = addMessage(welcomeMessage, ConsultationMessgeTypeEnum.WELCOME);
-        consultationEventDTO.setId(eventId);
+        // no need to store welcome message
+        //long eventId = addMessage(welcomeMessage, ConsultationMessgeTypeEnum.WELCOME);
+        //consultationEventDTO.setId(eventId);
         consultationEventDTO.setPayload(welcomeMessage);
 
       /*  messagingTemplate.convertAndSendToUser(
