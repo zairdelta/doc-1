@@ -78,13 +78,13 @@ public class DoctorController {
         }
     }
 
-    @GetMapping("/patient/sessionId/{sessionId}/consultationMessages")
+    @GetMapping("/patient/consultation/{consultationId}/sessionId/{sessionId}/consultationMessages")
     public ResponseEntity<ConsultationMessagesPagingDTO> getConsultationMessagesBySessionIdAndUserName(
-            @PathVariable String consultationSessionId,
+            @PathVariable String consultationId, @PathVariable String consultationSessionId,
             @RequestParam int pageNumber, @RequestParam int elementsPerPage) {
         try {
             return ResponseEntity.ok().body(consultationService
-                    .getAllMessageBySessionIdUsingPaginationPagination(consultationSessionId,
+                    .getAllMessagesGivenConsultationIdAndSessionId(consultationId, consultationSessionId,
                             pageNumber, elementsPerPage));
         } catch (ConsultationServiceException e) {
             return WooBoHttpError.of(e).toResponseEntity();
