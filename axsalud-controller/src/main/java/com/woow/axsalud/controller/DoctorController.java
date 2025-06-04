@@ -78,11 +78,12 @@ public class DoctorController {
         }
     }
 
-    @GetMapping("/patient/consultation/{consultationId}/sessionId/{sessionId}/consultationMessages")
+    @GetMapping("/patient/consultation/{consultationId}/sessionId/{consultationSessionId}/consultationMessages")
     public ResponseEntity<ConsultationMessagesPagingDTO> getConsultationMessagesBySessionIdAndUserName(
             @PathVariable String consultationId, @PathVariable String consultationSessionId,
             @RequestParam int pageNumber, @RequestParam int elementsPerPage) {
         try {
+            log.info("getting consultation messages on behalf of doctor");
             return ResponseEntity.ok().body(consultationService
                     .getAllMessagesGivenConsultationIdAndSessionId(consultationId, consultationSessionId,
                             pageNumber, elementsPerPage));
