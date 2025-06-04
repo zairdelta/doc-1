@@ -647,7 +647,9 @@ public class ConsultationServiceImpl implements ConsultationService {
         consultationMessagesPagingDTO.setMessages(messages.stream()
                 .filter(Objects::nonNull)
                 .filter(consultationMessageEntity ->
-                        ConsultationMessgeTypeEnum.TEXT_MESSAGE.getType().equalsIgnoreCase(consultationMessageEntity.getMessageType()))
+                        ConsultationMessgeTypeEnum.TEXT_MESSAGE.getType().equalsIgnoreCase(consultationMessageEntity.getMessageType()) ||
+                                ConsultationMessgeTypeEnum.WELCOME.getType().equalsIgnoreCase(consultationMessageEntity.getMessageType()) ||
+                                ConsultationMessgeTypeEnum.FILE_UPLOADED.getType().equalsIgnoreCase(consultationMessageEntity.getMessageType()))
                 .map(ConsultationMessageDTO::from)
                 .collect(Collectors.toList()));
         consultationMessagesPagingDTO.setTotalElements(totalElements);
