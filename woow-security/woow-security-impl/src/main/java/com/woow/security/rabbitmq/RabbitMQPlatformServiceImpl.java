@@ -21,7 +21,7 @@ public class RabbitMQPlatformServiceImpl implements PlatformService {
 
     private String convertSessionIdToPlatformSessionId(final String sessionId) {
         String bindingName = sessionId.replace("/", "_");
-        bindingName = sessionId.replace(".", "_");
+        bindingName = bindingName.replace(".", "_");
         return bindingName;
     }
 }
