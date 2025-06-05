@@ -1,18 +1,15 @@
 package com.woow.axsalud.controller;
 
 import com.woow.axsalud.controller.exception.WooBoHttpError;
-import com.woow.axsalud.data.consultation.ComentariosMedicos;
 import com.woow.axsalud.data.repository.ComentariosMedicosRepository;
 import com.woow.axsalud.data.repository.PatientConsultationSummary;
 import com.woow.axsalud.service.api.AxSaludService;
 import com.woow.axsalud.service.api.ConsultationService;
+import com.woow.axsalud.service.api.DoctorCommentsService;
 import com.woow.axsalud.service.api.dto.*;
 import com.woow.axsalud.service.api.exception.ConsultationServiceException;
 import com.woow.core.service.api.exception.WooUserServiceException;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
@@ -22,21 +19,20 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/doctor")
 @Slf4j
 public class DoctorController {
 
-    private ComentariosMedicosRepository comentariosMedicosRepository;
+    private     DoctorCommentsService doctorCommentsService;
     private ConsultationService consultationService;
     private AxSaludService axSaludService;
-    public DoctorController(final ComentariosMedicosRepository comentariosMedicosRepository,
-                            final ConsultationService consultationService,
-                            final AxSaludService axSaludService) {
+    public DoctorController(final ConsultationService consultationService,
+                            final AxSaludService axSaludService,
+                            final DoctorCommentsService doctorCommentsService) {
         this.axSaludService = axSaludService;
-        this.comentariosMedicosRepository = comentariosMedicosRepository;
+        this.doctorCommentsService = doctorCommentsService;
         this.consultationService = consultationService;
     }
 
@@ -51,23 +47,10 @@ public class DoctorController {
     public ResponseEntity<List<DoctorCommentsDTO>>
     getDoctorComment(@PathVariable String userName,
                      @AuthenticationPrincipal UserDetails userDetails) {
-        List<ComentariosMedicos> comentariosMedicos =
-                comentariosMedicosRepository.findByAxSaludWooUser_CoreUser_UserName(userName);
+
 
         List<DoctorCommentsDTO> doctorCommentsDTOS =
-                comentariosMedicos.stream()
-                        .map(comentariosMedicos1 -> {
-                            DoctorCommentsDTO doctorCommentsDTO = new DoctorCommentsDTO();
-                            doctorCommentsDTO.setComment(comentariosMedicos1.getObservacionesMedicas());
-                            doctorCommentsDTO.setDoctorFullName(comentariosMedicos1
-                                    .getConsultationSession().getDoctor()
-                                    .getCoreUser().getName() + " " +
-                                    comentariosMedicos1.getConsultationSession()
-                                            .getDoctor().getCoreUser().getLastName());
-                            doctorCommentsDTO.setCreatedAt(comentariosMedicos1.getConsultationSession().getCreatedAt());
-                            return doctorCommentsDTO;
-                        })
-                        .collect(Collectors.toList());
+                doctorCommentsService.getDoctorCommentsByUserName(userName);
         return ResponseEntity.ok().body(doctorCommentsDTOS);
     }
 
