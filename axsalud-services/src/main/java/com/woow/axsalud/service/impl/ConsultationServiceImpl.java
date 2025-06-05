@@ -13,6 +13,7 @@ import com.woow.axsalud.service.api.messages.control.ControlMessageType;
 import com.woow.core.data.repository.WoowUserRepository;
 import com.woow.core.data.user.WoowUser;
 import com.woow.core.service.api.exception.WooUserServiceException;
+import com.woow.security.api.ws.PlatformService;
 import com.woow.storage.api.StorageService;
 import com.woow.storage.api.StorageServiceException;
 import com.woow.storage.api.StorageServiceUploadResponseDTO;
@@ -53,6 +54,7 @@ public class ConsultationServiceImpl implements ConsultationService {
     private ConsultationDocumentRepository consultationDocumentRepository;
     private ConsultationSessionRepository consultationSessionRepository;
     private ComentariosMedicosRepository comentariosMedicosRepository;
+    private PlatformService platformService;
 
     public ConsultationServiceImpl(ConsultationRepository consultationRepository,
                                    WoowUserRepository woowUserRepository,
@@ -60,6 +62,7 @@ public class ConsultationServiceImpl implements ConsultationService {
                                    ModelMapper modelMapper,
                                    SimpMessagingTemplate messagingTemplate,
                                    ConsultationMessageRepository consultationMessageRepository,
+                                   final PlatformService platformService,
                                    final ConsultationDocumentRepository consultationDocumentRepository,
                                    final StorageService storageService,
                                    final ConsultationSessionRepository consultationSessionRepository,
@@ -67,6 +70,7 @@ public class ConsultationServiceImpl implements ConsultationService {
         this.consultationRepository = consultationRepository;
         this.woowUserRepository = woowUserRepository;
         this.axSaludUserRepository = axSaludUserRepository;
+        this.platformService = platformService;
         this.modelMapper = modelMapper;
         this.consultationMessageRepository = consultationMessageRepository;
         this.messagingTemplate = messagingTemplate;
@@ -725,6 +729,10 @@ public class ConsultationServiceImpl implements ConsultationService {
         );
 
         messagingTemplate.convertAndSend("/topic/doctor-events", consultationEventDTO);
+        String controlComunicationTopic = "/topic/consultation." + consultationSession.getConsultation().getConsultationId() +
+                ".session." + consultationSession.getConsultationSessionId() + ".control";
+        log.info("ending application session id: {} ", controlComunicationTopic);
+        platformService.appSessionTerminated(controlComunicationTopic);
 
     }
 

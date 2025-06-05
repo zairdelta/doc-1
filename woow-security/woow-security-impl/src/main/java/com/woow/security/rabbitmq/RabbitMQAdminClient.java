@@ -6,18 +6,31 @@ import com.rabbitmq.client.ConnectionFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.core5.ssl.SSLContextBuilder;
 import org.apache.hc.core5.ssl.TrustStrategy;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.net.ssl.SSLContext;
+import java.net.URI;
+import java.util.List;
 
 @Component
 @Slf4j
 public class RabbitMQAdminClient {
 
     private final RabbitMQStompBrokerProperties stompBrokerProperties;
+    private final RestTemplate restTemplate = new RestTemplate();
+    private final String rabbitHost;
+    private final String username;
+    private final String password;
+    private final String VHOST = "/";
 
     public RabbitMQAdminClient(RabbitMQStompBrokerProperties stompBrokerProperties) {
         this.stompBrokerProperties = stompBrokerProperties;
+        this.rabbitHost = "https://" + stompBrokerProperties.getRelayHost();
+        this.username = stompBrokerProperties.getSystemLogin();
+        this.password = stompBrokerProperties.getSystemPasscode();
     }
 
     public void deleteQueue(String queueName) throws Exception {
@@ -42,4 +55,101 @@ public class RabbitMQAdminClient {
             log.debug("Delete queue command send to: {}", stompBrokerProperties.getRelayHost());
         }
     }
-}
+
+        public void deleteIdleQueues ( int amountOfMessagesReady) {
+            List<RabbitMQQueueInfo> queues = getAllQueues();
+
+            for (RabbitMQQueueInfo queue : queues) {
+                if (queue.getMessagesReady() >= amountOfMessagesReady &&
+                        queue.getMessagesUnacknowledged() == 0 &&
+                        queue.getConsumers() == 0) {
+                    log.info("Queue with 0 consumers and more than: {} messages waiting. QueueInfo: {}", amountOfMessagesReady, queue);
+                    deleteQueueUsingRestClient(queue.getName());
+                }
+            }
+
+        }
+
+        public void deleteBindingThatContains (final String bindingName){
+            try {
+                log.info("Deleting queue that contains binding name: {}", bindingName);
+
+                List<RabbitMQBinding> bindings = getAllBindings();
+                log.info("🔗 Total bindings: {}", bindings.size());
+
+                for (RabbitMQBinding binding : bindings) {
+                    if (binding.getRoutingKey().contains(bindingName) &&
+                            "queue".equalsIgnoreCase(binding.getDestinationType())) {
+                        String queueName = binding.getDestination();
+                        log.info("🧹 Deleting queue '{}' matching binding '{}'", queueName, bindingName);
+                        deleteQueueUsingRestClient(queueName);
+                        return;
+                    }
+                }
+            } catch (Exception e) {
+                log.error("❌ Error fetching bindings: {}", e.getMessage(), e);
+            }
+        }
+
+        public List<RabbitMQQueueInfo> getAllQueues () {
+            String url = rabbitHost + "/api/queues/%2F";
+
+            URI uri = UriComponentsBuilder
+                    .fromHttpUrl(url)
+                    .build(true)
+                    .toUri();
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setBasicAuth(username, password);
+            headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+
+            HttpEntity<Void> entity = new HttpEntity<>(headers);
+            ResponseEntity<RabbitMQQueueInfo[]> response = restTemplate.exchange(uri,
+                    HttpMethod.GET, entity, RabbitMQQueueInfo[].class);
+
+            if (response.getBody() == null) throw new RuntimeException("No queues found");
+            return List.of(response.getBody());
+        }
+
+
+        private List<RabbitMQBinding> getAllBindings () {
+            String url = rabbitHost + "/api/bindings";
+            HttpHeaders headers = new HttpHeaders();
+            headers.setBasicAuth(username, password);
+            headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+
+            HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<RabbitMQBinding[]> response = restTemplate.exchange(url, HttpMethod.GET,
+                    entity, RabbitMQBinding[].class);
+
+            if (response.getStatusCode() != HttpStatus.OK || response.getBody() == null) {
+                throw new RuntimeException("Failed to fetch bindings");
+            }
+
+            return List.of(response.getBody());
+        }
+
+        public void deleteQueueUsingRestClient (String queueName) {
+            String urlString = rabbitHost + "/api/queues/%2F/" + queueName;
+            URI uri = UriComponentsBuilder
+                    .fromHttpUrl(urlString)
+                    .build(true)
+                    .toUri();
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setBasicAuth(username, password);
+            headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+            HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<String> response =
+                    restTemplate.exchange(uri, HttpMethod.DELETE, entity, String.class);
+
+            if (response.getStatusCode().is2xxSuccessful()) {
+                log.info("✅ Successfully deleted queue: {}", queueName);
+            } else {
+                log.warn("⚠️ Failed to delete queue: {} — Status: {}", queueName, response.getStatusCode());
+            }
+        }
+    }
+
