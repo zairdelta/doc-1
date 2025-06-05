@@ -14,14 +14,13 @@ public class RabbitMQPlatformServiceImpl implements PlatformService {
         this.rabbitMQAdminClient = rabbitMQAdminClient;
     }
     @Override
-    public void appSessionTerminated(String sessionId) {
-        log.info("Application Session Terminated for sessionId: {}", sessionId);
-        rabbitMQAdminClient.deleteBindingThatContains(convertSessionIdToPlatformSessionId(sessionId));
+    public void appSessionTerminated(String appSessionId) {
+        log.info("Application Session Terminated for appSessionId: {}", appSessionId);
+        rabbitMQAdminClient.deleteBindingThatContains(convertSessionIdToPlatformSessionId(appSessionId));
     }
 
-    private String convertSessionIdToPlatformSessionId(final String sessionId) {
-        String bindingName = sessionId.replace("/", "_");
-        bindingName = bindingName.replace(".", "_");
+    private String convertSessionIdToPlatformSessionId(final String appSessionId) {
+        String bindingName = appSessionId.replaceFirst("^/topic/", "");
         return bindingName;
     }
 }
