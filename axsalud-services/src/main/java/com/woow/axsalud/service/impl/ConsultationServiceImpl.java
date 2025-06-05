@@ -23,7 +23,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -398,7 +397,7 @@ public class ConsultationServiceImpl implements ConsultationService {
         welcomeMessage.setConsultationSessionId(consultationSession.getConsultationSessionId().toString());
         welcomeMessage.setContent("👋 " + consultationDTO.getWelcomeMessage());
 
-        log.info("Sending Welcome message:{} ", welcomeMessage);
+       // log.info("Sending Welcome message:{} ", welcomeMessage);
         // no need to store welcome message
         //long eventId = addMessage(welcomeMessage, ConsultationMessgeTypeEnum.WELCOME);
         //consultationEventDTO.setId(eventId);
@@ -655,10 +654,6 @@ public class ConsultationServiceImpl implements ConsultationService {
                 .collect(Collectors.toList()));
         consultationMessagesPagingDTO.setTotalElements(totalElements);
         consultationMessagesPagingDTO.setTotalPages(totalPages);
-
-        for(ConsultationEventDTO eventDTO:consultationMessagesPagingDTO.getMessages()) {
-            log.info("Messages: {}", ((ConsultationMessageDTO)eventDTO.getPayload()).getContent());
-        }
 
         return consultationMessagesPagingDTO;
     }

@@ -59,6 +59,12 @@ public class DoctorController {
                         .map(comentariosMedicos1 -> {
                             DoctorCommentsDTO doctorCommentsDTO = new DoctorCommentsDTO();
                             doctorCommentsDTO.setComment(comentariosMedicos1.getObservacionesMedicas());
+                            doctorCommentsDTO.setDoctorFullName(comentariosMedicos1
+                                    .getConsultationSession().getDoctor()
+                                    .getCoreUser().getName() + " " +
+                                    comentariosMedicos1.getConsultationSession()
+                                            .getDoctor().getCoreUser().getLastName());
+                            doctorCommentsDTO.setCreatedAt(comentariosMedicos1.getConsultationSession().getCreatedAt());
                             return doctorCommentsDTO;
                         })
                         .collect(Collectors.toList());
