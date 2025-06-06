@@ -83,9 +83,7 @@ public class WoowUserController {
     }
 
     @PostMapping("/file")
-    public ResponseEntity<FileResponseDTO> upload(@PathVariable String consultationId,
-                                                  @PathVariable String consultationSessionId,
-                                                  @AuthenticationPrincipal UserDetails userDetails,
+    public ResponseEntity<FileResponseDTO> upload(@AuthenticationPrincipal UserDetails userDetails,
                                                   @RequestBody MultipartFile file) {
         try {
 
