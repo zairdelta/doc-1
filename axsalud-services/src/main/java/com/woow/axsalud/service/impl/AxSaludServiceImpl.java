@@ -24,6 +24,7 @@ import com.woow.storage.api.StorageService;
 import com.woow.storage.api.StorageServiceException;
 import com.woow.storage.api.StorageServiceUploadResponseDTO;
 import lombok.extern.slf4j.Slf4j;
+import net.coobird.thumbnailator.Thumbnails;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -32,6 +33,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -422,8 +425,24 @@ public class AxSaludServiceImpl implements AxSaludService {
 
             AxSaludWooUser axSaludWooUser = axSaludWooUserOptional.get();
 
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            Thumbnails.of(file.getInputStream())
+                    .size(200, 200)
+                    .outputFormat("jpeg")
+                    .toOutputStream(outputStream);
+
+            byte[] resizedImageBytes = outputStream.toByteArray();
+
+            MultipartFile resizedFile = new InMemoryMultipartFile(
+                    file.getName(),
+                    file.getOriginalFilename(),
+                    "image/jpeg",
+                    resizedImageBytes
+            );
+
+
             StorageServiceUploadResponseDTO storageServiceUploadResponseDTO =
-                    storageService.uploadFile(file);
+                    storageService.uploadFile(resizedFile);
 
             ConsultationDocument doc = new ConsultationDocument();
             doc.setFileName(storageServiceUploadResponseDTO.getOriginalFilename());
@@ -451,6 +470,9 @@ public class AxSaludServiceImpl implements AxSaludService {
             return fileResponseDTO;
         } catch (StorageServiceException e) {
             throw new WooUserServiceException(e.getMessage(), 301);
+        } catch (IOException e) {
+            log.error("Error in Resizing file:{} ", e);
+            throw new WooUserServiceException("Failing resizing file", 301);
         }
     }
 
