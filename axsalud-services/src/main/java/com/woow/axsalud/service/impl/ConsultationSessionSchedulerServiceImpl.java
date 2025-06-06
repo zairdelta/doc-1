@@ -12,6 +12,7 @@ import com.woow.axsalud.service.api.dto.ConsultationMessgeTypeEnum;
 import com.woow.axsalud.service.api.messages.ConsultationEventDTO;
 import com.woow.axsalud.service.api.messages.control.SessionAbandonedDTO;
 import com.woow.core.data.repository.WoowUserRepository;
+import com.woow.security.api.ws.PlatformService;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,8 +37,10 @@ public class ConsultationSessionSchedulerServiceImpl implements ConsultationSess
     private ModelMapper modelMapper;
     private SimpMessagingTemplate messagingTemplate;
     private ConsultationSessionRepository consultationSessionRepository;
+    private PlatformService platformService;
 
     public ConsultationSessionSchedulerServiceImpl(
+                                   final PlatformService platformService,
                                    WoowUserRepository woowUserRepository,
                                    AxSaludUserRepository axSaludUserRepository,
                                    ModelMapper modelMapper,
@@ -50,6 +53,7 @@ public class ConsultationSessionSchedulerServiceImpl implements ConsultationSess
         this.consultationMessageRepository = consultationMessageRepository;
         this.messagingTemplate = messagingTemplate;
         this.consultationSessionRepository = consultationSessionRepository;
+        this.platformService = platformService;
     }
 
     @Scheduled(fixedRate = 30000)
@@ -76,7 +80,8 @@ public class ConsultationSessionSchedulerServiceImpl implements ConsultationSess
 
         consultationSessionsDoctorLost.stream()
                 .map(session -> handledSessionAbandoned(session, AXSaludUserRoles.DOCTOR))
-                .forEach(consultationEventDTO -> sendConsultationEvent(consultationEventDTO));
+                .map(this::sendConsultationEvent)
+                .forEach(platformService::appSessionTerminated);
 
         List<ConsultationSession> consultationSessionsPatientLost =
                 consultationSessionRepository.findByPatientLastTimeSeen(localDateTime, statuses);
@@ -84,7 +89,8 @@ public class ConsultationSessionSchedulerServiceImpl implements ConsultationSess
 
         consultationSessionsPatientLost.stream()
                 .map(session -> handledSessionAbandoned(session, AXSaludUserRoles.USER))
-                .forEach(consultationEventDTO -> sendConsultationEvent(consultationEventDTO));
+                .map(this::sendConsultationEvent)
+                .forEach(platformService::appSessionTerminated);
     }
 
     @Transactional
@@ -127,11 +133,12 @@ public class ConsultationSessionSchedulerServiceImpl implements ConsultationSess
         return consultationEventDTO;
     }
 
-    private void sendConsultationEvent(ConsultationEventDTO<SessionAbandonedDTO> consultationEventDTO) {
+    private String sendConsultationEvent(ConsultationEventDTO<SessionAbandonedDTO> consultationEventDTO) {
         SessionAbandonedDTO sessionAbandonedDTO = consultationEventDTO.getPayload();
         String controlCommunicationTopic = "/topic/consultation." + sessionAbandonedDTO.getConsultationId() +
                 ".session." + sessionAbandonedDTO.getConsultationSessionId() + ".control";
         messagingTemplate.convertAndSend(controlCommunicationTopic, consultationEventDTO);
+        return controlCommunicationTopic;
     }
 
 }
