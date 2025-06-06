@@ -5,22 +5,24 @@ import com.woow.axsalud.data.client.AxSaludWooUser;
 import com.woow.axsalud.data.client.PatientAdditional;
 import com.woow.axsalud.data.client.PatientData;
 import com.woow.axsalud.data.client.WoowUserType;
-import com.woow.axsalud.data.consultation.Consultation;
-import com.woow.axsalud.data.consultation.ConsultationSession;
-import com.woow.axsalud.data.consultation.DoctorPrescription;
-import com.woow.axsalud.data.consultation.LaboratoryPrescription;
+import com.woow.axsalud.data.consultation.*;
 import com.woow.axsalud.data.repository.*;
 import com.woow.axsalud.data.serviceprovider.ServiceProvider;
 import com.woow.axsalud.service.api.AxSaludService;
 import com.woow.axsalud.service.api.ServiceProviderService;
 import com.woow.axsalud.service.api.dto.*;
 import com.woow.axsalud.service.api.exception.ConsultationServiceException;
+import com.woow.axsalud.service.api.messages.ConsultationEventDTO;
+import com.woow.axsalud.service.api.messages.ConsultationMessageDTO;
 import com.woow.core.data.repository.WoowUserRepository;
 import com.woow.core.data.user.WoowUser;
 import com.woow.core.service.api.UserDtoCreate;
 import com.woow.core.service.api.WooWUserService;
 import com.woow.core.service.api.exception.WooUserServiceException;
 import com.woow.serviceprovider.api.ServiceProviderClient;
+import com.woow.storage.api.StorageService;
+import com.woow.storage.api.StorageServiceException;
+import com.woow.storage.api.StorageServiceUploadResponseDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -28,7 +30,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -47,6 +52,7 @@ public class AxSaludServiceImpl implements AxSaludService {
     private LaboratoryPrescriptionsRepository laboratoryPrescriptionsRepository;
     private ConsultationRepository consultationRepository;
     private ServiceProviderClient serviceProviderClient;
+    private StorageService storageService;
 
     public AxSaludServiceImpl(final AxSaludUserRepository axSaludUserRepository,
                               final ModelMapper modelMapper,
@@ -57,7 +63,8 @@ public class AxSaludServiceImpl implements AxSaludService {
                               final PatientDataRepository patientDataRepository,
                               final DoctorPrescriptionRepository doctorPrescriptionRepository,
                               final LaboratoryPrescriptionsRepository laboratoryPrescriptionsRepository,
-                              final ConsultationRepository consultationRepository) {
+                              final ConsultationRepository consultationRepository,
+                              final StorageService storageService) {
         this.axSaludUserRepository = axSaludUserRepository;
         this.modelMapper = modelMapper;
         this.wooWUserService = wooWUserService;
@@ -68,6 +75,7 @@ public class AxSaludServiceImpl implements AxSaludService {
         this.doctorPrescriptionRepository = doctorPrescriptionRepository;
         this.laboratoryPrescriptionsRepository = laboratoryPrescriptionsRepository;
         this.consultationRepository = consultationRepository;
+        this.storageService = storageService;
     }
     @Override
     public String save(AxSaludUserDTO axSaludUserDTO)
@@ -402,6 +410,48 @@ public class AxSaludServiceImpl implements AxSaludService {
             log.info("user not found in the system: {}, userId: {}", userName, woowUser.getUserId());
 
             return new ArrayList<>();
+        }
+    }
+
+    @Override
+    public FileResponseDTO appendDocument(String userName, MultipartFile file) throws WooUserServiceException {
+        try {
+            WoowUser woowUser = woowUserRepository.findByUserName(userName);
+            Optional<AxSaludWooUser> axSaludWooUserOptional =
+                    axSaludUserRepository.findByCoreUser_UserId(woowUser.getUserId());
+
+            AxSaludWooUser axSaludWooUser = axSaludWooUserOptional.get();
+
+            StorageServiceUploadResponseDTO storageServiceUploadResponseDTO =
+                    storageService.uploadFile(file);
+
+            ConsultationDocument doc = new ConsultationDocument();
+            doc.setFileName(storageServiceUploadResponseDTO.getOriginalFilename());
+            doc.setFileType(storageServiceUploadResponseDTO.getFileType());
+            doc.setElementPublicId(storageServiceUploadResponseDTO.getPublicId());
+            doc.setSecureUrl(storageServiceUploadResponseDTO.getSecureUrl());
+            doc.setFormat(storageServiceUploadResponseDTO.getFormat());
+            doc.setVersion(storageServiceUploadResponseDTO.getVersion());
+
+            if (storageServiceUploadResponseDTO.getCreatedAt() != null) {
+                doc.setCreatedAt(LocalDateTime.parse(storageServiceUploadResponseDTO.getCreatedAt(),
+                        DateTimeFormatter.ISO_DATE_TIME));
+            } else {
+                doc.setCreatedAt(LocalDateTime.now());
+            }
+
+            doc.setUploadedBy(axSaludWooUser);
+            doc.setUploaderRole(axSaludWooUser.getUserType());
+
+            FileResponseDTO fileResponseDTO = new FileResponseDTO();
+            fileResponseDTO.setId(doc.getId());
+            fileResponseDTO.setName(doc.getFileName());
+            fileResponseDTO.setUrl(doc.getSecureUrl());
+            woowUser.setImgURL(doc.getSecureUrl());
+
+            return fileResponseDTO;
+        } catch (StorageServiceException e) {
+            throw new WooUserServiceException(e.getMessage(), 301);
         }
     }
 

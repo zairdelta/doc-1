@@ -4,6 +4,7 @@ import com.woow.axsalud.controller.exception.WooBoHttpError;
 import com.woow.axsalud.data.repository.PatientConsultationSummary;
 import com.woow.axsalud.service.api.AxSaludService;
 import com.woow.axsalud.service.api.dto.*;
+import com.woow.axsalud.service.api.exception.ConsultationServiceException;
 import com.woow.core.service.api.exception.WooUserServiceException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -22,6 +23,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -78,6 +80,22 @@ public class WoowUserController {
                 .status(HttpStatus.OK)
                 .header(LOCATION, appRoot + ROOT_PATH + userName)
                 .build();
+    }
+
+    @PostMapping("/file")
+    public ResponseEntity<FileResponseDTO> upload(@PathVariable String consultationId,
+                                                  @PathVariable String consultationSessionId,
+                                                  @AuthenticationPrincipal UserDetails userDetails,
+                                                  @RequestBody MultipartFile file) {
+        try {
+
+            return ResponseEntity.ok().body(axSaludService.appendDocument(userDetails.getUsername(), file));
+        } catch (ConsultationServiceException e) {
+            return WooBoHttpError.of(e).toResponseEntity();
+        } catch (WooUserServiceException e) {
+            return WooBoHttpError.of(e).toResponseEntity();
+        }
+
     }
 
     @GetMapping("/history")
