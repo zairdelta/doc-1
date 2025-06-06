@@ -20,6 +20,10 @@ logging:
     com.woow: DEBUG
 
 spring:
+  servlet:
+    multipart:
+      max-file-size: 6MB
+      max-request-size: 7MB
   messaging:
     stomp:
       relay:
