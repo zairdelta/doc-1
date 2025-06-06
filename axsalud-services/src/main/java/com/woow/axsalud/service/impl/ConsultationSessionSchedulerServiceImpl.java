@@ -29,7 +29,7 @@ import java.util.Map;
 @Slf4j
 public class ConsultationSessionSchedulerServiceImpl implements ConsultationSessionSchedulerService {
 
-    @Value("${ woow.app.telemedicine.consultation.session.connected.idleTimeoutInSeconds:60}")
+    @Value("${ woow.app.telemedicine.consultation.session.connected.idleTimeoutInSeconds:90}")
     private int CONNECTED_SESSION_IDLE_IN_SECONDS;
     private WoowUserRepository woowUserRepository;
     private AxSaludUserRepository axSaludUserRepository;
@@ -85,7 +85,7 @@ public class ConsultationSessionSchedulerServiceImpl implements ConsultationSess
 
         List<ConsultationSession> consultationSessionsPatientLost =
                 consultationSessionRepository.findByPatientLastTimeSeen(localDateTime, statuses);
-        log.info("Sessions list size found to terminated for Patient: {}", consultationSessionsDoctorLost.size());
+        log.info("Sessions list size found to terminated for Patient: {}", consultationSessionsPatientLost.size());
 
         consultationSessionsPatientLost.stream()
                 .map(session -> handledSessionAbandoned(session, AXSaludUserRoles.USER))

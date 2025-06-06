@@ -32,7 +32,7 @@ public interface ConsultationSessionRepository extends JpaRepository<Consultatio
             @Param("statuses") List<ConsultationSessionStatus> statuses);
 
     @Query("SELECT c FROM ConsultationSession c " +
-            "WHERE c.doctorLastTimePing <= :patientLastTimePing " +
+            "WHERE c.patientLastTimePing <= :patientLastTimePing " +
             "AND c.status IN :statuses")
     List<ConsultationSession> findByPatientLastTimeSeen(
             @Param("patientLastTimePing") LocalDateTime patientLastTimePing,
