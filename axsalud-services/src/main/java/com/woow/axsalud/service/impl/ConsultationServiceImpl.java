@@ -625,6 +625,9 @@ public class ConsultationServiceImpl implements ConsultationService {
         consultationMessagesPagingDTO.setTotalElements(totalElements);
         consultationMessagesPagingDTO.setTotalPages(totalPages);
 
+        consultationMessagesPagingDTO.getMessages()
+                .forEach(System.out::println);
+
         return consultationMessagesPagingDTO;
     }
 
