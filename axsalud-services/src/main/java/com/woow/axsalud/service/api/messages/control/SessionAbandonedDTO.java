@@ -12,4 +12,5 @@ public class SessionAbandonedDTO {
     private String consultationId;
     private String consultationSessionId;
     private LocalDateTime lastTimeSeen;
+    private String currentState;
 }

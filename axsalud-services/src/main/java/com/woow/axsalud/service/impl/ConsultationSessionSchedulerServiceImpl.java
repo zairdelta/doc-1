@@ -72,7 +72,7 @@ public class ConsultationSessionSchedulerServiceImpl implements ConsultationSess
         localDateTime = localDateTime.minusSeconds(CONNECTED_SESSION_IDLE_IN_SECONDS);
 
         List<ConsultationSessionStatus> statuses = List.of(ConsultationSessionStatus.CONNECTED,
-                ConsultationSessionStatus.CONNECTING);
+                ConsultationSessionStatus.CONNECTING, ConsultationSessionStatus.CONFIRMING_PARTIES);
 
         List<ConsultationSession> consultationSessionsDoctorLost =
                 consultationSessionRepository.findByDoctorLastTimeSeen(localDateTime, statuses);
@@ -106,7 +106,7 @@ public class ConsultationSessionSchedulerServiceImpl implements ConsultationSess
         sessionAbandonedDTO.setNewConsultationSessionStatus(ConsultationSessionStatus.ABANDONED.getStatus());
         sessionAbandonedDTO.setConsultationSessionId(consultationSession.getConsultationSessionId().toString());
         sessionAbandonedDTO.setConsultationId(consultationSession.getConsultation().getConsultationId().toString());
-
+        sessionAbandonedDTO.setCurrentState(consultationSession.getStatus().getStatus());
         if(role == AXSaludUserRoles.DOCTOR) {
             consultationSession.setDoctorStatus(PartyConsultationStatus.DROPPED);
             sessionAbandonedDTO.setRole(AXSaludUserRoles.DOCTOR.getRole());
