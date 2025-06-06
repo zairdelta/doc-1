@@ -29,7 +29,7 @@ import java.util.Map;
 @Slf4j
 public class ConsultationSessionSchedulerServiceImpl implements ConsultationSessionSchedulerService {
 
-    @Value("${ woow.app.telemedicine.consultation.session.connected.idleTimeoutInSeconds:90}")
+    @Value("${ woow.app.telemedicine.consultation.session.connected.idleTimeoutInSeconds:120}")
     private int CONNECTED_SESSION_IDLE_IN_SECONDS;
     private WoowUserRepository woowUserRepository;
     private AxSaludUserRepository axSaludUserRepository;

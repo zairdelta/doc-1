@@ -38,11 +38,11 @@ public interface ConsultationSessionRepository extends JpaRepository<Consultatio
             @Param("patientLastTimePing") LocalDateTime patientLastTimePing,
             @Param("statuses") List<ConsultationSessionStatus> statuses);
 
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query("UPDATE ConsultationSession c SET c.doctorLastTimePing = :time WHERE c.consultationSessionId = :sessionId")
     void updateDoctorLastPing(@Param("sessionId") UUID sessionId, @Param("time") LocalDateTime time);
 
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query("UPDATE ConsultationSession c SET c.patientLastTimePing = :time WHERE c.consultationSessionId = :sessionId")
     void updatePatientLastPing(@Param("sessionId") UUID sessionId, @Param("time") LocalDateTime time);
 
