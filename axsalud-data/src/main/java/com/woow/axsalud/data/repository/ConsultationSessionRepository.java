@@ -40,10 +40,10 @@ public interface ConsultationSessionRepository extends JpaRepository<Consultatio
 
     @Modifying(clearAutomatically = true)
     @Query("UPDATE ConsultationSession c SET c.doctorLastTimePing = :time WHERE c.consultationSessionId = :sessionId")
-    void updateDoctorLastPing(@Param("sessionId") UUID sessionId, @Param("time") LocalDateTime time);
+    int updateDoctorLastPing(@Param("sessionId") UUID sessionId, @Param("time") LocalDateTime time);
 
     @Modifying(clearAutomatically = true)
     @Query("UPDATE ConsultationSession c SET c.patientLastTimePing = :time WHERE c.consultationSessionId = :sessionId")
-    void updatePatientLastPing(@Param("sessionId") UUID sessionId, @Param("time") LocalDateTime time);
+    int updatePatientLastPing(@Param("sessionId") UUID sessionId, @Param("time") LocalDateTime time);
 
 }

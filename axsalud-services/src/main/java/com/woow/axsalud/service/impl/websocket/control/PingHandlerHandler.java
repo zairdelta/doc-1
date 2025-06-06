@@ -44,15 +44,17 @@ public class PingHandlerHandler implements ControlMessageHandler {
         controlMessageDTO.setTimeProcessed(LocalDateTime.now());
         controlMessageDTO.setSender(message.getUserName());
         UUID sessionId = UUID.fromString(message.getConsultationSessionId());
-
+        int numberOfRowsAffected = 0 ;
         if(message.getRoles().contains(AXSaludUserRoles.DOCTOR.getRole())) {
             log.info("updating Doctor lastPing, not intrusive query");
-            consultationSessionRepository.updateDoctorLastPing(sessionId, LocalDateTime.now());
+            numberOfRowsAffected = consultationSessionRepository.updateDoctorLastPing(sessionId, LocalDateTime.now());
 
         } else {
             log.info("updating Patient lastPing, not intrusive query");
-            consultationSessionRepository.updatePatientLastPing(sessionId, LocalDateTime.now());
+            numberOfRowsAffected = consultationSessionRepository.updatePatientLastPing(sessionId, LocalDateTime.now());
         }
+
+        log.info("number of rows affected by the update: {}", numberOfRowsAffected);
 
         String controlCommunicationTopic = "/topic/consultation." + message.getConsultationId() +
                 ".session." + message.getConsultationSessionId() + ".control";
