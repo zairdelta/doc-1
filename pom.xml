@@ -283,6 +283,11 @@
                 <artifactId>httpcore5</artifactId>
                 <version>5.3.4</version>
             </dependency>
+            <dependency>
+                <groupId>net.coobird</groupId>
+                <artifactId>thumbnailator</artifactId>
+                <version>0.4.20</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <dependencies>
