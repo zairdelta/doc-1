@@ -444,7 +444,6 @@ public class AxSaludServiceImpl implements AxSaludService {
             doc.setUploaderRole(axSaludWooUser.getUserType());
 
             FileResponseDTO fileResponseDTO = new FileResponseDTO();
-            fileResponseDTO.setId(doc.getId());
             fileResponseDTO.setName(doc.getFileName());
             fileResponseDTO.setUrl(doc.getSecureUrl());
             woowUser.setImgURL(doc.getSecureUrl());
