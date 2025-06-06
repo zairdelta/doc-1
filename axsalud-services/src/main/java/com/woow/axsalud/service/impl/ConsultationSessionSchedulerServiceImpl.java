@@ -79,8 +79,8 @@ public class ConsultationSessionSchedulerServiceImpl implements ConsultationSess
                 .forEach(consultationEventDTO -> sendConsultationEvent(consultationEventDTO));
 
         List<ConsultationSession> consultationSessionsPatientLost =
-                consultationSessionRepository.findByDoctorLastTimeSeen(localDateTime, statuses);
-        log.info("Sessions list size found to terminated for doctors: {}", consultationSessionsDoctorLost.size());
+                consultationSessionRepository.findByPatientLastTimeSeen(localDateTime, statuses);
+        log.info("Sessions list size found to terminated for Patient: {}", consultationSessionsDoctorLost.size());
 
         consultationSessionsPatientLost.stream()
                 .map(session -> handledSessionAbandoned(session, AXSaludUserRoles.USER))
