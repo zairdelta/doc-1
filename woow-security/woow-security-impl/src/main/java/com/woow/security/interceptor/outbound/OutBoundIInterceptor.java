@@ -30,8 +30,9 @@ public class OutBoundIInterceptor implements ChannelInterceptor {
                 payloadConvertedToString = message.getPayload().toString();
             }
 
-            log.info("SERVER OUTBOUND STOMP MESSAGE - Destination: [{}], " +
+            log.info("{}_ SERVER OUTBOUND STOMP MESSAGE - Destination: [{}], " +
                             "Session: [{}], Payload: {}",
+                    accessor.getSessionId(),
                     accessor.getDestination(),
                     accessor.getSessionId(),
                     payloadConvertedToString);

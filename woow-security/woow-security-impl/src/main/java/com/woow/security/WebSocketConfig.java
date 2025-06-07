@@ -3,8 +3,8 @@ package com.woow.security;
 import com.woow.security.api.JwtTokenUtil;
 import com.woow.security.api.WebSocketUserPrincipal;
 import com.woow.security.interceptor.inbound.*;
-import com.woow.security.rabbitmq.RabbitMQStompBrokerProperties;
 import com.woow.security.interceptor.outbound.OutBoundIInterceptor;
+import com.woow.security.rabbitmq.RabbitMQStompBrokerProperties;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
@@ -33,7 +33,6 @@ import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -192,7 +191,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
-        registration.interceptors(connectWsInterceptor, ackMessageWsInterceptor);
+        registration.interceptors(connectWsInterceptor, ackMessageWsInterceptor,
+                outBoundIInterceptor);
        /* registration.interceptors(connectWsInterceptor, disconnectWsInterceptor,
                 inboundMessageLoggingWsInterceptor, sendMessageWsInterceptor, subscribeWsInterceptor,
                 unsubscribeWsInterceptor);*/

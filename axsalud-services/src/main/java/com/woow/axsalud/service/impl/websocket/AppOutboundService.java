@@ -21,6 +21,8 @@ public class AppOutboundService {
     }
 
     public void sendQueueMessage(String receiver, ConsultationEventDTO consultationEventDTO) {
+        log.info("Sending message to QUEUE_MESSAGES_DESTINATION, receiver: {}, messageId: {}", receiver,
+                consultationEventDTO.getId());
         messagingTemplate.convertAndSendToUser(
                 receiver,
                 QUEUE_MESSAGES_DESTINATION,
