@@ -1,7 +1,10 @@
 package com.woow.security.lc;
 
+import com.woow.security.api.ws.StompConnectAppEvent;
+import com.woow.security.api.ws.WSCacheInput;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Component;
@@ -10,6 +13,7 @@ import org.springframework.web.socket.messaging.SessionConnectedEvent;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
@@ -19,16 +23,20 @@ public class WebSocketConnectListener {
     @Autowired
     private WSCache wsCache;
 
+    @Autowired
+    private ApplicationEventPublisher publisher;
+
     @EventListener
     public void handleSessionConnected(SessionConnectedEvent event) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
         Principal principal = event.getUser();
         String sessionId = accessor.getSessionId();
 
-        log.info("✅ STOMP session connected: {}", sessionId);
+        log.info("✅ {} , STOMP session connected: {}", sessionId, sessionId);
 
         WSCacheInput input = createWSCacheInput(event, accessor, principal);
         wsCache.addOrUpdateSession(sessionId, input);
+        publisher.publishEvent(new StompConnectAppEvent(this, input));
     }
 
     private WSCacheInput createWSCacheInput(SessionConnectedEvent event, StompHeaderAccessor accessor, Principal principal) {

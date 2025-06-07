@@ -1,4 +1,4 @@
-package com.woow.security.lc;
+package com.woow.security.api.ws;
 
 import lombok.Data;
 

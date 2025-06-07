@@ -27,9 +27,9 @@ public class ConnectWsInterceptor implements ChannelInterceptor {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
 
         if (StompCommand.CONNECT.equals(accessor.getCommand())) {
-
+            String sessionId = accessor.getSessionId();
             String authHeader = accessor.getFirstNativeHeader("Authorization");
-            log.info("Getting STOMP CONNECT, getting authentication header");
+            log.info("{}_ Getting STOMP CONNECT, getting authentication header", sessionId);
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 String jwtToken = authHeader.substring(7);
                 String username = jwtTokenUtil.getUsernameFromToken(jwtToken);
@@ -42,10 +42,10 @@ public class ConnectWsInterceptor implements ChannelInterceptor {
             }
         } else if (accessor.getCommand() == StompCommand.SEND
                 || accessor.getCommand() == StompCommand.MESSAGE) {
-            log.info("INBOUND STOMP message to destination [{}], STOMP session [{}], payload: {}",
+           /* log.info("INBOUND STOMP message to destination [{}], STOMP session [{}], payload: {}",
                     accessor.getDestination(),
                     accessor.getSessionId(),
-                    message.getPayload());
+                    message.getPayload()); */
         }
 
         return message;

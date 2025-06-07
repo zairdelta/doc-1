@@ -1,5 +1,6 @@
 package com.woow.security.lc;
 
+import com.woow.security.api.ws.WSCacheInput;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 

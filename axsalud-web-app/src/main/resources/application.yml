@@ -2,19 +2,17 @@ logging:
   level:
     org.hibernate.SQL: OFF
     org.hibernate.type.descriptor.sql: OFF
-
-    # ADD THESE FOR WEBSOCKET DEBUGGING 👇
-    org.springframework.web.socket: DEBUG
-    org.springframework.web.socket.server.support: DEBUG
-    org.apache.tomcat.websocket: DEBUG
-    org.springframework.messaging: DEBUG
-    org.springframework.messaging.simp.stomp: TRACE
-    org.springframework.messaging.simp.stomp.StompBrokerRelayMessageHandler: TRACE
-    org.springframework.messaging.simp.stomp.StompSession: TRACE
-    org.springframework.messaging.simp.broker: DEBUG
-    org.springframework.security.web.FilterChainProxy: DEBUG
-    org.springframework.security.web.authentication: DEBUG
-    org.springframework.security.config: DEBUG
+    org.springframework.web.socket: OFF
+    org.springframework.web.socket.server.support: OFF
+    org.apache.tomcat.websocket: OFF
+    org.springframework.messaging: OFF
+    org.springframework.messaging.simp.stomp: OFF # TRACE
+    org.springframework.messaging.simp.stomp.StompBrokerRelayMessageHandler: OFF #TRACE
+    org.springframework.messaging.simp.stomp.StompSession: OFF # TRACE
+    org.springframework.messaging.simp.broker: OFF # DEBUG
+    org.springframework.security.web.FilterChainProxy: OFF #DEBUG
+    org.springframework.security.web.authentication: OFF #DEBUG
+    org.springframework.security.config: OFF #DEBUG
 
     # OPTIONAL: your custom package if you want to see your own logs
     com.woow: DEBUG

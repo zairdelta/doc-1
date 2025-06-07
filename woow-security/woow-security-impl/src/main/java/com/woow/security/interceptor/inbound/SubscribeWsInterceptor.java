@@ -21,9 +21,8 @@ public class SubscribeWsInterceptor implements ChannelInterceptor {
             accessor.setNativeHeader("durable", "true");
             accessor.setNativeHeader("auto-delete", "false");
           //  accessor.setNativeHeader("x-expires", "120000");
-            log.info("Injected headers for subscription: " + accessor.toNativeHeaderMap());
-        } else {
-            log.info("SUBSCRIBE command was not received, accessor: {}", accessor);
+            log.info("{}_ Injected headers for subscription: "
+                    + accessor.toNativeHeaderMap(), accessor.getSessionId());
         }
 
         return message;

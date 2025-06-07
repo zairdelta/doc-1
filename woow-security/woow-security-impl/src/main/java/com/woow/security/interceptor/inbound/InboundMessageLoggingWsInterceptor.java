@@ -29,8 +29,9 @@ public class InboundMessageLoggingWsInterceptor implements ChannelInterceptor {
         }
 
         if (accessor.getCommand() != null) {
-            log.info("Inbound STOMP message - Command: [{}]," +
+            log.info("{}_ Inbound STOMP message - Command: [{}]," +
                             " Destination: [{}], Session: [{}], Payload: {}, Receipt:{}",
+                    accessor.getSessionId(),
                     accessor.getCommand(),
                     accessor.getDestination(),
                     accessor.getSessionId(),
