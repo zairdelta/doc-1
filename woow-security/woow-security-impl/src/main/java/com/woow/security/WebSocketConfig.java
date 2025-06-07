@@ -45,6 +45,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private JwtTokenUtil jwtTokenUtil;
     private ConnectWsInterceptor connectWsInterceptor;
+    private AckMessageWsInterceptor ackMessageWsInterceptor;
     private DisconnectWsInterceptor disconnectWsInterceptor;
     private InboundMessageLoggingWsInterceptor inboundMessageLoggingWsInterceptor;
     private SendMessageWsInterceptor sendMessageWsInterceptor;
@@ -59,6 +60,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                            SendMessageWsInterceptor sendMessageWsInterceptor,
                            SubscribeWsInterceptor subscribeWsInterceptor,
                            UnsubscribeWsInterceptor unsubscribeWsInterceptor,
+                           AckMessageWsInterceptor ackMessageWsInterceptor,
                            OutBoundIInterceptor outBoundIInterceptor,
                            JwtTokenUtil jwtTokenUtil,
                            RabbitMQStompBrokerProperties rabbitMQStompBrokerProperties) {
@@ -70,6 +72,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         this.unsubscribeWsInterceptor = unsubscribeWsInterceptor;
         this.outBoundIInterceptor = outBoundIInterceptor;
         this.jwtTokenUtil = jwtTokenUtil;
+        this.ackMessageWsInterceptor = ackMessageWsInterceptor;
         this.rabbitMQStompBrokerProperties = rabbitMQStompBrokerProperties;
     }
 
@@ -138,8 +141,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                             conn.outbound()
                                     .sendByteArray(Mono.just(heartbeat))
                                     .then()
-                                    .doOnSuccess(unused ->
-                                            log.info("✅ [HEARTBEAT] Manual STOMP heartbeat sent at: {}", Instant.now()))
+                                 //   .doOnSuccess(unused ->
+                                   //         log.info("✅ [HEARTBEAT] Manual STOMP heartbeat sent at: {}", Instant.now()))
                                     .doOnError(e ->
                                             log.warn("❌ [HEARTBEAT] Failed to send manual heartbeat: {}", e.getMessage()))
                                     .subscribe();
@@ -189,7 +192,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
-        registration.interceptors(connectWsInterceptor);
+        registration.interceptors(connectWsInterceptor, ackMessageWsInterceptor);
        /* registration.interceptors(connectWsInterceptor, disconnectWsInterceptor,
                 inboundMessageLoggingWsInterceptor, sendMessageWsInterceptor, subscribeWsInterceptor,
                 unsubscribeWsInterceptor);*/
