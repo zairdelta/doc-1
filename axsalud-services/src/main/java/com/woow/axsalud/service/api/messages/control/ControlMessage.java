@@ -11,4 +11,5 @@ public class ControlMessage {
     private String consultationSessionId;
     private String userName;
     private List<String> roles;
+    private String sessionId;
 }

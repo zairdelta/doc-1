@@ -42,7 +42,7 @@ public class PingHandlerHandler implements ControlMessageHandler {
     @Override
     @Transactional
     public void handledControlMessage(ControlMessage message) {
-        log.info("ping message received: {}", message);
+        log.info("{}_ ping message received: {}", message.getSessionId(), message);
         ControlMessageDTO controlMessageDTO = new ControlMessageDTO();
         controlMessageDTO.setMessageType(ControlMessageType.PONG);
         controlMessageDTO.setTimeProcessed(LocalDateTime.now());
@@ -50,22 +50,23 @@ public class PingHandlerHandler implements ControlMessageHandler {
         UUID sessionId = UUID.fromString(message.getConsultationSessionId());
         int numberOfRowsAffected = 0 ;
         if(message.getRoles().contains(AXSaludUserRoles.DOCTOR.getRole())) {
-            log.info("updating Doctor lastPing, not intrusive query");
+            log.info("{}_ updating Doctor lastPing, not intrusive query", message.getSessionId());
             numberOfRowsAffected = consultationSessionRepository.updateDoctorLastPing(sessionId, LocalDateTime.now());
 
         } else {
-            log.info("updating Patient lastPing, not intrusive query");
+            log.info("{}_ updating Patient lastPing, not intrusive query", message.getSessionId());
             numberOfRowsAffected = consultationSessionRepository.updatePatientLastPing(sessionId, LocalDateTime.now());
         }
 
-        log.info("number of rows affected by the update: {}", numberOfRowsAffected);
+        log.info("{}_ number of rows affected by the update: {}", message.getSessionId(),
+                numberOfRowsAffected);
 
        /* String controlCommunicationTopic = "/topic/consultation." + message.getConsultationId() +
                 ".session." + message.getConsultationSessionId() + ".control";
         messagingTemplate.convertAndSend(controlCommunicationTopic, controlMessageDTO);*/
         appOutboundService.sendConsultationControlEvent(message.getConsultationId(),
                 message.getConsultationSessionId(), controlMessageDTO);
-        log.info("PONG message send: {}", controlMessageDTO);
+        log.info("{}_ PONG message send: {}", message.getSessionId(), controlMessageDTO);
     }
 
 }

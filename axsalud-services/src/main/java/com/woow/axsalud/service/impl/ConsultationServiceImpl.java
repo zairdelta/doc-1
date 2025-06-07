@@ -87,11 +87,11 @@ public class ConsultationServiceImpl implements ConsultationService {
 
     @Override
     @Transactional
-    public void handledConsultationMessage(final ConsultationMessageDTO consultationMessage) {
+    public void handledConsultationMessage(final String sessionId, final ConsultationMessageDTO consultationMessage) {
 
         long eventId = 0;
         try {
-            log.debug("Validating Message: {}", consultationMessage);
+            log.debug("{}_ Validating Message: {}", sessionId, consultationMessage);
 
             if(consultationMessage.getContent() != null &
                     !consultationMessage.getContent().equalsIgnoreCase(CHAT_PING_MESSAGE)) {
@@ -120,7 +120,7 @@ public class ConsultationServiceImpl implements ConsultationService {
 
         } catch (ConsultationServiceException e) {
 
-            log.error("Error Sending consultationMessage DTO: {}", e.getMessage());
+            log.error("{}_ Error Sending consultationMessage DTO: {}", sessionId, e.getMessage());
             ConsultationMessageDTO errorMessage = new ConsultationMessageDTO();
             errorMessage.setConsultationId(consultationMessage.getConsultationId());
             errorMessage.setSender(SYSTEM_USER);
@@ -132,14 +132,16 @@ public class ConsultationServiceImpl implements ConsultationService {
             consultationEventDTO.setTimeProcessed(LocalDateTime.now());
             consultationEventDTO.setPayload(errorMessage);
 
-            log.error("Error validating or adding message for consultationMessage: {}, errorMessage:{}, reporting to system user: {}",
+            log.error("{}_ Error validating or adding message for consultationMessage: {}, " +
+                            "errorMessage:{}, reporting to system user: {}", sessionId,
                     consultationMessage, errorMessage, SYSTEM_USER);
 
             try {
                 eventId = addMessage(errorMessage, ConsultationMessgeTypeEnum.ERROR);
                 consultationEventDTO.setId(eventId);
             } catch (ConsultationServiceException ex) {
-                log.error("There was an error processing errorMessage: {}", e.getMessage());
+                log.error("{}}_ There was an error processing errorMessage: {}", sessionId,
+                        e.getMessage());
             }
             appOutboundService.sendErrorQueueMessage(consultationMessage.getSender(), consultationEventDTO);
            /* messagingTemplate.convertAndSendToUser(
@@ -692,7 +694,8 @@ public class ConsultationServiceImpl implements ConsultationService {
     }
 
     @Override
-    public void closeSession(String consultationId, String consultationSessionId, String sender)
+    public void closeSession(String sessionId,
+                             String consultationId, String consultationSessionId, String sender)
             throws ConsultationServiceException {
 
         ConsultationSession consultationSession =
@@ -750,7 +753,7 @@ public class ConsultationServiceImpl implements ConsultationService {
         appOutboundService.sendDoctorEventMessage(consultationEventDTO);
         String controlComunicationTopic = "/topic/consultation." + consultationSession.getConsultation().getConsultationId() +
                 ".session." + consultationSession.getConsultationSessionId() + ".control";
-        log.info("ending application session id: {} ", controlComunicationTopic);
+        log.info("{}_ ending application session id: {} ", sessionId, controlComunicationTopic);
         platformService.appSessionTerminated(controlComunicationTopic);
 
     }

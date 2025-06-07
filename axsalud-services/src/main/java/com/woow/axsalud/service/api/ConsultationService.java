@@ -11,7 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface ConsultationService {
-    void handledConsultationMessage(ConsultationMessageDTO consultationMessage);
+    void handledConsultationMessage(String sessionId, ConsultationMessageDTO consultationMessage);
     ConsultationDTO create(SymptomsDTO symptomsDTO, String userName) throws WooUserServiceException;
 
     void addComentariosMedicos(DoctorCommentsDTO doctorCommentsDTO, String consultationSessionId);
@@ -41,7 +41,7 @@ public interface ConsultationService {
             throws ConsultationServiceException;
 
     ConsultationSession getConsultationSession(String consultationSessionId) throws ConsultationServiceException;
-    void closeSession(String consultationId, String consultationSessionId, String sender)
+    void closeSession(String sessionId, String consultationId, String consultationSessionId, String sender)
             throws ConsultationServiceException;
 
     ConsultationSessionViewDTO getConsultationSession(String userName, String consultationSessionId) throws ConsultationServiceException;

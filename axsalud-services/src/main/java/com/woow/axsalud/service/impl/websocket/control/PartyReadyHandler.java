@@ -52,24 +52,25 @@ public class PartyReadyHandler implements ControlMessageHandler {
             backoff = @Backoff(delay = 100, multiplier = 2)
     )
     public void handledControlMessage(final ControlMessage message) {
-        log.info("Processing PARTY_READY message: {}, reading DB with lock ", message);
+        log.info("{}_ Processing PARTY_READY message: {}, reading DB with lock ", message.getSessionId(), message);
         if(message.getControlMessageDTO().getMessageType() == ControlMessageType.PARTY_READY) {
             ConsultationSession consultationSession = consultationSessionRepository
                     .findWithLock(UUID.fromString(message.getConsultationSessionId()));
             if(consultationSession.getStatus() == ConsultationSessionStatus.CONFIRMING_PARTIES) {
-                log.info("running hand check process");
+                log.info("{}_ running hand check process", message.getSessionId());
                 if (message.getRoles().contains(AXSaludUserRoles.DOCTOR.getRole())) {
                     consultationSession.setDoctorStatus(PartyConsultationStatus.READY);
-                    log.info("setting Doctor to READY");
+                    log.info("{}_ setting Doctor to READY", message.getSessionId());
                 } else if (message.getRoles().contains(AXSaludUserRoles.USER.getRole())) {
                     consultationSession.setPatientStatus(PartyConsultationStatus.READY);
-                    log.info("setting Patient to READY");
+                    log.info("{}_ setting Patient to READY", message.getSessionId());
                 }
 
                 if(consultationSession.getDoctorStatus() == PartyConsultationStatus.READY &&
                         consultationSession.getPatientStatus() == PartyConsultationStatus.READY) {
                     consultationSession.setStatus(ConsultationSessionStatus.CONNECTING);
-                    log.info("Both parties are ready, sending CHAT_READY event, sessionID: {}", message.getConsultationSessionId());
+                    log.info("{}_ Both parties are ready, sending CHAT_READY event, sessionID: {}",
+                            message.getSessionId(), message.getConsultationSessionId());
                     ControlMessageDTO controlMessageDTO = new ControlMessageDTO();
                     controlMessageDTO.setMessageType(ControlMessageType.CHAT_READY);
                     controlMessageDTO.setTimeProcessed(LocalDateTime.now());
@@ -84,7 +85,7 @@ public class PartyReadyHandler implements ControlMessageHandler {
                             consultationSession.getConsultationSessionId().toString(), controlMessageDTO);
                 }
                 consultationSessionRepository.save(consultationSession);
-                log.info("ConsultationSession updated");
+                log.info("{}_ ConsultationSession updated", message.getSessionId());
             }
         }
     }

@@ -53,24 +53,25 @@ public class PartiesConnectedHandler implements ControlMessageHandler {
             backoff = @Backoff(delay = 100, multiplier = 2)
     )
     public void handledControlMessage(final ControlMessage message) {
-        log.info("Processing PARTY_CONNECTED message: {}, reading DB with lock ", message);
+        log.info("{}_ Processing PARTY_CONNECTED message: {}, reading DB with lock ", message.getSessionId(), message);
         if(message.getControlMessageDTO().getMessageType() == ControlMessageType.PARTY_CONNECTED) {
             ConsultationSession consultationSession = consultationSessionRepository
                     .findWithLock(UUID.fromString(message.getConsultationSessionId()));
             if(consultationSession.getStatus() == ConsultationSessionStatus.CONNECTING) {
-                log.info("running connected process");
+                log.info("{}_ running connected process", message.getSessionId());
                 if (message.getRoles().contains(AXSaludUserRoles.DOCTOR.getRole())) {
                     consultationSession.setDoctorStatus(PartyConsultationStatus.CONNECTED);
-                    log.info("setting Doctor to CONNECTED");
+                    log.info("{}_ setting Doctor to CONNECTED", message.getSessionId());
                 } else if (message.getRoles().contains(AXSaludUserRoles.USER.getRole())) {
                     consultationSession.setPatientStatus(PartyConsultationStatus.CONNECTED);
-                    log.info("setting Patient to CONNECTED");
+                    log.info("{}_ setting Patient to CONNECTED", message.getSessionId());
                 }
 
                 if(consultationSession.getDoctorStatus() == PartyConsultationStatus.CONNECTED &&
                         consultationSession.getPatientStatus() == PartyConsultationStatus.CONNECTED) {
                     consultationSession.setStatus(ConsultationSessionStatus.CONNECTED);
-                    log.info("Both parties are CONNECTED, sending CONNECTED event, sessionID: {}", message.getConsultationSessionId());
+                    log.info("{}_ Both parties are CONNECTED, sending CONNECTED event, sessionID: {}",
+                            message.getSessionId(), message.getConsultationSessionId());
                     ControlMessageDTO controlMessageDTO = new ControlMessageDTO();
                     controlMessageDTO.setMessageType(ControlMessageType.CONNECTED);
                     controlMessageDTO.setTimeProcessed(LocalDateTime.now());
@@ -85,9 +86,10 @@ public class PartiesConnectedHandler implements ControlMessageHandler {
                             consultationSession.getConsultationSessionId().toString(), controlMessageDTO);
                 }
                 consultationSessionRepository.save(consultationSession);
-                log.info("ConsultationSession updated");
+                log.info("{}_ ConsultationSession updated", message.getSessionId());
             } else {
-                log.info("Receiving PARTY_CONNECTED where consultationSession is not in CONNECTING state");
+                log.info("{}_ Receiving PARTY_CONNECTED where consultationSession is not in CONNECTING state",
+                        message.getSessionId());
             }
         }
     }
