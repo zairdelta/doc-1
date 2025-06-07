@@ -5,7 +5,6 @@ import com.woow.axsalud.data.consultation.ComentariosMedicos;
 import com.woow.axsalud.data.consultation.Consultation;
 import com.woow.core.data.user.WoowUser;
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
