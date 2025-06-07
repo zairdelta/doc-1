@@ -12,6 +12,7 @@ public class ConsultationEventDTO<T> {
     private Map<String, Object> metadata;
     private LocalDateTime timeProcessed;
     private ConsultationMessgeTypeEnum messageType;
+    private String transportSessionId;
     private String version = "1.0.0";
     private T payload;
 }

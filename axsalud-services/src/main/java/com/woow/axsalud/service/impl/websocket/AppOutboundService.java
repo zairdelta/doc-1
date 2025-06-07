@@ -21,7 +21,10 @@ public class AppOutboundService {
     }
 
     public void sendQueueMessage(String receiver, ConsultationEventDTO consultationEventDTO) {
-        log.info("Sending message to QUEUE_MESSAGES_DESTINATION, receiver: {}, messageId: {}", receiver,
+        log.info("{}_ Sending message to {}, receiver: {}, messageId: {}",
+                consultationEventDTO.getTransportSessionId(),
+                QUEUE_MESSAGES_DESTINATION,
+                receiver,
                 consultationEventDTO.getId());
         messagingTemplate.convertAndSendToUser(
                 receiver,
@@ -31,6 +34,11 @@ public class AppOutboundService {
     }
 
     public void sendErrorQueueMessage(String receiver, ConsultationEventDTO consultationEventDTO) {
+        log.info("{}_ Sending message to {}, receiver: {}, messageId: {}",
+                consultationEventDTO.getTransportSessionId(),
+                QUEUE_ERRORS,
+                receiver,
+                consultationEventDTO.getId());
         messagingTemplate.convertAndSendToUser(
                 receiver,
                 QUEUE_ERRORS,
@@ -38,7 +46,8 @@ public class AppOutboundService {
         );
     }
     public void sendDoctorEventMessage(ConsultationEventDTO consultationEventDTO) {
-        log.info("Sending consultationEventDTO to topic/doctor-events: {}", consultationEventDTO);
+        log.info("{}_ Sending consultationEventDTO to topic/doctor-events: {}",
+                consultationEventDTO.getTransportSessionId(), consultationEventDTO);
         messagingTemplate.convertAndSend(DOCTOR_EVENTS_DESTINATION, consultationEventDTO);
     }
 

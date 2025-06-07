@@ -101,10 +101,11 @@ public class ConsultationServiceImpl implements ConsultationService {
                         consultationMessage.getReceiver(), consultationMessage.getSender());
                 eventId = addMessage(consultationMessage, ConsultationMessgeTypeEnum.TEXT_MESSAGE);
             } else {
-                log.debug("Receiving messagetype ping, keep alive send to other party in chat topic");
+                log.debug("{}_ Receiving messagetype ping, keep alive send to other party in chat topic", sessionId);
             }
 
             ConsultationEventDTO<ConsultationMessageDTO> consultationEventDTO = new ConsultationEventDTO<>();
+            consultationEventDTO.setTransportSessionId(sessionId);
             consultationEventDTO.setMessageType(ConsultationMessgeTypeEnum.TEXT_MESSAGE);
             consultationEventDTO.setTimeProcessed(LocalDateTime.now());
             consultationEventDTO.setPayload(consultationMessage);
