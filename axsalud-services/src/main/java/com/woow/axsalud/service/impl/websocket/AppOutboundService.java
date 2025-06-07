@@ -26,12 +26,7 @@ public class AppOutboundService {
         messagingTemplate.convertAndSendToUser(
                 receiver,
                 QUEUE_MESSAGES_DESTINATION,
-                consultationEventDTO,
-                message -> {
-                    // Add a custom message ID or any other metadata
-                    message.getHeaders().put("x-msg-id", generateMessageId(consultationEventDTO));
-                    return message;
-                }
+                consultationEventDTO
         );
     }
 
