@@ -32,7 +32,6 @@
         <module>axsalud-it</module>
         <module>axsalud-exec</module>
         <module>woow-core/storage</module>
-        <module>axsalud-cache-service</module>
     </modules>
 
     <properties>

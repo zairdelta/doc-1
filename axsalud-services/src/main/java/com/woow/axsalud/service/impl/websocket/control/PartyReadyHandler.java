@@ -9,6 +9,7 @@ import com.woow.axsalud.service.api.messages.control.ControlMessage;
 import com.woow.axsalud.service.api.messages.control.ControlMessageDTO;
 import com.woow.axsalud.service.api.messages.control.ControlMessageType;
 import com.woow.axsalud.service.api.websocket.ControlMessageHandler;
+import com.woow.axsalud.service.impl.websocket.AppOutboundService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -27,12 +28,15 @@ public class PartyReadyHandler implements ControlMessageHandler {
 
     private SimpMessagingTemplate messagingTemplate;
     private ConsultationSessionRepository consultationSessionRepository;
+    private AppOutboundService appOutboundService;
 
     public PartyReadyHandler(final SimpMessagingTemplate messagingTemplate,
-                             final ConsultationSessionRepository consultationSessionRepository) {
+                             final ConsultationSessionRepository consultationSessionRepository,
+                             final AppOutboundService appOutboundService) {
 
         this.messagingTemplate = messagingTemplate;
         this.consultationSessionRepository = consultationSessionRepository;
+        this.appOutboundService = appOutboundService;
     }
 
     @Override
@@ -73,9 +77,11 @@ public class PartyReadyHandler implements ControlMessageHandler {
                     controlMessageDTO.setPatient(consultationSession.getConsultation()
                             .getPatient().getCoreUser().getUserName());
 
-                    String controlCommunicationTopic = "/topic/consultation." + consultationSession.getConsultation().getConsultationId() +
+                    /*String controlCommunicationTopic = "/topic/consultation." + consultationSession.getConsultation().getConsultationId() +
                             ".session." + consultationSession.getConsultationSessionId() + ".control";
-                    messagingTemplate.convertAndSend(controlCommunicationTopic, controlMessageDTO);
+                    messagingTemplate.convertAndSend(controlCommunicationTopic, controlMessageDTO);*/
+                    appOutboundService.sendConsultationControlEvent(consultationSession.getConsultation().getConsultationId().toString(),
+                            consultationSession.getConsultationSessionId().toString(), controlMessageDTO);
                 }
                 consultationSessionRepository.save(consultationSession);
                 log.info("ConsultationSession updated");

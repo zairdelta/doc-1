@@ -9,6 +9,7 @@ import com.woow.axsalud.service.api.exception.ConsultationServiceException;
 import com.woow.axsalud.service.api.exception.WoowVideoCallException;
 import com.woow.axsalud.service.api.messages.ConsultationEventDTO;
 import com.woow.axsalud.service.api.messages.VideoCallStartMessageDTO;
+import com.woow.axsalud.service.impl.websocket.AppOutboundService;
 import io.agora.media.RtcTokenBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,12 +35,15 @@ public class WoowVideoCallsServiceImpl implements WoowVideoCallsService {
     private SimpMessagingTemplate messagingTemplate;
 
     private ConsultationService consultationService;
+    private AppOutboundService appOutboundService;
 
     public WoowVideoCallsServiceImpl(SimpMessagingTemplate messagingTemplate,
-                                     ConsultationService consultationService
+                                     ConsultationService consultationService,
+                                     AppOutboundService appOutboundService
                                      ) {
         this.messagingTemplate = messagingTemplate;
         this.consultationService = consultationService;
+        this.appOutboundService = appOutboundService;
     }
 
     @Override
@@ -87,15 +91,20 @@ public class WoowVideoCallsServiceImpl implements WoowVideoCallsService {
         consultationEventDTO.setTimeProcessed(LocalDateTime.now());
         consultationEventDTO.setPayload(consultationMessageDTO);
         consultationEventDTO.setId(0);
-        messagingTemplate.convertAndSendToUser(
+
+        log.info("Sending video Call Start event to doctor: {}", doctorUserName);
+       /* messagingTemplate.convertAndSendToUser(
                 doctorUserName,
                 "/queue/messages",
-                consultationEventDTO);
+                consultationEventDTO);*/
+        appOutboundService.sendQueueMessage(doctorUserName, consultationEventDTO);
 
-        messagingTemplate.convertAndSendToUser(
+        log.info("Sending video Call Start event to patient: {}", patientUserName);
+        appOutboundService.sendQueueMessage(patientUserName, consultationEventDTO);
+        /*messagingTemplate.convertAndSendToUser(
                 patientUserName,
                 "/queue/messages",
-                consultationEventDTO);
+                consultationEventDTO);*/
 
         return videoTokenDTO;
     }

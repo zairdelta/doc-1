@@ -27,6 +27,7 @@ public class ConnectWsInterceptor implements ChannelInterceptor {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
 
         if (StompCommand.CONNECT.equals(accessor.getCommand())) {
+
             String authHeader = accessor.getFirstNativeHeader("Authorization");
             log.info("Getting STOMP CONNECT, getting authentication header");
             if (authHeader != null && authHeader.startsWith("Bearer ")) {

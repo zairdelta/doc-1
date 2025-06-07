@@ -10,6 +10,7 @@ import com.woow.axsalud.service.api.messages.ConsultationEventDTO;
 import com.woow.axsalud.service.api.messages.ConsultationMessageDTO;
 import com.woow.axsalud.service.api.messages.control.ControlMessageDTO;
 import com.woow.axsalud.service.api.messages.control.ControlMessageType;
+import com.woow.axsalud.service.impl.websocket.AppOutboundService;
 import com.woow.core.data.repository.WoowUserRepository;
 import com.woow.core.data.user.WoowUser;
 import com.woow.core.service.api.exception.WooUserServiceException;
@@ -55,6 +56,7 @@ public class ConsultationServiceImpl implements ConsultationService {
     private ConsultationSessionRepository consultationSessionRepository;
     private ComentariosMedicosRepository comentariosMedicosRepository;
     private PlatformService platformService;
+    private AppOutboundService appOutboundService;
 
     public ConsultationServiceImpl(ConsultationRepository consultationRepository,
                                    WoowUserRepository woowUserRepository,
@@ -66,7 +68,8 @@ public class ConsultationServiceImpl implements ConsultationService {
                                    final ConsultationDocumentRepository consultationDocumentRepository,
                                    final StorageService storageService,
                                    final ConsultationSessionRepository consultationSessionRepository,
-                                   final ComentariosMedicosRepository comentariosMedicosRepository) {
+                                   final ComentariosMedicosRepository comentariosMedicosRepository,
+                                   final AppOutboundService appOutboundService) {
         this.consultationRepository = consultationRepository;
         this.woowUserRepository = woowUserRepository;
         this.axSaludUserRepository = axSaludUserRepository;
@@ -78,6 +81,7 @@ public class ConsultationServiceImpl implements ConsultationService {
         this.storageService = storageService;
         this.consultationSessionRepository = consultationSessionRepository;
         this.comentariosMedicosRepository = comentariosMedicosRepository;
+        this.appOutboundService = appOutboundService;
     }
 
 
@@ -106,11 +110,13 @@ public class ConsultationServiceImpl implements ConsultationService {
             consultationEventDTO.setPayload(consultationMessage);
             consultationEventDTO.setId(eventId);
 
-            messagingTemplate.convertAndSendToUser(
+            appOutboundService.sendQueueMessage(consultationMessage.getReceiver(), consultationEventDTO);
+
+           /* messagingTemplate.convertAndSendToUser(
                     consultationMessage.getReceiver(),
                     "/queue/messages",
                     consultationEventDTO
-            );
+            );*/
 
         } catch (ConsultationServiceException e) {
 
@@ -135,12 +141,12 @@ public class ConsultationServiceImpl implements ConsultationService {
             } catch (ConsultationServiceException ex) {
                 log.error("There was an error processing errorMessage: {}", e.getMessage());
             }
-
-            messagingTemplate.convertAndSendToUser(
+            appOutboundService.sendErrorQueueMessage(consultationMessage.getSender(), consultationEventDTO);
+           /* messagingTemplate.convertAndSendToUser(
                     consultationMessage.getSender(),
                     "/queue/errors",
                     consultationEventDTO
-            );
+            ); */
         }
 
     }
@@ -202,8 +208,9 @@ public class ConsultationServiceImpl implements ConsultationService {
         consultationEventDTO.setPayload(consultationDTO);
         consultationEventDTO.setId(0);
 
-        log.info("Sending consultationDTO to topic/doctor-events: {}", consultationEventDTO);
-        messagingTemplate.convertAndSend("/topic/doctor-events", consultationEventDTO);
+        /*log.info("Sending consultationDTO to topic/doctor-events: {}", consultationEventDTO);
+        messagingTemplate.convertAndSend("/topic/doctor-events", consultationEventDTO);*/
+        appOutboundService.sendDoctorEventMessage(consultationEventDTO);
 
         return consultationDTO;
     }
@@ -267,7 +274,8 @@ public class ConsultationServiceImpl implements ConsultationService {
         consultationDTO.setCurrentSessionIdIfExists(consultationSession.getConsultationSessionId().toString());
 
         log.info("Sending consultationDTO to topic/doctor-events: {}", consultationDTO);
-        messagingTemplate.convertAndSend("/topic/doctor-events", consultationDTO);
+       /* messagingTemplate.convertAndSend("/topic/doctor-events", consultationDTO);*/
+        appOutboundService.sendDoctorEventMessage(consultationDTO);
 
         return consultationDTO;
     }
@@ -417,7 +425,8 @@ public class ConsultationServiceImpl implements ConsultationService {
 
         consultationEventDTO.setMessageType(ConsultationMessgeTypeEnum.CONSULTATION_ASSIGNED);
         log.info("new consultationDTO assigned to topic/doctor-events: {}", consultationEventDTO);
-        messagingTemplate.convertAndSend("/topic/doctor-events", consultationEventDTO);
+        appOutboundService.sendDoctorEventMessage(consultationEventDTO);
+      //  messagingTemplate.convertAndSend("/topic/doctor-events", consultationEventDTO);
 
         ControlMessageDTO controlMessageDTO = new ControlMessageDTO();
         controlMessageDTO.setMessageType(ControlMessageType.DOCTOR_ASSIGNED);
@@ -426,11 +435,15 @@ public class ConsultationServiceImpl implements ConsultationService {
         controlMessageDTO.setPatient(consultationSession.getConsultation()
                 .getPatient().getCoreUser().getUserName());
 
+        /*
         String controlComunicationTopic = "/topic/consultation." + consultationSession.getConsultation().getConsultationId() +
                 ".session." + consultationSession.getConsultationSessionId() + ".control";
         log.debug("Sending controleMessage to topic: {} ", controlComunicationTopic);
         messagingTemplate.convertAndSend(controlComunicationTopic, controlMessageDTO);
-        log.debug("ControlMessage sent to topic: {}, message: {} ", controlComunicationTopic, controlMessageDTO);
+        */
+
+        appOutboundService.sendConsultationControlEvent(consultationId, consultationSessionId, controlMessageDTO);
+        //log.debug("ControlMessage sent to topic: {}, message: {} ", controlComunicationTopic, controlMessageDTO);
 
         return consultationDTO;
     }
@@ -725,13 +738,16 @@ public class ConsultationServiceImpl implements ConsultationService {
         consultationEventDTO.setPayload(endSessionMessageDTO);
         consultationEventDTO.setId(eventId);
 
-        messagingTemplate.convertAndSendToUser(
+        appOutboundService.sendQueueMessage(receiver, consultationEventDTO);
+
+        /*messagingTemplate.convertAndSendToUser(
                 receiver,
                 "/queue/messages",
                 consultationEventDTO
-        );
+        );*/
 
-        messagingTemplate.convertAndSend("/topic/doctor-events", consultationEventDTO);
+        //messagingTemplate.convertAndSend("/topic/doctor-events", consultationEventDTO);
+        appOutboundService.sendDoctorEventMessage(consultationEventDTO);
         String controlComunicationTopic = "/topic/consultation." + consultationSession.getConsultation().getConsultationId() +
                 ".session." + consultationSession.getConsultationSessionId() + ".control";
         log.info("ending application session id: {} ", controlComunicationTopic);

@@ -7,6 +7,7 @@ import com.woow.axsalud.service.api.messages.control.ControlMessage;
 import com.woow.axsalud.service.api.messages.control.ControlMessageDTO;
 import com.woow.axsalud.service.api.messages.control.ControlMessageType;
 import com.woow.axsalud.service.api.websocket.ControlMessageHandler;
+import com.woow.axsalud.service.impl.websocket.AppOutboundService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
@@ -22,12 +23,15 @@ public class PingHandlerHandler implements ControlMessageHandler {
 
     private SimpMessagingTemplate messagingTemplate;
     private ConsultationSessionRepository consultationSessionRepository;
+    private AppOutboundService appOutboundService;
 
     public PingHandlerHandler(final SimpMessagingTemplate messagingTemplate,
-                              final ConsultationSessionRepository consultationSessionRepository) {
+                              final ConsultationSessionRepository consultationSessionRepository,
+                              AppOutboundService appOutboundService) {
 
         this.messagingTemplate = messagingTemplate;
         this.consultationSessionRepository = consultationSessionRepository;
+        this.appOutboundService = appOutboundService;
     }
 
     @Override
@@ -56,9 +60,11 @@ public class PingHandlerHandler implements ControlMessageHandler {
 
         log.info("number of rows affected by the update: {}", numberOfRowsAffected);
 
-        String controlCommunicationTopic = "/topic/consultation." + message.getConsultationId() +
+       /* String controlCommunicationTopic = "/topic/consultation." + message.getConsultationId() +
                 ".session." + message.getConsultationSessionId() + ".control";
-        messagingTemplate.convertAndSend(controlCommunicationTopic, controlMessageDTO);
+        messagingTemplate.convertAndSend(controlCommunicationTopic, controlMessageDTO);*/
+        appOutboundService.sendConsultationControlEvent(message.getConsultationId(),
+                message.getConsultationSessionId(), controlMessageDTO);
         log.info("PONG message send: {}", controlMessageDTO);
     }
 

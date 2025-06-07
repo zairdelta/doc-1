@@ -11,6 +11,7 @@ import com.woow.axsalud.service.api.ConsultationSessionSchedulerService;
 import com.woow.axsalud.service.api.dto.ConsultationMessgeTypeEnum;
 import com.woow.axsalud.service.api.messages.ConsultationEventDTO;
 import com.woow.axsalud.service.api.messages.control.SessionAbandonedDTO;
+import com.woow.axsalud.service.impl.websocket.AppOutboundService;
 import com.woow.core.data.repository.WoowUserRepository;
 import com.woow.security.api.ws.PlatformService;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +35,7 @@ public class ConsultationSessionSchedulerServiceImpl implements ConsultationSess
     private WoowUserRepository woowUserRepository;
     private AxSaludUserRepository axSaludUserRepository;
     private ConsultationMessageRepository consultationMessageRepository;
-    private ModelMapper modelMapper;
+    private AppOutboundService appOutboundService;
     private SimpMessagingTemplate messagingTemplate;
     private ConsultationSessionRepository consultationSessionRepository;
     private PlatformService platformService;
@@ -43,17 +44,17 @@ public class ConsultationSessionSchedulerServiceImpl implements ConsultationSess
                                    final PlatformService platformService,
                                    WoowUserRepository woowUserRepository,
                                    AxSaludUserRepository axSaludUserRepository,
-                                   ModelMapper modelMapper,
+                                   final AppOutboundService appOutboundService,
                                    SimpMessagingTemplate messagingTemplate,
                                    ConsultationMessageRepository consultationMessageRepository,
                                    final ConsultationSessionRepository consultationSessionRepository) {
         this.woowUserRepository = woowUserRepository;
         this.axSaludUserRepository = axSaludUserRepository;
-        this.modelMapper = modelMapper;
         this.consultationMessageRepository = consultationMessageRepository;
         this.messagingTemplate = messagingTemplate;
         this.consultationSessionRepository = consultationSessionRepository;
         this.platformService = platformService;
+        this.appOutboundService = appOutboundService;
     }
 
     @Scheduled(fixedRate = 30000)
@@ -135,10 +136,12 @@ public class ConsultationSessionSchedulerServiceImpl implements ConsultationSess
 
     private String sendConsultationEvent(ConsultationEventDTO<SessionAbandonedDTO> consultationEventDTO) {
         SessionAbandonedDTO sessionAbandonedDTO = consultationEventDTO.getPayload();
-        String controlCommunicationTopic = "/topic/consultation." + sessionAbandonedDTO.getConsultationId() +
-                ".session." + sessionAbandonedDTO.getConsultationSessionId() + ".control";
-        messagingTemplate.convertAndSend(controlCommunicationTopic, consultationEventDTO);
-        return controlCommunicationTopic;
+        /*String controlCommunicationTopic = "/topic/consultation." + sessionAbandonedDTO.getConsultationId() +
+                ".session." + sessionAbandonedDTO.getConsultationSessionId() + ".control";*/
+        return appOutboundService.sendSessionAbandonedConsultationControlEvent( sessionAbandonedDTO.getConsultationId(),
+                sessionAbandonedDTO.getConsultationSessionId(), consultationEventDTO);
+       // messagingTemplate.convertAndSend(controlCommunicationTopic, consultationEventDTO);
+
     }
 
 }
