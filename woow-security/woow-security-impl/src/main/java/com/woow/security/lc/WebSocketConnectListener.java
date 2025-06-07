@@ -32,7 +32,7 @@ public class WebSocketConnectListener {
         Principal principal = event.getUser();
         String sessionId = accessor.getSessionId();
 
-        log.info("✅ {} , STOMP session connected: {}", sessionId, sessionId);
+        log.info("✅ {}_ , STOMP session connected: {}", sessionId, sessionId);
 
         WSCacheInput input = createWSCacheInput(event, accessor, principal);
         wsCache.addOrUpdateSession(sessionId, input);

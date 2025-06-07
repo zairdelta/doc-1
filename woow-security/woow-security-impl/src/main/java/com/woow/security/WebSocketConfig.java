@@ -189,9 +189,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
-        registration.interceptors(connectWsInterceptor, disconnectWsInterceptor,
+       /* registration.interceptors(connectWsInterceptor, disconnectWsInterceptor,
                 inboundMessageLoggingWsInterceptor, sendMessageWsInterceptor, subscribeWsInterceptor,
-                unsubscribeWsInterceptor);
+                unsubscribeWsInterceptor);*/
     }
 
     @Override
