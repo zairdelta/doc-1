@@ -16,7 +16,7 @@ public class RabbitMQPlatformServiceImpl implements PlatformService {
     @Override
     public void appSessionTerminated(String appSessionId) {
         log.info("Application Session Terminated for appSessionId: {}", appSessionId);
-        rabbitMQAdminClient.deleteBindingThatContains(convertSessionIdToPlatformSessionId(appSessionId));
+       // rabbitMQAdminClient.deleteBindingThatContains(convertSessionIdToPlatformSessionId(appSessionId));
     }
 
     private String convertSessionIdToPlatformSessionId(final String appSessionId) {
