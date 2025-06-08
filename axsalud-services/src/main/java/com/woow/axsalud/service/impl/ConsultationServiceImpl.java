@@ -873,9 +873,12 @@ public class ConsultationServiceImpl implements ConsultationService {
                     log.info("{}_ consultationSessionID: {} for user:{}, consultation dropped from" +
                                     " waiting for a doctor",
                             sessionId, consultationSession, userName);
-                    sendConsultationEvent(sessionId, handledSessionAbandoned(sessionId, consultationSession,
+                    ConsultationEventDTO consultationEventDTO = handledSessionAbandoned(sessionId, consultationSession,
                             ConsultationSessionStatus.WAITING_FROM_DOCTOR_ABANDONED,
-                            AXSaludUserRoles.valueOf(role), userName));
+                            AXSaludUserRoles.valueOf(role), userName);
+                    consultationEventDTO.setTransportSessionId(sessionId);
+                    appOutboundService.sendDoctorEventMessage(consultationEventDTO);
+                    sendConsultationEvent(sessionId, consultationEventDTO);
                 } else if (ConsultationSessionStatus.CONNECTING.equals(status)) {
                     log.info("{}_ consultationSessionID: {} for user:{}, consultation dropped from" +
                                     " CONNECTING state",
@@ -967,7 +970,7 @@ public class ConsultationServiceImpl implements ConsultationService {
         /*String controlCommunicationTopic = "/topic/consultation." + sessionAbandonedDTO.getConsultationId() +
                 ".session." + sessionAbandonedDTO.getConsultationSessionId() + ".control";*/
         log.info("{}_ Sending end session", transportSessionId);
-        return appOutboundService.sendSessionAbandonedConsultationControlEvent(sessionAbandonedDTO.getConsultationId(),
+        return appOutboundService.sendSessionAbandonedConsultationControlEvent(transportSessionId,  sessionAbandonedDTO.getConsultationId(),
                 sessionAbandonedDTO.getConsultationSessionId(), consultationEventDTO);
         // messagingTemplate.convertAndSend(controlCommunicationTopic, consultationEventDTO);
 
