@@ -12,6 +12,7 @@ import com.woow.axsalud.service.api.messages.ConsultationEventDTO;
 import com.woow.axsalud.service.api.messages.ConsultationMessageDTO;
 import com.woow.axsalud.service.api.messages.control.ControlMessageDTO;
 import com.woow.axsalud.service.api.messages.control.ControlMessageType;
+import com.woow.axsalud.service.api.messages.control.SessionAbandonedDTO;
 import com.woow.axsalud.service.impl.websocket.AppOutboundService;
 import com.woow.core.data.repository.WoowUserRepository;
 import com.woow.core.data.user.WoowUser;
@@ -856,7 +857,6 @@ public class ConsultationServiceImpl implements ConsultationService {
         } else {
 
             UUID consultationSessionUUID = UUID.fromString(consultationSessionId);
-            UUID consultationUUID = UUID.fromString(consultationId);
 
             ConsultationSession consultationSession =
                     consultationSessionRepository.findByConsultationSessionId(consultationSessionUUID);
@@ -873,59 +873,104 @@ public class ConsultationServiceImpl implements ConsultationService {
                     log.info("{}_ consultationSessionID: {} for user:{}, consultation dropped from" +
                                     " waiting for a doctor",
                             sessionId, consultationSession, userName);
-                    consultationSessionRepository.updateStatus(consultationSessionUUID,
-                            ConsultationSessionStatus.WAITING_FROM_DOCTOR_ABANDONED);
-                    updateUserStatus(sessionId, consultationSessionUUID, userName, role);
-
+                    sendConsultationEvent(sessionId, handledSessionAbandoned(sessionId, consultationSession,
+                            ConsultationSessionStatus.WAITING_FROM_DOCTOR_ABANDONED,
+                            AXSaludUserRoles.valueOf(role), userName));
                 } else if (ConsultationSessionStatus.CONNECTING.equals(status)) {
                     log.info("{}_ consultationSessionID: {} for user:{}, consultation dropped from" +
                                     " CONNECTING state",
                             sessionId, consultationSession, userName);
-                    consultationSessionRepository.updateStatus(consultationSessionUUID,
-                            ConsultationSessionStatus.CONNECTING_ABANDONED);
-                    updateUserStatus(sessionId, consultationSessionUUID, userName, role);
+                    sendConsultationEvent(sessionId, handledSessionAbandoned(sessionId, consultationSession,
+                            ConsultationSessionStatus.CONNECTING_ABANDONED,
+                            AXSaludUserRoles.valueOf(role), userName));
 
 
                 } else if (ConsultationSessionStatus.CONNECTED.equals(status)) {
                     log.info("{}_ consultationSessionID: {} for user:{}, consultation dropped from" +
                                     " CONNECTED state",
                             sessionId, consultationSession, userName);
-                    consultationSessionRepository.updateStatus(consultationSessionUUID,
-                            ConsultationSessionStatus.CONNECTED_ABANDONED);
-                    updateUserStatus(sessionId, consultationSessionUUID, userName, role);
+                    sendConsultationEvent(sessionId, handledSessionAbandoned(sessionId, consultationSession,
+                            ConsultationSessionStatus.CONNECTED_ABANDONED,
+                            AXSaludUserRoles.valueOf(role), userName));
                 } else if (ConsultationSessionStatus.CONFIRMING_PARTIES.equals(status)) {
                     log.info("{}_ consultationSessionID: {} for user:{}, consultation dropped from" +
                                     " CONFIRMING_PARTIES state",
                             sessionId, consultationSession, userName);
                     consultationSessionRepository.updateStatus(consultationSessionUUID,
                             ConsultationSessionStatus.CONFIRMING_PARTIES_ABANDONED);
-                    updateUserStatus(sessionId, consultationSessionUUID, userName, role);
+                    sendConsultationEvent(sessionId, handledSessionAbandoned(sessionId, consultationSession,
+                            ConsultationSessionStatus.CONFIRMING_PARTIES_ABANDONED,
+                            AXSaludUserRoles.valueOf(role), userName));
                 } else {
                     log.info("{}_ consultationSessionID: {} for user:{}, consultation dropped from" +
                                     " status could not be processed state: {}",
                             sessionId, consultationSession, userName, status);
                 }
-                consultationRepository.updateStatus(consultationUUID, ConsultationStatus.ABANDONED);
+
             }
         }
 
     }
 
-    private void updateUserStatus(String sessionId,
-                                  UUID consultationSessionUUID, String userName, String role) {
-        if(AXSaludUserRoles.DOCTOR.getRole().equalsIgnoreCase(role)) {
+
+    @Override
+    public ConsultationEventDTO<SessionAbandonedDTO>
+    handledSessionAbandoned(final String transportSessionId, final ConsultationSession consultationSession,
+                            final ConsultationSessionStatus status,
+                            final AXSaludUserRoles role, final String userName) {
+
+        log.info("{}_ SessionAbandoned, sessionID: {}, role: {}, doctor: {}, patient: {}", transportSessionId, consultationSession.getConsultationSessionId(),
+                role, consultationSession.getDoctor().getCoreUser().getUserName(),
+                consultationSession.getConsultation().getPatient().getCoreUser().getUserName());
+
+        SessionAbandonedDTO sessionAbandonedDTO = new SessionAbandonedDTO();
+        sessionAbandonedDTO.setNewConsultationSessionStatus(ConsultationSessionStatus.ABANDONED.getStatus());
+        sessionAbandonedDTO.setConsultationSessionId(consultationSession.getConsultationSessionId().toString());
+        sessionAbandonedDTO.setConsultationId(consultationSession.getConsultation().getConsultationId().toString());
+        sessionAbandonedDTO.setCurrentState(consultationSession.getStatus().getStatus());
+        if(role == AXSaludUserRoles.DOCTOR) {
             log.info("{}_ updating doctor state to dropped consultationSessionID:" +
                             " {} for user:{}",
-                    sessionId, consultationSessionUUID, userName);
-            consultationSessionRepository.updateDoctorStatus(consultationSessionUUID,
+                    transportSessionId, consultationSession.getConsultationSessionId(), userName);
+            consultationSessionRepository.updateDoctorStatus(consultationSession.getConsultationSessionId(),
                     PartyConsultationStatus.DROPPED);
+            sessionAbandonedDTO.setRole(AXSaludUserRoles.DOCTOR.getRole());
+            sessionAbandonedDTO.setUserName(consultationSession.getDoctor()
+                    .getCoreUser().getUserName());
+            sessionAbandonedDTO.setLastTimeSeen(consultationSession.getDoctorLastTimePing());
         } else {
             log.info("{}_ updating patient state to dropped consultationSessionID:" +
                             " {} for user:{}",
-                    sessionId, consultationSessionUUID, userName);
-            consultationSessionRepository.updatePatientStatus(consultationSessionUUID,
+                    transportSessionId, consultationSession.getConsultationSessionId(), userName);
+            consultationSessionRepository.updatePatientStatus(consultationSession.getConsultationSessionId(),
                     PartyConsultationStatus.DROPPED);
+            sessionAbandonedDTO.setRole(AXSaludUserRoles.USER.getRole());
+            sessionAbandonedDTO.setUserName(consultationSession.getConsultation()
+                    .getPatient().getCoreUser().getUserName());
+            sessionAbandonedDTO.setLastTimeSeen(consultationSession.getPatientLastTimePing());
         }
+        ConsultationEventDTO<SessionAbandonedDTO> consultationEventDTO = new ConsultationEventDTO<>();
+        consultationEventDTO.setTimeProcessed(LocalDateTime.now());
+        consultationEventDTO.setPayload(sessionAbandonedDTO);
+        consultationEventDTO.setId(-1);
+        consultationEventDTO.setMessageType(ConsultationMessgeTypeEnum.SESSION_ABANDONED);
+        log.info("{}_ Session abandoned event: {}", transportSessionId, sessionAbandonedDTO);
+        consultationSessionRepository.updateStatus(consultationSession.getConsultationSessionId(), status);
+        consultationRepository.updateStatus(consultationSession.getConsultation().getConsultationId(), ConsultationStatus.ABANDONED);
+
+        return consultationEventDTO;
+    }
+
+    @Override
+    public String sendConsultationEvent(final String transportSessionId, ConsultationEventDTO<SessionAbandonedDTO> consultationEventDTO) {
+        SessionAbandonedDTO sessionAbandonedDTO = consultationEventDTO.getPayload();
+        /*String controlCommunicationTopic = "/topic/consultation." + sessionAbandonedDTO.getConsultationId() +
+                ".session." + sessionAbandonedDTO.getConsultationSessionId() + ".control";*/
+        log.info("{}_ Sending end session", transportSessionId);
+        return appOutboundService.sendSessionAbandonedConsultationControlEvent(sessionAbandonedDTO.getConsultationId(),
+                sessionAbandonedDTO.getConsultationSessionId(), consultationEventDTO);
+        // messagingTemplate.convertAndSend(controlCommunicationTopic, consultationEventDTO);
+
     }
 
 }

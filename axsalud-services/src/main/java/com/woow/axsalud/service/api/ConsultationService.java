@@ -1,10 +1,14 @@
 package com.woow.axsalud.service.api;
 
+import com.woow.axsalud.common.AXSaludUserRoles;
 import com.woow.axsalud.data.consultation.ConsultationSession;
+import com.woow.axsalud.data.consultation.ConsultationSessionStatus;
 import com.woow.axsalud.data.consultation.ConsultationStatus;
 import com.woow.axsalud.service.api.dto.*;
 import com.woow.axsalud.service.api.exception.ConsultationServiceException;
+import com.woow.axsalud.service.api.messages.ConsultationEventDTO;
 import com.woow.axsalud.service.api.messages.ConsultationMessageDTO;
+import com.woow.axsalud.service.api.messages.control.SessionAbandonedDTO;
 import com.woow.core.service.api.exception.WooUserServiceException;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -51,4 +55,10 @@ public interface ConsultationService {
 
     void consultationDisconnect(String sessionId, String consultationId,
                                 String consultationSessionId, String userName, String role);
+    ConsultationEventDTO<SessionAbandonedDTO>
+    handledSessionAbandoned(final String transportSessionId, final ConsultationSession consultationSession,
+                            ConsultationSessionStatus status,
+                            final AXSaludUserRoles role, String userName)
+
+    String sendConsultationEvent(final String transportSessionId, ConsultationEventDTO<SessionAbandonedDTO> consultationEventDTO);
 }
