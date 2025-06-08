@@ -936,8 +936,11 @@ public class ConsultationServiceImpl implements ConsultationService {
                             final ConsultationSessionStatus status,
                             final AXSaludUserRoles role, final String userName) {
 
-        log.info("{}_ SessionAbandoned, sessionID: {}, role: {}, doctor: {}, patient: {}", transportSessionId, consultationSession.getConsultationSessionId(),
-                role, consultationSession.getDoctor().getCoreUser().getUserName(),
+        String doctorName = consultationSession.getDoctor()== null ? "DOCTOR_UNASSIGNED" :
+                 consultationSession.getDoctor().getCoreUser().getUserName();
+        log.info("{}_ SessionAbandoned, sessionID: {}, role: {}, doctor: {}, patient: {}",
+                transportSessionId, consultationSession.getConsultationSessionId(),
+                role, doctorName,
                 consultationSession.getConsultation().getPatient().getCoreUser().getUserName());
 
         SessionAbandonedDTO sessionAbandonedDTO = new SessionAbandonedDTO();
@@ -945,7 +948,7 @@ public class ConsultationServiceImpl implements ConsultationService {
         sessionAbandonedDTO.setConsultationSessionId(consultationSession.getConsultationSessionId().toString());
         sessionAbandonedDTO.setConsultationId(consultationSession.getConsultation().getConsultationId().toString());
         sessionAbandonedDTO.setCurrentState(consultationSession.getStatus().getStatus());
-        if(role == AXSaludUserRoles.DOCTOR) {
+        if(!"DOCTOR_UNASSIGNED".equalsIgnoreCase(doctorName) && role == AXSaludUserRoles.DOCTOR) {
             log.info("{}_ updating doctor state to dropped consultationSessionID:" +
                             " {} for user:{}",
                     transportSessionId, consultationSession.getConsultationSessionId(), userName);
