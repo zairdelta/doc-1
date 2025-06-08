@@ -1,6 +1,7 @@
 package com.woow.axsalud.service.impl.websocket.control;
 
 import com.woow.axsalud.data.repository.AxSaludUserRepository;
+import com.woow.axsalud.service.api.ConsultationService;
 import com.woow.security.api.ws.StompConnectAppEvent;
 import com.woow.security.api.ws.StompDisconnectAppEvent;
 import com.woow.security.api.ws.StompSubscribeAppEvent;
@@ -18,11 +19,14 @@ import java.util.regex.Pattern;
 public class ProtocolApplicationListener {
 
     private AxSaludUserRepository axSaludUserRepository;
+    private ConsultationService consultationService;
 
     private final static String CONSULTATION_CONTROL_PATTERN = "/topic/consultation\\.([^.]+)\\.session\\.([^.]+)\\.control";
     private final static Pattern PATTERN_CONTROL_SESSION = Pattern.compile(CONSULTATION_CONTROL_PATTERN);
-    public ProtocolApplicationListener(final AxSaludUserRepository axSaludUserRepository) {
+    public ProtocolApplicationListener(final AxSaludUserRepository axSaludUserRepository,
+                                       final ConsultationService consultationService) {
         this.axSaludUserRepository = axSaludUserRepository;
+        this.consultationService = consultationService;
     }
     @EventListener
     public void onConnect(StompConnectAppEvent event) {
@@ -49,6 +53,11 @@ public class ProtocolApplicationListener {
                     getConsultationIds(controlSessionSubscriptionOptional.get());
             log.info("{}_ consultationSessionId DISCONNECT received: {}", event.getWsCacheInput().getSessionId(),
                     consultationSessionIdVO);
+            consultationService.consultationDisconnect(event.getWsCacheInput().getSessionId(),
+                    consultationSessionIdVO.getConsultationId(), consultationSessionIdVO.getConsultationSessionId(),
+                    event.getWsCacheInput().getUsername(),
+                    event.getWsCacheInput().getRoles().stream().findFirst().orElse(""));
+
         }
     }
 
