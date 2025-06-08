@@ -871,7 +871,7 @@ public class ConsultationServiceImpl implements ConsultationService {
 
                 if (ConsultationSessionStatus.WAITING_FOR_DOCTOR.equals(status)) {
                     log.info("{}_ consultationSessionID: {} for user:{}, consultation dropped from" +
-                                    " waiting for a doctor",
+                                    " waiting for a doctor, calling handled session",
                             sessionId, consultationSession, userName);
                     ConsultationEventDTO consultationEventDTO = handledSessionAbandoned(sessionId, consultationSession,
                             ConsultationSessionStatus.WAITING_FROM_DOCTOR_ABANDONED,
