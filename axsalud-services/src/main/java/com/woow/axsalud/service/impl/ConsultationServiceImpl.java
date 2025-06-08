@@ -869,13 +869,21 @@ public class ConsultationServiceImpl implements ConsultationService {
 
             } else {
 
+                AXSaludUserRoles userRole;
+                try {
+                    userRole = AXSaludUserRoles.valueOf(role);
+                } catch (IllegalArgumentException e) {
+                    log.error("{}_ Invalid role '{}' for user '{}'", sessionId, role, userName, e);
+                    return;
+                }
+
                 if (ConsultationSessionStatus.WAITING_FOR_DOCTOR.equals(status)) {
                     log.info("{}_ consultationSessionID: {} for user:{}, consultation dropped from" +
-                                    " waiting for a doctor, calling handled session",
-                            sessionId, consultationSession, userName);
+                                    " waiting for a doctor, calling handled session abandoned, role logic added",
+                            sessionId, consultationSession.getConsultationSessionId(), userName);
                     ConsultationEventDTO consultationEventDTO = handledSessionAbandoned(sessionId, consultationSession,
                             ConsultationSessionStatus.WAITING_FROM_DOCTOR_ABANDONED,
-                            AXSaludUserRoles.valueOf(role), userName);
+                            userRole, userName);
                     consultationEventDTO.setTransportSessionId(sessionId);
                     appOutboundService.sendDoctorEventMessage(consultationEventDTO);
                     sendConsultationEvent(sessionId, consultationEventDTO);
@@ -885,7 +893,7 @@ public class ConsultationServiceImpl implements ConsultationService {
                             sessionId, consultationSession, userName);
                     sendConsultationEvent(sessionId, handledSessionAbandoned(sessionId, consultationSession,
                             ConsultationSessionStatus.CONNECTING_ABANDONED,
-                            AXSaludUserRoles.valueOf(role), userName));
+                            userRole, userName));
 
 
                 } else if (ConsultationSessionStatus.CONNECTED.equals(status)) {
@@ -894,7 +902,7 @@ public class ConsultationServiceImpl implements ConsultationService {
                             sessionId, consultationSession, userName);
                     sendConsultationEvent(sessionId, handledSessionAbandoned(sessionId, consultationSession,
                             ConsultationSessionStatus.CONNECTED_ABANDONED,
-                            AXSaludUserRoles.valueOf(role), userName));
+                            userRole, userName));
                 } else if (ConsultationSessionStatus.CONFIRMING_PARTIES.equals(status)) {
                     log.info("{}_ consultationSessionID: {} for user:{}, consultation dropped from" +
                                     " CONFIRMING_PARTIES state",
@@ -903,7 +911,7 @@ public class ConsultationServiceImpl implements ConsultationService {
                             ConsultationSessionStatus.CONFIRMING_PARTIES_ABANDONED);
                     sendConsultationEvent(sessionId, handledSessionAbandoned(sessionId, consultationSession,
                             ConsultationSessionStatus.CONFIRMING_PARTIES_ABANDONED,
-                            AXSaludUserRoles.valueOf(role), userName));
+                            userRole, userName));
                 } else {
                     log.info("{}_ consultationSessionID: {} for user:{}, consultation dropped from" +
                                     " status could not be processed state: {}",
