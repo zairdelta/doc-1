@@ -23,6 +23,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
+import static com.woow.axsalud.common.WoowConstants.NO_TRANSPORT_SESSION;
+
 @Service
 @Slf4j
 public class ConsultationSessionSchedulerServiceImpl implements ConsultationSessionSchedulerService {
@@ -30,7 +32,6 @@ public class ConsultationSessionSchedulerServiceImpl implements ConsultationSess
     @Value("${ woow.app.telemedicine.consultation.session.connected.idleTimeoutInSeconds:120}")
     private int CONNECTED_SESSION_IDLE_IN_SECONDS;
 
-    private final static String NO_TRANSPORT_SESSION = "NO_T_SESSION";
     private WoowUserRepository woowUserRepository;
     private AxSaludUserRepository axSaludUserRepository;
     private ConsultationMessageRepository consultationMessageRepository;

@@ -39,6 +39,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.woow.axsalud.common.WoowConstants.NO_TRANSPORT_SESSION;
+
 @Service
 @Slf4j
 @Transactional
@@ -205,12 +207,13 @@ public class ConsultationServiceImpl implements ConsultationService {
         consultation.setCurrentSessionIdIfExists(consultationSession.getConsultationSessionId().toString());
         consultationRepository.save(consultation);
 
-        sendConsultationDTOToDoctorEvents(consultationDTO);
+        sendConsultationDTOToDoctorEvents(NO_TRANSPORT_SESSION, consultationDTO);
 
         return consultationDTO;
     }
 
-    private void sendConsultationDTOToDoctorEvents(ConsultationDTO consultationDTO) {
+    private void sendConsultationDTOToDoctorEvents(String transportSessionId, ConsultationDTO consultationDTO) {
+        log.debug("{}_ Sending consultationDTO to doctor events, consultationDTO: {}", transportSessionId, consultationDTO);
         ConsultationEventDTO<ConsultationDTO> consultationEventDTO = new ConsultationEventDTO<>();
         consultationEventDTO.setMessageType(ConsultationMessgeTypeEnum.NEW_CONSULTATION_CREATED);
         consultationEventDTO.setTimeProcessed(LocalDateTime.now());
@@ -930,7 +933,7 @@ public class ConsultationServiceImpl implements ConsultationService {
                      //   consultation.setCurrentSessionIdIfExists(consultationSession.getConsultationSessionId().toString());
                      //   consultationRepository.save(consultation);
 
-                        sendConsultationDTOToDoctorEvents(consultationDTO);
+                        sendConsultationDTOToDoctorEvents(sessionId, consultationDTO);
                     }
                     //todo move the consultation back to WAITING FOR DOCTOR in case doctor was the one dropping the connection
 
@@ -961,7 +964,7 @@ public class ConsultationServiceImpl implements ConsultationService {
                      //   consultation.setCurrentSessionIdIfExists(consultationSession.getConsultationSessionId().toString());
                       //  consultationRepository.save(consultation);
 
-                        sendConsultationDTOToDoctorEvents(consultationDTO);
+                        sendConsultationDTOToDoctorEvents(sessionId, consultationDTO);
                     }
                 } else if (ConsultationSessionStatus.CONFIRMING_PARTIES.equals(status)) {
                     log.info("{}_ consultationSessionID: {} for user:{}, consultation dropped from: {}" +
@@ -991,7 +994,7 @@ public class ConsultationServiceImpl implements ConsultationService {
                        // consultation.setCurrentSessionIdIfExists(consultationSession.getConsultationSessionId().toString());
                        // consultationRepository.save(consultation);
 
-                        sendConsultationDTOToDoctorEvents(consultationDTO);
+                        sendConsultationDTOToDoctorEvents(sessionId, consultationDTO);
                     }
 
                     //todo move the consultation back to WAITING FOR DOCTOR in case doctor was the one dropping the connection
