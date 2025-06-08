@@ -31,6 +31,9 @@ public class ProtocolApplicationListener {
     public void onDisconnect(StompDisconnectAppEvent event) {
         log.info("❌ {}_ DISCONNECT: user={}", event.getWsCacheInput().getSessionId(),
                 event.getWsCacheInput().getUsername());
+
+        event.getWsCacheInput().getSubscriptions()
+                .forEach(log::info);
     }
 
     @EventListener
