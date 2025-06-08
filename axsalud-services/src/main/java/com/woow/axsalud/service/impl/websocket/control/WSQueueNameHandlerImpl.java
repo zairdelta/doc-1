@@ -2,12 +2,17 @@ package com.woow.axsalud.service.impl.websocket.control;
 
 import com.woow.security.api.ws.WSQueueNamesHandler;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
 @Slf4j
 @Component
 public class WSQueueNameHandlerImpl implements WSQueueNamesHandler {
+
+    @Value("${stomp.broker.user-queue-prefix:messages-user}")
+    private String userQueuePrefix;
+
     private static final String QUEUE_PREFIX = "-queue";
     @Override
     public String parseQueueNameFrom(String sessionId, String subscriptioinId) {
@@ -26,6 +31,8 @@ public class WSQueueNameHandlerImpl implements WSQueueNamesHandler {
             queueName = subscriptioinId + QUEUE_PREFIX;
             log.info("{}_ getting queueName from subscriptionId: {} contains control Session, result: {}",
                     sessionId, subscriptioinId, queueName);
+        } else if(subscriptioinId.contains("user_queue_messages")) {
+            queueName = userQueuePrefix + sessionId;;
         }
         return queueName;
     }
