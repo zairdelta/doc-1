@@ -586,9 +586,9 @@ public class ConsultationServiceImpl implements ConsultationService {
 
     @Override
     public List<ConsultationDTO> getConsultationsByStatus(ConsultationStatus status) {
+
         List<Consultation> consultations =
                 consultationRepository.findByStatusOrderByCreatedAtAsc(status);
-
         return consultations.stream()
                 .filter(Objects::nonNull)
                 .map(ConsultationDTO::from)
@@ -856,6 +856,8 @@ public class ConsultationServiceImpl implements ConsultationService {
         } else {
 
             UUID consultationSessionUUID = UUID.fromString(consultationSessionId);
+            UUID consultationUUID = UUID.fromString(consultationId);
+
             ConsultationSession consultationSession =
                     consultationSessionRepository.findByConsultationSessionId(consultationSessionUUID);
 
@@ -864,42 +866,46 @@ public class ConsultationServiceImpl implements ConsultationService {
             if(ConsultationSessionStatus.FINISHED.equals(status)) {
                 log.info("{}_ consultationSessionID: {} for user:{}, terminated correctly",
                         sessionId, consultationSession, userName);
-            } else if(ConsultationSessionStatus.WAITING_FOR_DOCTOR.equals(status)) {
-                log.info("{}_ consultationSessionID: {} for user:{}, consultation dropped from" +
-                                " waiting for a doctor",
-                        sessionId, consultationSession, userName);
-                consultationSessionRepository.updateStatus(consultationSessionUUID,
-                        ConsultationSessionStatus.WAITING_FROM_DOCTOR_ABANDONED);
-                updateUserStatus(sessionId, consultationSessionUUID, userName, role);
 
-
-            } else if(ConsultationSessionStatus.CONNECTING.equals(status)) {
-                log.info("{}_ consultationSessionID: {} for user:{}, consultation dropped from" +
-                                " CONNECTING state",
-                        sessionId, consultationSession, userName);
-                consultationSessionRepository.updateStatus(consultationSessionUUID,
-                        ConsultationSessionStatus.CONNECTING_ABANDONED);
-                updateUserStatus(sessionId, consultationSessionUUID, userName, role);
-
-
-            } else if(ConsultationSessionStatus.CONNECTED.equals(status)) {
-                log.info("{}_ consultationSessionID: {} for user:{}, consultation dropped from" +
-                                " CONNECTED state",
-                        sessionId, consultationSession, userName);
-                consultationSessionRepository.updateStatus(consultationSessionUUID,
-                        ConsultationSessionStatus.CONNECTED_ABANDONED);
-                updateUserStatus(sessionId, consultationSessionUUID, userName, role);
-            } else if(ConsultationSessionStatus.CONFIRMING_PARTIES.equals(status)) {
-                log.info("{}_ consultationSessionID: {} for user:{}, consultation dropped from" +
-                                " CONFIRMING_PARTIES state",
-                        sessionId, consultationSession, userName);
-                consultationSessionRepository.updateStatus(consultationSessionUUID,
-                        ConsultationSessionStatus.CONFIRMING_PARTIES_ABANDONED);
-                updateUserStatus(sessionId, consultationSessionUUID, userName, role);
             } else {
-                log.info("{}_ consultationSessionID: {} for user:{}, consultation dropped from" +
-                                " status could not be processed state: {}",
-                        sessionId, consultationSession, userName, status);
+
+                if (ConsultationSessionStatus.WAITING_FOR_DOCTOR.equals(status)) {
+                    log.info("{}_ consultationSessionID: {} for user:{}, consultation dropped from" +
+                                    " waiting for a doctor",
+                            sessionId, consultationSession, userName);
+                    consultationSessionRepository.updateStatus(consultationSessionUUID,
+                            ConsultationSessionStatus.WAITING_FROM_DOCTOR_ABANDONED);
+                    updateUserStatus(sessionId, consultationSessionUUID, userName, role);
+
+                } else if (ConsultationSessionStatus.CONNECTING.equals(status)) {
+                    log.info("{}_ consultationSessionID: {} for user:{}, consultation dropped from" +
+                                    " CONNECTING state",
+                            sessionId, consultationSession, userName);
+                    consultationSessionRepository.updateStatus(consultationSessionUUID,
+                            ConsultationSessionStatus.CONNECTING_ABANDONED);
+                    updateUserStatus(sessionId, consultationSessionUUID, userName, role);
+
+
+                } else if (ConsultationSessionStatus.CONNECTED.equals(status)) {
+                    log.info("{}_ consultationSessionID: {} for user:{}, consultation dropped from" +
+                                    " CONNECTED state",
+                            sessionId, consultationSession, userName);
+                    consultationSessionRepository.updateStatus(consultationSessionUUID,
+                            ConsultationSessionStatus.CONNECTED_ABANDONED);
+                    updateUserStatus(sessionId, consultationSessionUUID, userName, role);
+                } else if (ConsultationSessionStatus.CONFIRMING_PARTIES.equals(status)) {
+                    log.info("{}_ consultationSessionID: {} for user:{}, consultation dropped from" +
+                                    " CONFIRMING_PARTIES state",
+                            sessionId, consultationSession, userName);
+                    consultationSessionRepository.updateStatus(consultationSessionUUID,
+                            ConsultationSessionStatus.CONFIRMING_PARTIES_ABANDONED);
+                    updateUserStatus(sessionId, consultationSessionUUID, userName, role);
+                } else {
+                    log.info("{}_ consultationSessionID: {} for user:{}, consultation dropped from" +
+                                    " status could not be processed state: {}",
+                            sessionId, consultationSession, userName, status);
+                }
+                consultationRepository.updateStatus(consultationUUID, ConsultationStatus.ABANDONED);
             }
         }
 
