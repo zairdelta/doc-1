@@ -32,6 +32,8 @@ public class ProtocolApplicationListener {
         log.info("❌ {}_ DISCONNECT: user={}", event.getWsCacheInput().getSessionId(),
                 event.getWsCacheInput().getUsername());
 
+        event.getWsCacheInput().getSubscriptionMap().values()
+                .forEach(log::info);
         event.getWsCacheInput().getSubscriptions()
                 .forEach(log::info);
     }
