@@ -6,9 +6,15 @@ import com.woow.axsalud.data.repository.*;
 import com.woow.axsalud.service.api.ConsultationService;
 import com.woow.axsalud.service.api.dto.*;
 import com.woow.axsalud.service.api.exception.ConsultationServiceException;
+import com.woow.axsalud.service.api.messages.ConsultationEventDTO;
+import com.woow.axsalud.service.api.messages.ConsultationMessageDTO;
+import com.woow.axsalud.service.api.messages.control.ControlMessageDTO;
+import com.woow.axsalud.service.api.messages.control.ControlMessageType;
+import com.woow.axsalud.service.impl.websocket.AppOutboundService;
 import com.woow.core.data.repository.WoowUserRepository;
 import com.woow.core.data.user.WoowUser;
 import com.woow.core.service.api.exception.WooUserServiceException;
+import com.woow.security.api.ws.PlatformService;
 import com.woow.storage.api.StorageService;
 import com.woow.storage.api.StorageServiceException;
 import com.woow.storage.api.StorageServiceUploadResponseDTO;
@@ -37,6 +43,8 @@ public class ConsultationServiceImpl implements ConsultationService {
 
     @Value("${woow.system.user:master@example.com}")
     private String SYSTEM_USER;
+
+    private static final String CHAT_PING_MESSAGE = "<messageType>ping</messageType>";
     private ConsultationRepository consultationRepository;
     private WoowUserRepository woowUserRepository;
     private AxSaludUserRepository axSaludUserRepository;
@@ -47,6 +55,8 @@ public class ConsultationServiceImpl implements ConsultationService {
     private ConsultationDocumentRepository consultationDocumentRepository;
     private ConsultationSessionRepository consultationSessionRepository;
     private ComentariosMedicosRepository comentariosMedicosRepository;
+    private PlatformService platformService;
+    private AppOutboundService appOutboundService;
 
     public ConsultationServiceImpl(ConsultationRepository consultationRepository,
                                    WoowUserRepository woowUserRepository,
@@ -54,13 +64,16 @@ public class ConsultationServiceImpl implements ConsultationService {
                                    ModelMapper modelMapper,
                                    SimpMessagingTemplate messagingTemplate,
                                    ConsultationMessageRepository consultationMessageRepository,
+                                   final PlatformService platformService,
                                    final ConsultationDocumentRepository consultationDocumentRepository,
                                    final StorageService storageService,
                                    final ConsultationSessionRepository consultationSessionRepository,
-                                   final ComentariosMedicosRepository comentariosMedicosRepository) {
+                                   final ComentariosMedicosRepository comentariosMedicosRepository,
+                                   final AppOutboundService appOutboundService) {
         this.consultationRepository = consultationRepository;
         this.woowUserRepository = woowUserRepository;
         this.axSaludUserRepository = axSaludUserRepository;
+        this.platformService = platformService;
         this.modelMapper = modelMapper;
         this.consultationMessageRepository = consultationMessageRepository;
         this.messagingTemplate = messagingTemplate;
@@ -68,47 +81,77 @@ public class ConsultationServiceImpl implements ConsultationService {
         this.storageService = storageService;
         this.consultationSessionRepository = consultationSessionRepository;
         this.comentariosMedicosRepository = comentariosMedicosRepository;
+        this.appOutboundService = appOutboundService;
     }
+
 
     @Override
     @Transactional
-    public void handledConsultationMessage(final ConsultationMessageDTO consultationMessage) {
+    public void handledConsultationMessage(final String sessionId, final ConsultationMessageDTO consultationMessage) {
+
+        long eventId = 0;
         try {
-            log.debug("Validating Message: {}", consultationMessage);
-            validateOnSend(consultationMessage);
-            validate(consultationMessage.getConsultationId(),
-                    consultationMessage.getConsultationSessionId(),
-                    consultationMessage.getReceiver(), consultationMessage.getSender());
-            addMessage(consultationMessage);
+            log.debug("{}_ Validating Message: {}", sessionId, consultationMessage);
+
+            if(consultationMessage.getContent() != null &
+                    !consultationMessage.getContent().equalsIgnoreCase(CHAT_PING_MESSAGE)) {
+                validateOnSend(consultationMessage);
+                validate(consultationMessage.getConsultationId(),
+                        consultationMessage.getConsultationSessionId(),
+                        consultationMessage.getReceiver(), consultationMessage.getSender());
+                eventId = addMessage(consultationMessage, ConsultationMessgeTypeEnum.TEXT_MESSAGE);
+            } else {
+                log.debug("{}_ Receiving messagetype ping, keep alive send to other party in chat topic", sessionId);
+            }
+
+            ConsultationEventDTO<ConsultationMessageDTO> consultationEventDTO = new ConsultationEventDTO<>();
+            consultationEventDTO.setTransportSessionId(sessionId);
+            consultationEventDTO.setMessageType(ConsultationMessgeTypeEnum.TEXT_MESSAGE);
+            consultationEventDTO.setTimeProcessed(LocalDateTime.now());
+            consultationEventDTO.setPayload(consultationMessage);
+            consultationEventDTO.setId(eventId);
+
+            appOutboundService.sendQueueMessage(consultationMessage.getReceiver(), consultationEventDTO);
+
+           /* messagingTemplate.convertAndSendToUser(
+                    consultationMessage.getReceiver(),
+                    "/queue/messages",
+                    consultationEventDTO
+            );*/
+
         } catch (ConsultationServiceException e) {
 
+            log.error("{}_ Error Sending consultationMessage DTO: {}", sessionId, e.getMessage());
             ConsultationMessageDTO errorMessage = new ConsultationMessageDTO();
             errorMessage.setConsultationId(consultationMessage.getConsultationId());
             errorMessage.setSender(SYSTEM_USER);
             errorMessage.setReceiver(consultationMessage.getSender());
             errorMessage.setContent("❌ Failed to send message: " + e.getMessage());
-            errorMessage.setMessageType(ConsultationMessgeTypeEnum.ERROR);
 
-            log.error("Error validating or adding message for consultationMessage: {}, errorMessage:{}, reporting to system user: {}",
+            ConsultationEventDTO<ConsultationMessageDTO> consultationEventDTO = new ConsultationEventDTO<>();
+            consultationEventDTO.setMessageType(ConsultationMessgeTypeEnum.ERROR);
+            consultationEventDTO.setTimeProcessed(LocalDateTime.now());
+            consultationEventDTO.setPayload(errorMessage);
+
+            log.error("{}_ Error validating or adding message for consultationMessage: {}, " +
+                            "errorMessage:{}, reporting to system user: {}", sessionId,
                     consultationMessage, errorMessage, SYSTEM_USER);
 
             try {
-                addMessage(errorMessage);
+                eventId = addMessage(errorMessage, ConsultationMessgeTypeEnum.ERROR);
+                consultationEventDTO.setId(eventId);
             } catch (ConsultationServiceException ex) {
-                log.error("There was an error processing errorMessage: {}", e.getMessage());
+                log.error("{}}_ There was an error processing errorMessage: {}", sessionId,
+                        e.getMessage());
             }
-
-            messagingTemplate.convertAndSendToUser(
+            appOutboundService.sendErrorQueueMessage(consultationMessage.getSender(), consultationEventDTO);
+           /* messagingTemplate.convertAndSendToUser(
                     consultationMessage.getSender(),
                     "/queue/errors",
-                    errorMessage
-            );
+                    consultationEventDTO
+            ); */
         }
-        messagingTemplate.convertAndSendToUser(
-                consultationMessage.getReceiver(),
-                "/queue/messages",
-                consultationMessage
-        );
+
     }
 
     private void validateOnSend(final ConsultationMessageDTO consultationMessage) throws ConsultationServiceException {
@@ -151,8 +194,6 @@ public class ConsultationServiceImpl implements ConsultationService {
 
         consultation.getSessions().add(consultationSession);
 
-
-
         consultation = consultationRepository.save(consultation);
 
         ConsultationDTO consultationDTO = ConsultationDTO.from(consultation);
@@ -161,11 +202,45 @@ public class ConsultationServiceImpl implements ConsultationService {
         consultationDTO.setCurrentSessionIdIfExists(consultationSession.getConsultationSessionId().toString());
         consultationDTO.setConsultationId(consultation.getConsultationId().toString());
         consultation.setCurrentSessionIdIfExists(consultationSession.getConsultationSessionId().toString());
+
         consultationRepository.save(consultation);
-        log.info("Sending consultationDTO to topic/new-patient: {}", consultationDTO);
-        messagingTemplate.convertAndSend("/topic/new-patient", consultationDTO);
+
+        ConsultationEventDTO<ConsultationDTO> consultationEventDTO = new ConsultationEventDTO<>();
+        consultationEventDTO.setMessageType(ConsultationMessgeTypeEnum.NEW_CONSULTATION_CREATED);
+        consultationEventDTO.setTimeProcessed(LocalDateTime.now());
+        consultationEventDTO.setPayload(consultationDTO);
+        consultationEventDTO.setId(0);
+
+        /*log.info("Sending consultationDTO to topic/doctor-events: {}", consultationEventDTO);
+        messagingTemplate.convertAndSend("/topic/doctor-events", consultationEventDTO);*/
+        appOutboundService.sendDoctorEventMessage(consultationEventDTO);
 
         return consultationDTO;
+    }
+
+    @Override
+    public void addComentariosMedicos(DoctorCommentsDTO doctorCommentsDTO,
+                                      String consultationSessionId) {
+
+        ConsultationSession consultationSession = consultationSessionRepository
+                .findByConsultationSessionId(UUID.fromString(consultationSessionId));
+
+        if(consultationSession != null) {
+
+            ComentariosMedicos comentariosMedicos = consultationSession.getComentariosMedicos() ;
+
+            if(comentariosMedicos == null) {
+                comentariosMedicos = new ComentariosMedicos();
+                comentariosMedicos
+                        .setAxSaludWooUser(consultationSession.getConsultation().getPatient());
+                comentariosMedicos.setConsultationSession(consultationSession);
+            }
+
+            comentariosMedicos.setObservacionesMedicas(doctorCommentsDTO.getComment());
+            comentariosMedicos = comentariosMedicosRepository.save(comentariosMedicos);
+            consultationSession.setComentariosMedicos(comentariosMedicos);
+            consultationSessionRepository.save(consultationSession);
+        }
     }
 
     @Override
@@ -201,8 +276,9 @@ public class ConsultationServiceImpl implements ConsultationService {
         ConsultationDTO consultationDTO = modelMapper.map(consultation, ConsultationDTO.class);
         consultationDTO.setCurrentSessionIdIfExists(consultationSession.getConsultationSessionId().toString());
 
-        log.info("Sending consultationDTO to topic/new-patient: {}", consultationDTO);
-        messagingTemplate.convertAndSend("/topic/new-patient", consultationDTO);
+        log.info("Sending consultationDTO to topic/doctor-events: {}", consultationDTO);
+       /* messagingTemplate.convertAndSend("/topic/doctor-events", consultationDTO);*/
+        appOutboundService.sendDoctorEventMessage(consultationDTO);
 
         return consultationDTO;
     }
@@ -297,7 +373,7 @@ public class ConsultationServiceImpl implements ConsultationService {
 
         consultationSession.setDoctor(axSaludWooUser);
         consultationSession.setStartAt(LocalDateTime.now());
-        consultationSession.setStatus(ConsultationSessionStatus.ON_GOING);
+        consultationSession.setStatus(ConsultationSessionStatus.CONFIRMING_PARTIES);
         consultationSessionRepository.save(consultationSession);
 
         consultation.setStatus(ConsultationStatus.ON_GOING);
@@ -322,6 +398,12 @@ public class ConsultationServiceImpl implements ConsultationService {
         consultationDTO.getConsultationSessionIdDTOList().add(consultationSessionIdDTO);
         consultationDTO.setCurrentSessionIdIfExists(consultationSessionId);
         consultationDTO.setConsultationId(consultation.getConsultationId().toString());
+        consultationDTO.setDoctor(consultationSession.getDoctor().getCoreUser().getUserName());
+
+        ConsultationEventDTO<ConsultationMessageDTO> consultationEventDTO = new ConsultationEventDTO<>();
+        consultationEventDTO.setMessageType(ConsultationMessgeTypeEnum.WELCOME);
+        consultationEventDTO.setTimeProcessed(LocalDateTime.now());
+
 
         ConsultationMessageDTO welcomeMessage = new ConsultationMessageDTO();
         welcomeMessage.setSender(doctor);
@@ -329,25 +411,50 @@ public class ConsultationServiceImpl implements ConsultationService {
         welcomeMessage.setConsultationId(consultationId);
         welcomeMessage.setConsultationSessionId(consultationSession.getConsultationSessionId().toString());
         welcomeMessage.setContent("👋 " + consultationDTO.getWelcomeMessage());
-        welcomeMessage.setMessageType(ConsultationMessgeTypeEnum.WELCOME);
 
-        log.info("Sending Welcome message:{} ", welcomeMessage);
-        addMessage(welcomeMessage);
+       // log.info("Sending Welcome message:{} ", welcomeMessage);
+        // no need to store welcome message
+        //long eventId = addMessage(welcomeMessage, ConsultationMessgeTypeEnum.WELCOME);
+        //consultationEventDTO.setId(eventId);
+        consultationEventDTO.setPayload(welcomeMessage);
 
-        messagingTemplate.convertAndSendToUser(
+      /*  messagingTemplate.convertAndSendToUser(
                 consultationDTO.getPatient(),
                 "/queue/messages",
-                welcomeMessage
+                consultationEventDTO
         );
-
+*/
         consultationRepository.save(consultation);
 
-        return consultationDTO;
+        consultationEventDTO.setMessageType(ConsultationMessgeTypeEnum.CONSULTATION_ASSIGNED);
+        log.info("new consultationDTO assigned to topic/doctor-events: {}", consultationEventDTO);
+        appOutboundService.sendDoctorEventMessage(consultationEventDTO);
+      //  messagingTemplate.convertAndSend("/topic/doctor-events", consultationEventDTO);
 
+        ControlMessageDTO controlMessageDTO = new ControlMessageDTO();
+        controlMessageDTO.setMessageType(ControlMessageType.DOCTOR_ASSIGNED);
+        controlMessageDTO.setTimeProcessed(LocalDateTime.now());
+        controlMessageDTO.setDoctor(consultationSession.getDoctor().getCoreUser().getUserName());
+        controlMessageDTO.setPatient(consultationSession.getConsultation()
+                .getPatient().getCoreUser().getUserName());
+
+        /*
+        String controlComunicationTopic = "/topic/consultation." + consultationSession.getConsultation().getConsultationId() +
+                ".session." + consultationSession.getConsultationSessionId() + ".control";
+        log.debug("Sending controleMessage to topic: {} ", controlComunicationTopic);
+        messagingTemplate.convertAndSend(controlComunicationTopic, controlMessageDTO);
+        */
+
+        appOutboundService.sendConsultationControlEvent(consultationId, consultationSessionId, controlMessageDTO);
+        //log.debug("ControlMessage sent to topic: {}, message: {} ", controlComunicationTopic, controlMessageDTO);
+
+        return consultationDTO;
     }
 
     @Override
-    public void addMessage(ConsultationMessageDTO consultationMessage) throws ConsultationServiceException {
+    public long addMessage(ConsultationMessageDTO consultationMessage,
+                           ConsultationMessgeTypeEnum consultationMessageType)
+            throws ConsultationServiceException {
 
         log.info("AddMessage received at service layer: {}", consultationMessage);
         ConsultationSession consultationSession =
@@ -358,6 +465,7 @@ public class ConsultationServiceImpl implements ConsultationService {
         ConsultationMessageEntity consultationMessageEntity = new ConsultationMessageEntity();
         consultationMessageEntity.setConsultationSession(consultationSession);
         consultationMessageEntity.setContent(consultationMessage.getContent());
+        consultationMessageEntity.setMessageType(consultationMessageType.getType().toString());
 
         log.info("Adding message to DB, sentBy: {}", consultationMessage.getSender());
 
@@ -374,7 +482,7 @@ public class ConsultationServiceImpl implements ConsultationService {
 
         consultationMessageRepository.save(consultationMessageEntity);
         consultationSession.getMessages().add(consultationMessageEntity);
-        consultationSessionRepository.save(consultationSession);
+        return consultationSessionRepository.save(consultationSession).getId();
     }
 
     @Override
@@ -428,9 +536,9 @@ public class ConsultationServiceImpl implements ConsultationService {
             fileResponseDTO.setConsultationSessionId(consultationSessionId);
             fileResponseDTO.setConsultationId(
                     consultationSession.getConsultation().getConsultationId().toString());
-            ConsultationMessageDTO consultationMessageDTO =
+            ConsultationEventDTO<ConsultationMessageDTO> consultationMessageDTO =
                     ConsultationMessageDTO.from(fileResponseDTO, userName);
-            addMessage(consultationMessageDTO);
+            addMessage(consultationMessageDTO.getPayload(), ConsultationMessgeTypeEnum.FILE_UPLOADED);
             return fileResponseDTO;
         } catch (StorageServiceException e) {
             throw new ConsultationServiceException(e.getMessage(), 301);
@@ -491,7 +599,7 @@ public class ConsultationServiceImpl implements ConsultationService {
                                                      int pageNumber,
                                                      int totalElementsPerPage)
             throws ConsultationServiceException {
-
+        log.info("getting messages by userName: {}", userName);
         Pageable pageable = PageRequest.of(pageNumber, totalElementsPerPage);
         Page<ConsultationMessageEntity> page = consultationMessageRepository
                 .findMessagesByPatientUserNameOrdered(userName, pageable);
@@ -513,9 +621,10 @@ public class ConsultationServiceImpl implements ConsultationService {
 
     @Override
     public ConsultationMessagesPagingDTO getAllMessageBySessionIdUsingPaginationPagination(String sessionId,
-                                                                                                     int pageNumber,
-                                                                                                     int totalElementsPerPage)
+                                                                                           int pageNumber,
+                                                                                           int totalElementsPerPage)
             throws ConsultationServiceException {
+        log.info("getting messages for sessionId: {}", sessionId);
         Pageable pageable = PageRequest.of(pageNumber, totalElementsPerPage);
         Page<ConsultationMessageEntity> page = consultationMessageRepository
                 .findMessagesByConsultationSessionId(UUID.fromString(sessionId), pageable);
@@ -532,6 +641,9 @@ public class ConsultationServiceImpl implements ConsultationService {
         consultationMessagesPagingDTO.setTotalElements(totalElements);
         consultationMessagesPagingDTO.setTotalPages(totalPages);
 
+        consultationMessagesPagingDTO.getMessages()
+                .forEach(System.out::println);
+
         return consultationMessagesPagingDTO;
     }
 
@@ -541,6 +653,7 @@ public class ConsultationServiceImpl implements ConsultationService {
                                                                                        int pageNumber, int totalElementsPerPage)
             throws ConsultationServiceException {
 
+        log.info("getting messages for consultationID: {}, sessionId: {}", consultationId, consultationSessionId);
         if(ObjectUtils.isEmpty(consultationSessionId)) {
             throw new ConsultationServiceException("consultationSessionId cannot be empty", 402);
         }
@@ -556,6 +669,10 @@ public class ConsultationServiceImpl implements ConsultationService {
         ConsultationMessagesPagingDTO consultationMessagesPagingDTO = new ConsultationMessagesPagingDTO();
         consultationMessagesPagingDTO.setMessages(messages.stream()
                 .filter(Objects::nonNull)
+                .filter(consultationMessageEntity ->
+                        ConsultationMessgeTypeEnum.TEXT_MESSAGE.getType().equalsIgnoreCase(consultationMessageEntity.getMessageType()) ||
+                                ConsultationMessgeTypeEnum.WELCOME.getType().equalsIgnoreCase(consultationMessageEntity.getMessageType()) ||
+                                ConsultationMessgeTypeEnum.FILE_UPLOADED.getType().equalsIgnoreCase(consultationMessageEntity.getMessageType()))
                 .map(ConsultationMessageDTO::from)
                 .collect(Collectors.toList()));
         consultationMessagesPagingDTO.setTotalElements(totalElements);
@@ -578,7 +695,8 @@ public class ConsultationServiceImpl implements ConsultationService {
     }
 
     @Override
-    public void closeSession(String consultationId, String consultationSessionId, String sender)
+    public void closeSession(String sessionId,
+                             String consultationId, String consultationSessionId, String sender)
             throws ConsultationServiceException {
 
         ConsultationSession consultationSession =
@@ -614,14 +732,30 @@ public class ConsultationServiceImpl implements ConsultationService {
         endSessionMessageDTO.setConsultationId(consultationId);
         endSessionMessageDTO.setConsultationSessionId(consultationSession.getConsultationSessionId().toString());
         endSessionMessageDTO.setContent(" ");
-        endSessionMessageDTO.setMessageType(ConsultationMessgeTypeEnum.SESSION_END);
-        addMessage(endSessionMessageDTO);
 
-        messagingTemplate.convertAndSendToUser(
+
+        long eventId = addMessage(endSessionMessageDTO, ConsultationMessgeTypeEnum.SESSION_END);
+
+        ConsultationEventDTO<ConsultationMessageDTO> consultationEventDTO = new ConsultationEventDTO<>();
+        consultationEventDTO.setMessageType(ConsultationMessgeTypeEnum.SESSION_END);
+        consultationEventDTO.setTimeProcessed(LocalDateTime.now());
+        consultationEventDTO.setPayload(endSessionMessageDTO);
+        consultationEventDTO.setId(eventId);
+
+        appOutboundService.sendQueueMessage(receiver, consultationEventDTO);
+
+        /*messagingTemplate.convertAndSendToUser(
                 receiver,
                 "/queue/messages",
-                endSessionMessageDTO
-        );
+                consultationEventDTO
+        );*/
+
+        //messagingTemplate.convertAndSend("/topic/doctor-events", consultationEventDTO);
+        appOutboundService.sendDoctorEventMessage(consultationEventDTO);
+        String controlComunicationTopic = "/topic/consultation." + consultationSession.getConsultation().getConsultationId() +
+                ".session." + consultationSession.getConsultationSessionId() + ".control";
+        log.info("{}_ ending application session id: {} ", sessionId, controlComunicationTopic);
+        platformService.appSessionTerminated(controlComunicationTopic);
 
     }
 
@@ -658,8 +792,6 @@ public class ConsultationServiceImpl implements ConsultationService {
         patientViewDTO.setLastName(patientWoowUser.getLastName());
         consultationSessionViewDTO.setDoctorViewDTO(doctorViewDTO);
         consultationSessionViewDTO.setPatientViewDTO(patientViewDTO);
-        consultationSessionViewDTO.setDoctorPrescriptions(consultationSession.getDoctorPrescriptions());
-        consultationSessionViewDTO.setLaboratoryPrescriptions(consultationSession.getLaboratoryPrescriptions());
         return consultationSessionViewDTO;
     }
 
@@ -679,19 +811,7 @@ public class ConsultationServiceImpl implements ConsultationService {
 
                                 modelMapper.map(doctorPrescription, doctorPrescription1);
                                 doctorPrescription1.setConsultationSession(consultationSession);
-
-                                if(!ObjectUtils.isEmpty(doctorPrescription.getComentariosMedicos())) {
-                                    ComentariosMedicos comentariosMedicos = new ComentariosMedicos();
-                                    comentariosMedicos.setObservacionesMedicas(doctorPrescription.getComentariosMedicos());
-                                    comentariosMedicos
-                                            .setAxSaludWooUser(consultationSession.getConsultation().getPatient());
-                                    comentariosMedicos.setConsultationSession(consultationSession);
-                                    comentariosMedicos = comentariosMedicosRepository.save(comentariosMedicos);
-                                    consultationSession.setComentariosMedicos(comentariosMedicos);
-                                    consultationSessionRepository.save(consultationSession);
-
-                                }
-
+                                doctorPrescription1.setComentariosMedicos(doctorPrescription.getComentariosMedicos());
                                 return doctorPrescription1;
                             })
                             .collect(Collectors.toSet());
@@ -715,11 +835,13 @@ public class ConsultationServiceImpl implements ConsultationService {
                                 LaboratoryPrescription laboratoryPrescription1 = new LaboratoryPrescription();
                                 laboratoryPrescription.setId(0);
                                 modelMapper.map(laboratoryPrescription, laboratoryPrescription1);
+                                laboratoryPrescription1.setConsultationSession(consultationSession);
                                 return laboratoryPrescription1;
                             })
                             .collect(Collectors.toSet());
             consultationSession.getLaboratoryPrescriptions().addAll(laboratoryPrescriptionsSet);
         }
+        consultationSessionRepository.save(consultationSession);
     }
 
 }

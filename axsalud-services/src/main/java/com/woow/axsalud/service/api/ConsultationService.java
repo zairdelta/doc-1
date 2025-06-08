@@ -2,25 +2,26 @@ package com.woow.axsalud.service.api;
 
 import com.woow.axsalud.data.consultation.ConsultationSession;
 import com.woow.axsalud.data.consultation.ConsultationStatus;
-import com.woow.axsalud.data.consultation.DoctorPrescription;
-import com.woow.axsalud.data.consultation.LaboratoryPrescription;
 import com.woow.axsalud.service.api.dto.*;
 import com.woow.axsalud.service.api.exception.ConsultationServiceException;
+import com.woow.axsalud.service.api.messages.ConsultationMessageDTO;
 import com.woow.core.service.api.exception.WooUserServiceException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 public interface ConsultationService {
-    void handledConsultationMessage(ConsultationMessageDTO consultationMessage);
+    void handledConsultationMessage(String sessionId, ConsultationMessageDTO consultationMessage);
     ConsultationDTO create(SymptomsDTO symptomsDTO, String userName) throws WooUserServiceException;
+
+    void addComentariosMedicos(DoctorCommentsDTO doctorCommentsDTO, String consultationSessionId);
 
     ConsultationDTO continueWithConsultation(String userName, String consultationId)
             throws WooUserServiceException;
     void validate(String consultationId, String consultationSessionId,
                   String receiver, String sender) throws ConsultationServiceException;
     ConsultationDTO assign(String doctor, String consultationId, String consultationSessionId) throws ConsultationServiceException;
-    void addMessage(ConsultationMessageDTO consultationMessage)
+    long addMessage(ConsultationMessageDTO consultationMessage, ConsultationMessgeTypeEnum consultationMessageType)
             throws ConsultationServiceException;
 
     FileResponseDTO appendDocument(String userName, String consultationSessionId, MultipartFile file) throws ConsultationServiceException;
@@ -40,7 +41,7 @@ public interface ConsultationService {
             throws ConsultationServiceException;
 
     ConsultationSession getConsultationSession(String consultationSessionId) throws ConsultationServiceException;
-    void closeSession(String consultationId, String consultationSessionId, String sender)
+    void closeSession(String sessionId, String consultationId, String consultationSessionId, String sender)
             throws ConsultationServiceException;
 
     ConsultationSessionViewDTO getConsultationSession(String userName, String consultationSessionId) throws ConsultationServiceException;

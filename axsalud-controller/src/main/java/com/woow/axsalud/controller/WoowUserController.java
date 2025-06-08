@@ -1,8 +1,10 @@
 package com.woow.axsalud.controller;
 
 import com.woow.axsalud.controller.exception.WooBoHttpError;
+import com.woow.axsalud.data.repository.PatientConsultationSummary;
 import com.woow.axsalud.service.api.AxSaludService;
 import com.woow.axsalud.service.api.dto.*;
+import com.woow.axsalud.service.api.exception.ConsultationServiceException;
 import com.woow.core.service.api.exception.WooUserServiceException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -21,6 +23,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -79,7 +82,21 @@ public class WoowUserController {
                 .build();
     }
 
-    @GetMapping("/consultations")
+    @PostMapping("/file")
+    public ResponseEntity<FileResponseDTO> upload(@AuthenticationPrincipal UserDetails userDetails,
+                                                  @RequestBody MultipartFile file) {
+        try {
+
+            return ResponseEntity.ok().body(axSaludService.appendDocument(userDetails.getUsername(), file));
+        } catch (ConsultationServiceException e) {
+            return WooBoHttpError.of(e).toResponseEntity();
+        } catch (WooUserServiceException e) {
+            return WooBoHttpError.of(e).toResponseEntity();
+        }
+
+    }
+
+    @GetMapping("/history")
     @Operation(
             summary = "Get the user's consultations (Patient)",
             description = "Fetch all consultations for the authenticated user. User must have the PATIENT or USER role."
@@ -96,10 +113,11 @@ public class WoowUserController {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "403", description = "Forbidden")
     })
-    public ResponseEntity<List<ConsultationDTO>> getUserConsultations(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<List<PatientConsultationSummary>> getUserConsultations(@AuthenticationPrincipal UserDetails userDetails,
+                                                                                 @RequestParam int pageNumber, @RequestParam int elementsPerPage) {
         try {
-            return ResponseEntity.ok(axSaludService.getConsultation(userDetails.getUsername()));
-        } catch (WooUserServiceException e) {
+            return ResponseEntity.ok(axSaludService.getUserHistory(userDetails.getUsername(), pageNumber, elementsPerPage));
+        } catch (Exception e) {
             log.error("Error while getting user data: {}", e.getMessage(), e);
             return ResponseEntity.notFound().build();
         }
@@ -134,6 +152,7 @@ public class WoowUserController {
     public ResponseEntity<Void> addPatientData(@AuthenticationPrincipal UserDetails userDetails,
                                                @RequestBody PatientDataDTO patientDataDTO) {
         try {
+            log.debug("update patient data received, patientData:{}", patientDataDTO);
             axSaludService.updatePatientData(userDetails.getUsername(), patientDataDTO);
             return ResponseEntity.ok().build();
         } catch (WooUserServiceException e) {
@@ -168,6 +187,38 @@ public class WoowUserController {
                 .status(HttpStatus.OK)
                 .header(LOCATION, appRoot + ROOT_PATH + userName)
                 .build();
+    }
+
+    @GetMapping("/docPrescriptions")
+    @Operation(summary = "Get patient Prescriptions")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Patient found"),
+            @ApiResponse(responseCode = "301", description = "Forbidden")
+    })
+    public ResponseEntity<List<DoctorPrescriptionViewDTO>>
+    getPatientPrescriptions(@AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            return ResponseEntity.ok(axSaludService.getDoctorPrescriptions(userDetails.getUsername()));
+        } catch (WooUserServiceException e) {
+            log.error("Error while getting user data: {}", e.getMessage(), e);
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/labPrescription")
+    @Operation(summary = "Get patient labPrescription")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Patient found"),
+            @ApiResponse(responseCode = "301", description = "Forbidden")
+    })
+    public ResponseEntity<List<LabPrescriptionViewDTO>>
+    getLabPrescriptions(@AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            return ResponseEntity.ok(axSaludService.getLabPrescriptions(userDetails.getUsername()));
+        } catch (WooUserServiceException e) {
+            log.error("Error while getting user data: {}", e.getMessage(), e);
+            return ResponseEntity.notFound().build();
+        }
     }
 
 

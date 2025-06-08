@@ -19,6 +19,8 @@ public class DoctorPrescription {
     private String notasDeRecomendaciones;
     @Column(nullable = true, columnDefinition = "TEXT")
     private String diagnostico;
+    @Column(nullable = true, columnDefinition = "TEXT")
+    private String comentariosMedicos;
 
     @ManyToOne
     @JoinColumn(name = "consultation_session_id")

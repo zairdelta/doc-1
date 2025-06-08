@@ -68,6 +68,7 @@
             <groupId>io.swagger.core.v3</groupId>
             <artifactId>swagger-annotations</artifactId>
         </dependency>
+
         <dependency>
             <groupId>io.agora</groupId>
             <artifactId>authentication</artifactId>

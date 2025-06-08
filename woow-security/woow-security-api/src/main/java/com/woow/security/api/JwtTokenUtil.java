@@ -12,10 +12,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 @Component
@@ -24,7 +21,7 @@ public class JwtTokenUtil implements Serializable {
 
     private static final long serialVersionUID = -2550185165626007488L;
 
-    public static final long JWT_TOKEN_VALIDITY = 5 * 60 * 60;
+    public static final long JWT_TOKEN_VALIDITY = 18 * 60 * 60;
     public static final long JWT_TOKEN_VALIDITY_ONE_HOUR = 1 * 60 * 60;
 
     private static final String TENANT_ID = "X-TenantID";
@@ -84,6 +81,11 @@ public class JwtTokenUtil implements Serializable {
         claims.put(USER_ID, userId);
         claims.put(ROLES, roles);
         return doGenerateToken(claims, userDetails.getUsername());
+    }
+
+    public List<String> getRoles(String token) {
+        Claims claims = getAllClaimsFromToken(token);
+        return claims.get(ROLES) == null ? new ArrayList<>() : (List<String>) claims.get(ROLES);
     }
 
     public String generateAnonymousToken(String tenantId, int userId, String userName, List<String> roles) {

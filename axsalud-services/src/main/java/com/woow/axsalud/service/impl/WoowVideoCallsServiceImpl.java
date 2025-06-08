@@ -4,16 +4,19 @@ import com.woow.axsalud.data.consultation.ConsultationSession;
 import com.woow.axsalud.service.api.ConsultationService;
 import com.woow.axsalud.service.api.WoowVideoCallsService;
 import com.woow.axsalud.service.api.dto.ConsultationMessgeTypeEnum;
-import com.woow.axsalud.service.api.dto.VideoCallStartMessageDTO;
 import com.woow.axsalud.service.api.dto.VideoTokenDTO;
 import com.woow.axsalud.service.api.exception.ConsultationServiceException;
 import com.woow.axsalud.service.api.exception.WoowVideoCallException;
+import com.woow.axsalud.service.api.messages.ConsultationEventDTO;
+import com.woow.axsalud.service.api.messages.VideoCallStartMessageDTO;
+import com.woow.axsalud.service.impl.websocket.AppOutboundService;
 import io.agora.media.RtcTokenBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -32,12 +35,15 @@ public class WoowVideoCallsServiceImpl implements WoowVideoCallsService {
     private SimpMessagingTemplate messagingTemplate;
 
     private ConsultationService consultationService;
+    private AppOutboundService appOutboundService;
 
     public WoowVideoCallsServiceImpl(SimpMessagingTemplate messagingTemplate,
-                                     ConsultationService consultationService
+                                     ConsultationService consultationService,
+                                     AppOutboundService appOutboundService
                                      ) {
         this.messagingTemplate = messagingTemplate;
         this.consultationService = consultationService;
+        this.appOutboundService = appOutboundService;
     }
 
     @Override
@@ -72,7 +78,6 @@ public class WoowVideoCallsServiceImpl implements WoowVideoCallsService {
         String doctorUserName = consultationSession.getDoctor().getCoreUser().getUserName();
 
         VideoCallStartMessageDTO consultationMessageDTO = new VideoCallStartMessageDTO();
-        consultationMessageDTO.setMessageType(ConsultationMessgeTypeEnum.START_VIDEO_CALL);
         consultationMessageDTO.setContent(token);
         consultationMessageDTO.setVideoTokenDTO(videoTokenDTO);
         consultationMessageDTO.setSender(patientUserName);
@@ -81,15 +86,25 @@ public class WoowVideoCallsServiceImpl implements WoowVideoCallsService {
                 .setConsultationId(consultationSession.getConsultation().getConsultationId().toString());
         consultationMessageDTO.setConsultationSessionId(consultationSessionId);
 
-        messagingTemplate.convertAndSendToUser(
+        ConsultationEventDTO<VideoCallStartMessageDTO> consultationEventDTO = new ConsultationEventDTO<>();
+        consultationEventDTO.setMessageType(ConsultationMessgeTypeEnum.START_VIDEO_CALL);
+        consultationEventDTO.setTimeProcessed(LocalDateTime.now());
+        consultationEventDTO.setPayload(consultationMessageDTO);
+        consultationEventDTO.setId(0);
+
+        log.info("Sending video Call Start event to doctor: {}", doctorUserName);
+       /* messagingTemplate.convertAndSendToUser(
                 doctorUserName,
                 "/queue/messages",
-                consultationMessageDTO);
+                consultationEventDTO);*/
+        appOutboundService.sendQueueMessage(doctorUserName, consultationEventDTO);
 
-        messagingTemplate.convertAndSendToUser(
+        log.info("Sending video Call Start event to patient: {}", patientUserName);
+        appOutboundService.sendQueueMessage(patientUserName, consultationEventDTO);
+        /*messagingTemplate.convertAndSendToUser(
                 patientUserName,
                 "/queue/messages",
-                consultationMessageDTO);
+                consultationEventDTO);*/
 
         return videoTokenDTO;
     }

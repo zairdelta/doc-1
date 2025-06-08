@@ -1,9 +1,14 @@
 package com.woow.it;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.google.common.collect.Lists;
 import com.woow.WoowBaseTest;
 import com.woow.axsalud.common.WoowConstants;
 import com.woow.axsalud.service.api.dto.*;
+import com.woow.axsalud.service.api.messages.ConsultationEventDTO;
+import com.woow.axsalud.service.api.messages.ConsultationMessageDTO;
 import com.woow.it.data.HealthProviderFactory;
 import com.woow.it.data.UserFactory;
 import org.apache.hc.core5.ssl.SSLContextBuilder;
@@ -11,20 +16,20 @@ import org.apache.hc.core5.ssl.TrustStrategy;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.*;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.simp.stomp.*;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
 
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-
-import javax.net.ssl.*;
+import javax.net.ssl.SSLContext;
 import java.io.File;
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -36,6 +41,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ConsultationControllerTest extends WoowBaseTest {
 
@@ -55,8 +61,8 @@ public class ConsultationControllerTest extends WoowBaseTest {
 
         ResponseEntity<Void> response = restTemplate
                 .postForEntity(getBaseUrl() + "woo_user/new", request, Void.class);
-        Assertions.assertEquals(response.getStatusCode(), HttpStatus.OK);
-        Assertions.assertNotNull(response.getHeaders().getLocation());
+        assertEquals(response.getStatusCode(), HttpStatus.OK);
+        assertNotNull(response.getHeaders().getLocation());
         assertThat(response.getHeaders().getLocation().toString()).contains("/api/woo_user/realuser@woow.com");
 
 
@@ -75,6 +81,7 @@ public class ConsultationControllerTest extends WoowBaseTest {
 
     }
 
+
     @Test
     void shouldReceivePrivateMessage() throws Exception {
 
@@ -86,8 +93,8 @@ public class ConsultationControllerTest extends WoowBaseTest {
 
         ResponseEntity<Void> response = restTemplate
                 .postForEntity(getBaseUrl() + "woo_user/new", request, Void.class);
-        Assertions.assertEquals(response.getStatusCode(), HttpStatus.OK);
-        Assertions.assertNotNull(response.getHeaders().getLocation());
+        assertEquals(response.getStatusCode(), HttpStatus.OK);
+        assertNotNull(response.getHeaders().getLocation());
         assertThat(response.getHeaders().getLocation().toString())
                 .contains("/api/woo_user/realuser@woow.com");
 
@@ -110,7 +117,7 @@ public class ConsultationControllerTest extends WoowBaseTest {
         System.out.println("JWT_TOKEN_PATIENT: " + JWT_TOKEN_PATIENT);
 
         StompHeaders connectPatientnHeaders = new StompHeaders();
-       // connectPatientnHeaders.add(WoowConstants.AUTHORIZATION_HEADER, JWT_TOKEN_PATIENT);
+        // connectPatientnHeaders.add(WoowConstants.AUTHORIZATION_HEADER, JWT_TOKEN_PATIENT);
 
         WebSocketHttpHeaders httpHeaders = new WebSocketHttpHeaders();
         httpHeaders.add(WoowConstants.AUTHORIZATION_HEADER, JWT_TOKEN_PATIENT);
@@ -147,12 +154,31 @@ public class ConsultationControllerTest extends WoowBaseTest {
         session.subscribe("/user/queue/messages", new StompFrameHandler() {
             @Override
             public Type getPayloadType(StompHeaders headers) {
-                return ConsultationMessageDTO.class;
+                return Object.class;
             }
 
             @Override
             public void handleFrame(StompHeaders headers, Object payload) {
-                patientQueue.offer((ConsultationMessageDTO) payload);
+
+                try {
+                    ObjectMapper mapper = new ObjectMapper();
+                    mapper.registerModule(new JavaTimeModule());
+
+                    // Raw JSON string (only if Spring gave you a byte[])
+                    String json = new String((byte[]) payload, StandardCharsets.UTF_8);
+
+                    ConsultationEventDTO<ConsultationMessageDTO> event =
+                            mapper.readValue(json, new TypeReference<ConsultationEventDTO<ConsultationMessageDTO>>() {});
+
+                    System.out.println("Deserialized message: " + event.getPayload().getContent());
+                    // Add to your queue or process further
+                    patientQueue.offer(event.getPayload());
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Assertions.fail("Failed to deserialize WebSocket message: " + e.getMessage());
+                }
+
             }
         });
 
@@ -195,7 +221,7 @@ public class ConsultationControllerTest extends WoowBaseTest {
         System.out.println("DOCTOR: " + JWT_TOKEN_DOCTOR);
 
         StompHeaders doctorStompHeaders = new StompHeaders();
-       // doctorStompHeaders.add(WoowConstants.AUTHORIZATION_HEADER, JWT_TOKEN_DOCTOR);
+        // doctorStompHeaders.add(WoowConstants.AUTHORIZATION_HEADER, JWT_TOKEN_DOCTOR);
 
         WebSocketHttpHeaders doctorHeaders = new WebSocketHttpHeaders();
         doctorHeaders.add(WoowConstants.AUTHORIZATION_HEADER, JWT_TOKEN_DOCTOR);
@@ -212,12 +238,30 @@ public class ConsultationControllerTest extends WoowBaseTest {
         doctorSession.subscribe("/user/queue/messages", new StompFrameHandler() {
             @Override
             public Type getPayloadType(StompHeaders headers) {
-                return ConsultationMessageDTO.class;
+                return Object.class;
             }
 
             @Override
             public void handleFrame(StompHeaders headers, Object payload) {
-                doctorMessages.offer((ConsultationMessageDTO) payload);
+
+                try {
+                    ObjectMapper mapper = new ObjectMapper();
+                    mapper.registerModule(new JavaTimeModule());
+
+                    // Raw JSON string (only if Spring gave you a byte[])
+                    String json = new String((byte[]) payload, StandardCharsets.UTF_8);
+
+                    ConsultationEventDTO<ConsultationMessageDTO> event =
+                            mapper.readValue(json, new TypeReference<ConsultationEventDTO<ConsultationMessageDTO>>() {});
+
+                    System.out.println("Deserialized message: " + event.getPayload().getContent());
+                    // Add to your queue or process further
+                    doctorMessages.offer(event.getPayload());
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Assertions.fail("Failed to deserialize WebSocket message: " + e.getMessage());
+                }
             }
         });
 
@@ -242,6 +286,49 @@ public class ConsultationControllerTest extends WoowBaseTest {
                 .getBody().getConsultationId().toString() + "/session/" + consultationDoctorDTOResponseEntity
                 .getBody().getCurrentSessionIdIfExists() + "/private", message);
 
+        DoctorPrescriptionDTO doctorPrescriptionDTO = new DoctorPrescriptionDTO();
+        doctorPrescriptionDTO.setNotasDeRecomendaciones("Notas Recomendaciones");
+        doctorPrescriptionDTO.setDiagnostico("Diagnostico");
+        doctorPrescriptionDTO.setRecetaMedica("recetamedica");
+        doctorPrescriptionDTO.setComentariosMedicos("Comentarios Medicos");
+
+        String consultationId = consultationDoctorDTOResponseEntity.getBody().getConsultationId().toString();
+        String consultationSessionId = consultationDoctorDTOResponseEntity.getBody().getCurrentSessionIdIfExists();
+
+        String addDoctorPrescriptionRequest = getBaseUrl() + "/consultation/" + consultationId +
+                "/sessionId/" + consultationSessionId + "/doctorPrescription";
+
+        List<DoctorPrescriptionDTO> doctorPrescriptionDTOS = Lists.newArrayList(doctorPrescriptionDTO);
+
+        HttpEntity<List<DoctorPrescriptionDTO>> requestEntity = new HttpEntity<>(doctorPrescriptionDTOS, headersDoctor);
+
+        ResponseEntity<Void> responseCreatePrescription = restTemplate.exchange(
+                addDoctorPrescriptionRequest,
+                HttpMethod.PUT,
+                requestEntity,
+                Void.class
+        );
+
+        String getPrescriptionUrl = getBaseUrl() + "/doctor/patient/" +
+                axSaludUserDTO.getUserDtoCreate().getUserName() + "/docPrescriptions";
+
+        HttpEntity<Void> getRequestEntity = new HttpEntity<>(headersDoctor);
+
+        ResponseEntity<DoctorPrescriptionViewDTO[]> responseGetPrescriptions = restTemplate.exchange(
+                getPrescriptionUrl,
+                HttpMethod.GET,
+                getRequestEntity,
+                DoctorPrescriptionViewDTO[].class
+        );
+
+        assertEquals(HttpStatus.OK, responseGetPrescriptions.getStatusCode());
+        assertNotNull(responseGetPrescriptions.getBody());
+        assertTrue(responseGetPrescriptions.getBody().length > 0);
+
+        DoctorPrescriptionViewDTO retrieved = responseGetPrescriptions.getBody()[0];
+        assertEquals(doctorPrescriptionDTO.getDiagnostico(),
+                retrieved.getDoctorPrescriptionDTO().getDiagnostico());
+
 
         HttpHeaders consultationFetchHeaders = new HttpHeaders();
         consultationFetchHeaders.setContentType(MediaType.APPLICATION_JSON);
@@ -250,15 +337,15 @@ public class ConsultationControllerTest extends WoowBaseTest {
         HttpEntity<Void> fetchConsultationsRequest = new HttpEntity<>(consultationFetchHeaders);
 
         ResponseEntity<ConsultationDTO[]> consultationsResponse = restTemplate.exchange(
-                getBaseUrl() + "woo_user/consultations",
+                getBaseUrl() + "woo_user/history",
                 HttpMethod.GET,
                 fetchConsultationsRequest,
                 ConsultationDTO[].class
         );
 
-        Assertions.assertEquals(HttpStatus.OK, consultationsResponse.getStatusCode());
-        Assertions.assertNotNull(consultationsResponse.getBody());
-        Assertions.assertTrue(consultationsResponse.getBody().length > 0);
+        assertEquals(HttpStatus.OK, consultationsResponse.getStatusCode());
+        assertNotNull(consultationsResponse.getBody());
+        assertTrue(consultationsResponse.getBody().length > 0);
 
         for (ConsultationDTO consultation : consultationsResponse.getBody()) {
             System.out.println("Consultation ID: " + consultation.getConsultationId());
@@ -281,6 +368,8 @@ public class ConsultationControllerTest extends WoowBaseTest {
         patientMessagesList.forEach(consultationMessage -> System.out.println("PatientMessages: " + consultationMessage.getContent()));
         doctorMessagesList.forEach(consultationMessage -> System.out.println("Doctor Messages: " + consultationMessage.getContent()));
 
+        session.disconnect();
+        doctorSession.disconnect();
     }
 
     @Test
@@ -293,7 +382,7 @@ public class ConsultationControllerTest extends WoowBaseTest {
 
         // Create user
         ResponseEntity<Void> response = restTemplate.postForEntity(getBaseUrl() + "woo_user/new", request, Void.class);
-        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
 
         // Login and get JWT
         String JWT_TOKEN = login(axSaludUserDTO.getUserDtoCreate().getUserName(), axSaludUserDTO.getUserDtoCreate().getPassword());
@@ -332,8 +421,8 @@ public class ConsultationControllerTest extends WoowBaseTest {
                 getBaseUrl() + "consultation/" + consultationId + "/sessionId/"
                         + consultationSessionId + "/file", multipartRequest, FileResponseDTO.class);
 
-        Assertions.assertEquals(HttpStatus.OK, uploadResponse.getStatusCode());
-        Assertions.assertNotNull(uploadResponse.getBody());
+        assertEquals(HttpStatus.OK, uploadResponse.getStatusCode());
+        assertNotNull(uploadResponse.getBody());
     }
 
 
@@ -375,7 +464,7 @@ public class ConsultationControllerTest extends WoowBaseTest {
                 getBaseUrl() + "consultation/" + consultationId + "/sessionId/"
                         + consultationSessionId + "/file", uploadRequest, FileResponseDTO.class);
 
-        Assertions.assertEquals(HttpStatus.OK, fileUploadedResponse.getStatusCode());
+        assertEquals(HttpStatus.OK, fileUploadedResponse.getStatusCode());
 
         Long fileId = fileUploadedResponse.getBody().getId();
 
@@ -391,9 +480,8 @@ public class ConsultationControllerTest extends WoowBaseTest {
                 downloadRequest,
                 FileResponseDTO.class);
 
-        Assertions.assertEquals(HttpStatus.OK, downloadResponse.getStatusCode());
-        Assertions.assertTrue(downloadResponse.getBody().getUrl().contains("https:")); // URL firmada
+        assertEquals(HttpStatus.OK, downloadResponse.getStatusCode());
+        assertTrue(downloadResponse.getBody().getUrl().contains("https:")); // URL firmada
     }
-
 
 }

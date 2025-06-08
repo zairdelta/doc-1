@@ -1,0 +1,206 @@
+package com.woow.security;
+
+import com.woow.security.api.JwtTokenUtil;
+import com.woow.security.api.WebSocketUserPrincipal;
+import com.woow.security.interceptor.inbound.*;
+import com.woow.security.interceptor.outbound.OutBoundIInterceptor;
+import com.woow.security.rabbitmq.RabbitMQStompBrokerProperties;
+import io.netty.channel.ChannelOption;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.server.ServerHttpRequest;
+import org.springframework.messaging.simp.config.ChannelRegistration;
+import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.messaging.simp.stomp.StompReactorNettyCodec;
+import org.springframework.messaging.tcp.reactor.ReactorNettyTcpClient;
+import org.springframework.web.socket.WebSocketHandler;
+import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
+import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
+import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
+import reactor.core.Disposable;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
+import reactor.netty.resources.ConnectionProvider;
+import reactor.netty.tcp.TcpClient;
+
+import javax.net.ssl.SSLException;
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
+import java.security.Principal;
+import java.time.Duration;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+@Configuration
+@EnableWebSocketMessageBroker
+@Slf4j
+public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+
+    private JwtTokenUtil jwtTokenUtil;
+    private ConnectWsInterceptor connectWsInterceptor;
+    private AckMessageWsInterceptor ackMessageWsInterceptor;
+    private DisconnectWsInterceptor disconnectWsInterceptor;
+    private InboundMessageLoggingWsInterceptor inboundMessageLoggingWsInterceptor;
+    private SendMessageWsInterceptor sendMessageWsInterceptor;
+    private SubscribeWsInterceptor subscribeWsInterceptor;
+    private UnsubscribeWsInterceptor unsubscribeWsInterceptor;
+    private final OutBoundIInterceptor outBoundIInterceptor;
+    private RabbitMQStompBrokerProperties rabbitMQStompBrokerProperties;
+
+    public WebSocketConfig(ConnectWsInterceptor connectWsInterceptor,
+                           DisconnectWsInterceptor disconnectWsInterceptor,
+                           InboundMessageLoggingWsInterceptor inboundMessageLoggingWsInterceptor,
+                           SendMessageWsInterceptor sendMessageWsInterceptor,
+                           SubscribeWsInterceptor subscribeWsInterceptor,
+                           UnsubscribeWsInterceptor unsubscribeWsInterceptor,
+                           AckMessageWsInterceptor ackMessageWsInterceptor,
+                           OutBoundIInterceptor outBoundIInterceptor,
+                           JwtTokenUtil jwtTokenUtil,
+                           RabbitMQStompBrokerProperties rabbitMQStompBrokerProperties) {
+        this.connectWsInterceptor = connectWsInterceptor;
+        this.disconnectWsInterceptor = disconnectWsInterceptor;
+        this.inboundMessageLoggingWsInterceptor = inboundMessageLoggingWsInterceptor;
+        this.sendMessageWsInterceptor = sendMessageWsInterceptor;
+        this.subscribeWsInterceptor = subscribeWsInterceptor;
+        this.unsubscribeWsInterceptor = unsubscribeWsInterceptor;
+        this.outBoundIInterceptor = outBoundIInterceptor;
+        this.jwtTokenUtil = jwtTokenUtil;
+        this.ackMessageWsInterceptor = ackMessageWsInterceptor;
+        this.rabbitMQStompBrokerProperties = rabbitMQStompBrokerProperties;
+    }
+
+
+    @Override
+    public void registerStompEndpoints(StompEndpointRegistry registry) {
+        registry.addEndpoint("/ws")
+                .setHandshakeHandler(new DefaultHandshakeHandler() {
+                    @Override
+                    protected Principal determineUser(ServerHttpRequest request,
+                                                      WebSocketHandler wsHandler,
+                                                      Map<String, Object> attributes) {
+
+                        log.info("DetermineUser getting request");
+                        HttpHeaders headers = request.getHeaders();
+                        headers.forEach((key, value) -> {
+                            log.info("Header '{}' = {}", key, value);
+                        });
+
+                        if (request.getHeaders().get("Authorization") == null) {
+                            log.info("Authorization header is not present in web socket call");
+                            return null;
+
+                        } else {
+                            String authHeader = request.getHeaders().get("Authorization").get(0);
+                            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                                String jwtToken = authHeader.substring(7);
+                                String username = jwtTokenUtil.getUsernameFromToken(jwtToken);
+                                List<String> roles = jwtTokenUtil.getRoles(jwtToken);
+                                log.info("UserName ConnectedTo Socket from token: {}", username);
+                                return new WebSocketUserPrincipal(username, roles);
+                            }
+
+                            return null;
+
+                        }}})
+                .setAllowedOriginPatterns("*")
+                .withSockJS();
+    }
+
+    @Bean
+    public ReactorNettyTcpClient<byte[]> stompTcpClient() {
+        SslContext sslContext;
+        try {
+            sslContext = SslContextBuilder.forClient().build();
+        } catch (SSLException e) {
+            throw new IllegalStateException("Failed to create SSL context", e);
+        }
+
+        ConnectionProvider connectionProvider = ConnectionProvider.builder(rabbitMQStompBrokerProperties.getConnectionPoolName())
+                .maxIdleTime(Duration.ofSeconds(360))
+                .maxLifeTime(Duration.ofSeconds(360))
+                .maxConnections(rabbitMQStompBrokerProperties.getMaxConnections())
+                .pendingAcquireMaxCount(rabbitMQStompBrokerProperties.getPendingAcquireMaxCount())
+                .pendingAcquireTimeout(Duration.ofSeconds(rabbitMQStompBrokerProperties.getPendingAcquireTimeoutInSeconds()))
+                .build();
+
+        TcpClient sslClient = TcpClient.create(connectionProvider)
+                .secure(ssl -> ssl.sslContext(sslContext))
+                .option(ChannelOption.SO_KEEPALIVE, true)
+                .doOnConnected(conn -> {
+                    // 🔁 Schedule heartbeat and keep the Disposable
+                    Disposable heartbeatTask = Schedulers.parallel().schedulePeriodically(() -> {
+                        if (!conn.isDisposed()) {
+                            byte[] heartbeat = "\n".getBytes(StandardCharsets.UTF_8);
+                            conn.outbound()
+                                    .sendByteArray(Mono.just(heartbeat))
+                                    .then()
+                                 //   .doOnSuccess(unused ->
+                                   //         log.info("✅ [HEARTBEAT] Manual STOMP heartbeat sent at: {}", Instant.now()))
+                                    .doOnError(e ->
+                                            log.warn("❌ [HEARTBEAT] Failed to send manual heartbeat: {}", e.getMessage()))
+                                    .subscribe();
+                        } else {
+                            log.warn("💀 Skipping heartbeat — connection is disposed");
+                        }
+                    }, 3, 3, TimeUnit.SECONDS);
+
+                    conn.onDispose(() -> {
+                        log.info("🔌 Connection disposed, cancelling heartbeat");
+                        heartbeatTask.dispose();
+                    });
+                })
+                .remoteAddress(() -> new InetSocketAddress(
+                        rabbitMQStompBrokerProperties.getRelayHost(),
+                        rabbitMQStompBrokerProperties.getRelayPort()));
+
+        return new ReactorNettyTcpClient<>(client -> sslClient, new StompReactorNettyCodec());
+    }
+
+
+    @Override
+    public void configureMessageBroker(MessageBrokerRegistry config) {
+
+        config.enableStompBrokerRelay("/topic", "/queue")
+                .setSystemHeartbeatSendInterval(10000)
+                .setSystemHeartbeatReceiveInterval(60000)
+                .setRelayHost(rabbitMQStompBrokerProperties.getRelayHost())
+                .setRelayPort(rabbitMQStompBrokerProperties.getRelayPort())
+                .setClientLogin(rabbitMQStompBrokerProperties.getClientLogin())
+                .setClientPasscode(rabbitMQStompBrokerProperties.getClientPasscode())
+                .setSystemLogin(rabbitMQStompBrokerProperties.getSystemLogin())
+                .setSystemPasscode(rabbitMQStompBrokerProperties.getSystemPasscode())
+                .setTcpClient(stompTcpClient());
+
+        config.setApplicationDestinationPrefixes("/app");
+        config.setUserDestinationPrefix("/user/");
+    }
+
+    /*
+    @Override
+    public void configureMessageBroker(MessageBrokerRegistry registry) {
+        registry.setApplicationDestinationPrefixes("/app");
+        registry.enableSimpleBroker("/queue", "/topic");
+    }
+*/
+
+    @Override
+    public void configureClientInboundChannel(ChannelRegistration registration) {
+        registration.interceptors(connectWsInterceptor, ackMessageWsInterceptor,
+                outBoundIInterceptor);
+       /* registration.interceptors(connectWsInterceptor, disconnectWsInterceptor,
+                inboundMessageLoggingWsInterceptor, sendMessageWsInterceptor, subscribeWsInterceptor,
+                unsubscribeWsInterceptor);*/
+    }
+
+    @Override
+    public void configureClientOutboundChannel(ChannelRegistration registration) {
+        registration.interceptors(outBoundIInterceptor);
+    }
+
+}

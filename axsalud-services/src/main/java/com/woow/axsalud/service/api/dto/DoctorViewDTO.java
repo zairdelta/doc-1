@@ -5,6 +5,6 @@ import lombok.Data;
 
 @Data
 public class DoctorViewDTO extends AxSaludUserViewDTO {
-    private DoctorData doctorData;
+    private DoctorDataDTO doctorData;
     private String welcomeMessage;
 }

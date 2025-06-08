@@ -1,4 +1,4 @@
-package com.woow.security.config.interceptor;
+package com.woow.security.interceptor.inbound;
 
 import com.woow.security.api.JwtTokenUtil;
 import com.woow.security.api.JwtUserDetailsService;
@@ -12,11 +12,9 @@ import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import java.nio.charset.StandardCharsets;
-
 @Component
 @Slf4j
-public class JwtWebSocketInterceptor implements ChannelInterceptor {
+public class ConnectWsInterceptor implements ChannelInterceptor {
 
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
@@ -28,51 +26,26 @@ public class JwtWebSocketInterceptor implements ChannelInterceptor {
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
 
-        String payloadConvertedToString;
-
-        if (message.getPayload() == null) {
-            payloadConvertedToString = "NO PAYLOAD";
-        } else if (message.getPayload() instanceof byte[]) {
-            payloadConvertedToString = new String((byte[]) message.getPayload(),
-                    StandardCharsets.UTF_8);
-        } else {
-            payloadConvertedToString = message.getPayload().toString();
-        }
-
-
-        if (accessor.getCommand() != null) {
-            log.info("Inbound STOMP message - Command: [{}]," +
-                            " Destination: [{}], Session: [{}], Payload: {}, Receipt:{}",
-                    accessor.getCommand(),
-                    accessor.getDestination(),
-                    accessor.getSessionId(),
-                    payloadConvertedToString,
-                    accessor.getReceipt());
-        }
-
-
         if (StompCommand.CONNECT.equals(accessor.getCommand())) {
+            String sessionId = accessor.getSessionId();
             String authHeader = accessor.getFirstNativeHeader("Authorization");
-            log.info("Getting STOMP CONNECT, getting authentication header");
+            log.info("{}_ Getting STOMP CONNECT, getting authentication header", sessionId);
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 String jwtToken = authHeader.substring(7);
                 String username = jwtTokenUtil.getUsernameFromToken(jwtToken);
                 UserDetails userDetails = userDetailsService.loadUserByUsername(
                         username);
-
-
                 if (username != null && jwtTokenUtil.validateToken(jwtToken, userDetails)) {
-
                     accessor.setUser(new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
                             userDetails, null, userDetails.getAuthorities()));
                 }
             }
         } else if (accessor.getCommand() == StompCommand.SEND
                 || accessor.getCommand() == StompCommand.MESSAGE) {
-            log.info("INBOUND STOMP message to destination [{}], STOMP session [{}], payload: {}",
+           /* log.info("INBOUND STOMP message to destination [{}], STOMP session [{}], payload: {}",
                     accessor.getDestination(),
                     accessor.getSessionId(),
-                    message.getPayload());
+                    message.getPayload()); */
         }
 
         return message;

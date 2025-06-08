@@ -2,21 +2,32 @@ logging:
   level:
     org.hibernate.SQL: OFF
     org.hibernate.type.descriptor.sql: OFF
-
-    # ADD THESE FOR WEBSOCKET DEBUGGING 👇
-    org.springframework.web.socket: DEBUG
-    org.springframework.web.socket.server.support: DEBUG
-    org.apache.tomcat.websocket: DEBUG
-    org.springframework.messaging: DEBUG
-
-    org.springframework.security.web.FilterChainProxy: DEBUG
-    org.springframework.security.web.authentication: DEBUG
-    org.springframework.security.config: DEBUG
+    org.springframework.web.socket: OFF
+    org.springframework.web.socket.server.support: OFF
+    org.apache.tomcat.websocket: OFF
+    org.springframework.messaging: OFF
+    org.springframework.messaging.simp.stomp: OFF # TRACE
+    org.springframework.messaging.simp.stomp.StompBrokerRelayMessageHandler: OFF #TRACE
+    org.springframework.messaging.simp.stomp.StompSession: OFF # TRACE
+    org.springframework.messaging.simp.broker: OFF # DEBUG
+    org.springframework.security.web.FilterChainProxy: OFF #DEBUG
+    org.springframework.security.web.authentication: OFF #DEBUG
+    org.springframework.security.config: OFF #DEBUG
 
     # OPTIONAL: your custom package if you want to see your own logs
     com.woow: DEBUG
 
 spring:
+  servlet:
+    multipart:
+      max-file-size: 6MB
+      max-request-size: 7MB
+  messaging:
+    stomp:
+      relay:
+        heartbeat:
+          send-interval: 10000 # in miliseconds
+          receive-interval: 60000
   config:
     import: classpath:banner-config.yml
   flyway:
@@ -76,3 +87,19 @@ google:
     key:
       site: 6LeBD2ghAAAAADZG78n8VRzMYlUlGTP2h1Xos93u
       secret: 6LeBD2ghAAAAAIwmqN_EjY0H0vUFcoEPH-mwc8IB
+stomp:
+  broker:
+    relay-host: 0rbjt9.stackhero-network.com
+    relay-port: 63338
+    admin-port: 5909
+    client-login: admin
+    client-passcode: 9KLwnaP17gIdi8CoDetZIlHMgaaVxkqf
+    system-login: admin
+    system-passcode: 9KLwnaP17gIdi8CoDetZIlHMgaaVxkqf
+    max-connections: 10
+    pending-acquire-max-count: -1
+    pending-acquire-timeout-in-seconds: 30
+    connection-pool-name: rabbitmq-pool
+    heartbeat:
+      send-interval: 10000  # milliseconds
+      receive-interval: 60000

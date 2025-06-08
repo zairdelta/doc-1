@@ -1,14 +1,11 @@
 package com.woow.axsalud.controller;
 
 import com.woow.axsalud.controller.exception.WooBoHttpError;
-import com.woow.axsalud.data.consultation.ComentariosMedicos;
-import com.woow.axsalud.data.repository.ComentariosMedicosRepository;
+import com.woow.axsalud.data.repository.PatientConsultationSummary;
 import com.woow.axsalud.service.api.AxSaludService;
 import com.woow.axsalud.service.api.ConsultationService;
-import com.woow.axsalud.service.api.dto.ConsultationDTO;
-import com.woow.axsalud.service.api.dto.ConsultationMessagesPagingDTO;
-import com.woow.axsalud.service.api.dto.DoctorCommentsDTO;
-import com.woow.axsalud.service.api.dto.PatientViewDTO;
+import com.woow.axsalud.service.api.DoctorCommentsService;
+import com.woow.axsalud.service.api.dto.*;
 import com.woow.axsalud.service.api.exception.ConsultationServiceException;
 import com.woow.core.service.api.exception.WooUserServiceException;
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,21 +18,20 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/doctor")
 @Slf4j
 public class DoctorController {
 
-    private ComentariosMedicosRepository comentariosMedicosRepository;
+    private     DoctorCommentsService doctorCommentsService;
     private ConsultationService consultationService;
     private AxSaludService axSaludService;
-    public DoctorController(final ComentariosMedicosRepository comentariosMedicosRepository,
-                            final ConsultationService consultationService,
-                            final AxSaludService axSaludService) {
+    public DoctorController(final ConsultationService consultationService,
+                            final AxSaludService axSaludService,
+                            final DoctorCommentsService doctorCommentsService) {
         this.axSaludService = axSaludService;
-        this.comentariosMedicosRepository = comentariosMedicosRepository;
+        this.doctorCommentsService = doctorCommentsService;
         this.consultationService = consultationService;
     }
 
@@ -50,17 +46,10 @@ public class DoctorController {
     public ResponseEntity<List<DoctorCommentsDTO>>
     getDoctorComment(@PathVariable String userName,
                      @AuthenticationPrincipal UserDetails userDetails) {
-        List<ComentariosMedicos> comentariosMedicos =
-                comentariosMedicosRepository.findByAxSaludWooUser_CoreUser_UserName(userName);
+
 
         List<DoctorCommentsDTO> doctorCommentsDTOS =
-                comentariosMedicos.stream()
-                        .map(comentariosMedicos1 -> {
-                            DoctorCommentsDTO doctorCommentsDTO = new DoctorCommentsDTO();
-                            doctorCommentsDTO.setComment(comentariosMedicos1.getObservacionesMedicas());
-                            return doctorCommentsDTO;
-                        })
-                        .collect(Collectors.toList());
+                doctorCommentsService.getDoctorCommentsByUserName(userName);
         return ResponseEntity.ok().body(doctorCommentsDTOS);
     }
 
@@ -77,13 +66,14 @@ public class DoctorController {
         }
     }
 
-    @GetMapping("/patient/sessionId/{sessionId}/consultationMessages")
+    @GetMapping("/patient/consultation/{consultationId}/sessionId/{consultationSessionId}/consultationMessages")
     public ResponseEntity<ConsultationMessagesPagingDTO> getConsultationMessagesBySessionIdAndUserName(
-            @PathVariable String consultationSessionId,
+            @PathVariable String consultationId, @PathVariable String consultationSessionId,
             @RequestParam int pageNumber, @RequestParam int elementsPerPage) {
         try {
+            log.info("getting consultation messages on behalf of doctor");
             return ResponseEntity.ok().body(consultationService
-                    .getAllMessageBySessionIdUsingPaginationPagination(consultationSessionId,
+                    .getAllMessagesGivenConsultationIdAndSessionId(consultationId, consultationSessionId,
                             pageNumber, elementsPerPage));
         } catch (ConsultationServiceException e) {
             return WooBoHttpError.of(e).toResponseEntity();
@@ -98,12 +88,13 @@ public class DoctorController {
             @ApiResponse(responseCode = "400", description = "Invalid status parameter"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    public ResponseEntity<List<ConsultationDTO>>
+    public ResponseEntity<List<PatientConsultationSummary>>
     getPatientHistory(@PathVariable String userName,
+                      @RequestParam int pageNumber, @RequestParam int elementsPerPage,
                      @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            return ResponseEntity.ok().body(axSaludService.getConsultation(userName));
-        } catch (WooUserServiceException e) {
+            return ResponseEntity.ok().body(axSaludService.getUserHistory(userName, pageNumber, elementsPerPage));
+        } catch (Exception e) {
             return WooBoHttpError.of(e).toResponseEntity();
         }
     }
@@ -122,6 +113,38 @@ public class DoctorController {
                                                          @AuthenticationPrincipal UserDetails userDetails) {
         try {
             return ResponseEntity.ok(axSaludService.get(userName));
+        } catch (WooUserServiceException e) {
+            log.error("Error while getting user data: {}", e.getMessage(), e);
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/patient/{userName}/docPrescriptions")
+    @Operation(summary = "Get patient Prescriptions")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Patient found"),
+            @ApiResponse(responseCode = "301", description = "Forbidden")
+    })
+    public ResponseEntity<List<DoctorPrescriptionViewDTO>> getPatientPrescriptions(@PathVariable String userName,
+                                                                             @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            return ResponseEntity.ok(axSaludService.getDoctorPrescriptions(userName));
+        } catch (WooUserServiceException e) {
+            log.error("Error while getting user data: {}", e.getMessage(), e);
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/patient/{userName}/labPrescription")
+    @Operation(summary = "Get patient labPrescription")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Patient found"),
+            @ApiResponse(responseCode = "301", description = "Forbidden")
+    })
+    public ResponseEntity<List<LabPrescriptionViewDTO>> getLabPrescriptions(@PathVariable String userName,
+                                                                                   @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            return ResponseEntity.ok(axSaludService.getLabPrescriptions(userName));
         } catch (WooUserServiceException e) {
             log.error("Error while getting user data: {}", e.getMessage(), e);
             return ResponseEntity.notFound().build();

@@ -48,6 +48,16 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
+                <groupId>io.projectreactor.netty</groupId>
+                <artifactId>reactor-netty-core</artifactId>
+                <version>1.2.5</version>
+            </dependency>
+            <dependency>
+                <groupId>io.projectreactor.netty</groupId>
+                <artifactId>reactor-netty</artifactId>
+                <version>1.2.5</version>
+            </dependency>
+            <dependency>
                 <groupId>com.woow.axsalud</groupId>
                 <artifactId>axsalud-controller</artifactId>
                 <version>${axsalud.version}</version>
@@ -147,6 +157,11 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-webflux</artifactId>
                 <version>${spring.boot.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.retry</groupId>
+                <artifactId>spring-retry</artifactId>
+                <version>2.0.12</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
@@ -256,6 +271,21 @@
                 <groupId>io.agora</groupId>
                 <artifactId>authentication</artifactId>
                 <version>2.1.2</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rabbitmq</groupId>
+                <artifactId>amqp-client</artifactId>
+                <version>5.25.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents.core5</groupId>
+                <artifactId>httpcore5</artifactId>
+                <version>5.3.4</version>
+            </dependency>
+            <dependency>
+                <groupId>net.coobird</groupId>
+                <artifactId>thumbnailator</artifactId>
+                <version>0.4.20</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

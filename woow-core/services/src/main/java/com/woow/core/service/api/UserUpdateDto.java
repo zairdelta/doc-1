@@ -23,4 +23,5 @@ public class UserUpdateDto {
     private String cp;
     private String addressLine1;
     private String addressLine2;
+    private String imgURL;
 }

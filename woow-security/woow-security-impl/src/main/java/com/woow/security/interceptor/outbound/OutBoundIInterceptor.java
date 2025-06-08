@@ -1,4 +1,4 @@
-package com.woow.security.config.interceptor;
+package com.woow.security.interceptor.outbound;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.Message;
@@ -30,8 +30,9 @@ public class OutBoundIInterceptor implements ChannelInterceptor {
                 payloadConvertedToString = message.getPayload().toString();
             }
 
-            log.info("SERVER OUTBOUND STOMP MESSAGE - Destination: [{}], " +
+            log.info("{}_ SERVER OUTBOUND STOMP MESSAGE - Destination: [{}], " +
                             "Session: [{}], Payload: {}",
+                    accessor.getSessionId(),
                     accessor.getDestination(),
                     accessor.getSessionId(),
                     payloadConvertedToString);

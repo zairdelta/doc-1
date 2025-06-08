@@ -17,6 +17,5 @@ public class ConsultationSessionViewDTO {
     private LocalDateTime startAt;
     private LocalDateTime finishedAt;
     private ConsultationSessionStatus status;
-    private Set<DoctorPrescription> doctorPrescriptions;
-    private Set<LaboratoryPrescription> laboratoryPrescriptions;
+
 }

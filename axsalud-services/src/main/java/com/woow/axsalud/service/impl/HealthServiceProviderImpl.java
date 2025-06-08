@@ -130,6 +130,7 @@ public class HealthServiceProviderImpl implements HealthServiceProvider {
 
     @Override
     public HealthServiceProviderDTO get(String userName) throws WooUserServiceException {
+        log.info("Getting doctor details: {}", userName);
         WoowUser woowUser = woowUserRepository.findByUserName(userName);
         if(woowUser == null) {
             throw new WooUserServiceException("userName: " + userName + ", does not exist", 404);
@@ -150,6 +151,7 @@ public class HealthServiceProviderImpl implements HealthServiceProvider {
 
         UserDtoCreate userDtoCreate = new UserDtoCreate();
         modelMapper.map(woowUser, userDtoCreate);
+        userDtoCreate.setPassword("");
         dto.setUserDtoCreate(userDtoCreate);
 
         return dto;
