@@ -63,101 +63,101 @@ public class RabbitMQAdminClient {
         }
     }
 
-        public void deleteIdleQueues ( int amountOfMessagesReady) {
-            List<RabbitMQQueueInfo> queues = getAllQueues();
+    public void deleteIdleQueues ( int amountOfMessagesReady) {
+        List<RabbitMQQueueInfo> queues = getAllQueues();
 
-            for (RabbitMQQueueInfo queue : queues) {
-                if (queue.getMessagesReady() >= amountOfMessagesReady &&
-                        queue.getMessagesUnacknowledged() == 0 &&
-                        queue.getConsumers() == 0) {
-                    log.info("Queue with 0 consumers and more than: {} messages waiting. QueueInfo: {}", amountOfMessagesReady, queue);
-                    deleteQueueUsingRestClient(queue.getName());
+        for (RabbitMQQueueInfo queue : queues) {
+            if (queue.getMessagesReady() >= amountOfMessagesReady &&
+                    queue.getMessagesUnacknowledged() == 0 &&
+                    queue.getConsumers() == 0) {
+                log.info("Queue with 0 consumers and more than: {} messages waiting. QueueInfo: {}", amountOfMessagesReady, queue);
+                deleteQueueUsingRestClient(queue.getName());
+            }
+        }
+
+    }
+
+    public void deleteBindingThatContains (final String bindingName){
+        try {
+            log.info("Deleting queue that contains binding name: {}", bindingName);
+
+            List<RabbitMQBinding> bindings = getAllBindings();
+            log.info("🔗 Total bindings: {}", bindings.size());
+
+            for (RabbitMQBinding binding : bindings) {
+                if (binding.getRoutingKey().contains(bindingName) &&
+                        "queue".equalsIgnoreCase(binding.getDestinationType())) {
+                    String queueName = binding.getDestination();
+                    log.info("🧹 Deleting queue '{}' matching binding '{}'", queueName, bindingName);
+                    deleteQueueUsingRestClient(queueName);
+                    return;
                 }
             }
+        } catch (Exception e) {
+            log.error("❌ Error fetching bindings: {}", e.getMessage(), e);
+        }
+    }
 
+    public List<RabbitMQQueueInfo> getAllQueues () {
+        String url = rabbitHost + "/api/queues/%2F";
+
+        URI uri = UriComponentsBuilder
+                .fromHttpUrl(url)
+                .build(true)
+                .toUri();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBasicAuth(username, password);
+        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+        ResponseEntity<RabbitMQQueueInfo[]> response = restTemplate.exchange(uri,
+                HttpMethod.GET, entity, RabbitMQQueueInfo[].class);
+
+        if (response.getBody() == null) throw new RuntimeException("No queues found");
+        return List.of(response.getBody());
+    }
+
+
+    private List<RabbitMQBinding> getAllBindings () {
+        String url = rabbitHost + "/api/bindings";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBasicAuth(username, password);
+        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+        ResponseEntity<RabbitMQBinding[]> response = restTemplate.exchange(url, HttpMethod.GET,
+                entity, RabbitMQBinding[].class);
+
+        if (response.getStatusCode() != HttpStatus.OK || response.getBody() == null) {
+            throw new RuntimeException("Failed to fetch bindings");
         }
 
-        public void deleteBindingThatContains (final String bindingName){
-            try {
-                log.info("Deleting queue that contains binding name: {}", bindingName);
+        return List.of(response.getBody());
+    }
 
-                List<RabbitMQBinding> bindings = getAllBindings();
-                log.info("🔗 Total bindings: {}", bindings.size());
+    public void deleteQueueUsingRestClient (String queueName) {
+        String urlString = rabbitHost + "/api/queues/%2F/" + queueName;
+        URI uri = UriComponentsBuilder
+                .fromHttpUrl(urlString)
+                .build(true)
+                .toUri();
 
-                for (RabbitMQBinding binding : bindings) {
-                    if (binding.getRoutingKey().contains(bindingName) &&
-                            "queue".equalsIgnoreCase(binding.getDestinationType())) {
-                        String queueName = binding.getDestination();
-                        log.info("🧹 Deleting queue '{}' matching binding '{}'", queueName, bindingName);
-                        deleteQueueUsingRestClient(queueName);
-                        return;
-                    }
-                }
-            } catch (Exception e) {
-                log.error("❌ Error fetching bindings: {}", e.getMessage(), e);
-            }
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBasicAuth(username, password);
+        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+        ResponseEntity<String> response =
+                restTemplate.exchange(uri, HttpMethod.DELETE, entity, String.class);
+
+        if (response.getStatusCode().is2xxSuccessful()) {
+            log.info("✅ Successfully deleted queue: {}", queueName);
+        } else {
+            log.warn("⚠️ Failed to delete queue: {} — Status: {}", queueName, response.getStatusCode());
         }
-
-        public List<RabbitMQQueueInfo> getAllQueues () {
-            String url = rabbitHost + "/api/queues/%2F";
-
-            URI uri = UriComponentsBuilder
-                    .fromHttpUrl(url)
-                    .build(true)
-                    .toUri();
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setBasicAuth(username, password);
-            headers.setAccept(List.of(MediaType.APPLICATION_JSON));
-
-            HttpEntity<Void> entity = new HttpEntity<>(headers);
-            ResponseEntity<RabbitMQQueueInfo[]> response = restTemplate.exchange(uri,
-                    HttpMethod.GET, entity, RabbitMQQueueInfo[].class);
-
-            if (response.getBody() == null) throw new RuntimeException("No queues found");
-            return List.of(response.getBody());
-        }
-
-
-        private List<RabbitMQBinding> getAllBindings () {
-            String url = rabbitHost + "/api/bindings";
-            HttpHeaders headers = new HttpHeaders();
-            headers.setBasicAuth(username, password);
-            headers.setAccept(List.of(MediaType.APPLICATION_JSON));
-
-            HttpEntity<Void> entity = new HttpEntity<>(headers);
-
-            ResponseEntity<RabbitMQBinding[]> response = restTemplate.exchange(url, HttpMethod.GET,
-                    entity, RabbitMQBinding[].class);
-
-            if (response.getStatusCode() != HttpStatus.OK || response.getBody() == null) {
-                throw new RuntimeException("Failed to fetch bindings");
-            }
-
-            return List.of(response.getBody());
-        }
-
-        public void deleteQueueUsingRestClient (String queueName) {
-            String urlString = rabbitHost + "/api/queues/%2F/" + queueName;
-            URI uri = UriComponentsBuilder
-                    .fromHttpUrl(urlString)
-                    .build(true)
-                    .toUri();
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setBasicAuth(username, password);
-            headers.setAccept(List.of(MediaType.APPLICATION_JSON));
-            HttpEntity<Void> entity = new HttpEntity<>(headers);
-
-            ResponseEntity<String> response =
-                    restTemplate.exchange(uri, HttpMethod.DELETE, entity, String.class);
-
-            if (response.getStatusCode().is2xxSuccessful()) {
-                log.info("✅ Successfully deleted queue: {}", queueName);
-            } else {
-                log.warn("⚠️ Failed to delete queue: {} — Status: {}", queueName, response.getStatusCode());
-            }
-        }
+    }
 
     @EventListener
     public void onUnsubscribe(StompUnsubscribeAppEvent event) {
@@ -179,5 +179,5 @@ public class RabbitMQAdminClient {
 
     }
 
-    }
+}
 

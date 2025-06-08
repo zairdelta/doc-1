@@ -18,7 +18,7 @@ public class WSQueueNameHandlerImpl implements WSQueueNamesHandler {
         if(ObjectUtils.isEmpty(subscriptioinId)) {
             log.info("{}_ subscriptionId is empty or null {}", sessionId, subscriptioinId);
         } else
-        if(subscriptioinId.contains("doctor-events")) {
+        if(subscriptioinId.contains("doctor_events")) {
             queueName = subscriptioinId + QUEUE_PREFIX;
             log.info("{}_ getting queueName from subscriptionId: {} contains doctor events, result: {}",
                     sessionId, subscriptioinId, queueName);
