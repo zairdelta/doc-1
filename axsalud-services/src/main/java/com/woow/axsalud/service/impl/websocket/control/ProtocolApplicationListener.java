@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -18,6 +19,8 @@ public class ProtocolApplicationListener {
 
     private AxSaludUserRepository axSaludUserRepository;
 
+    private final static String CONSULTATION_CONTROL_PATTERN = "/topic/consultation\\.([^.]+)\\.session\\.([^.]+)\\.control";
+    private final static Pattern PATTERN_CONTROL_SESSION = Pattern.compile(CONSULTATION_CONTROL_PATTERN);
     public ProtocolApplicationListener(final AxSaludUserRepository axSaludUserRepository) {
         this.axSaludUserRepository = axSaludUserRepository;
     }
@@ -32,10 +35,21 @@ public class ProtocolApplicationListener {
         log.info("❌ {}_ DISCONNECT: user={}", event.getWsCacheInput().getSessionId(),
                 event.getWsCacheInput().getUsername());
 
-        event.getWsCacheInput().getSubscriptionMap().values()
-                .forEach(log::info);
-        event.getWsCacheInput().getSubscriptions()
-                .forEach(log::info);
+        Optional<String> controlSessionSubscriptionOptional = event.getWsCacheInput()
+                .getSubscriptions()
+                .stream()
+                .filter(s -> PATTERN_CONTROL_SESSION.matcher(s).matches())
+                .findFirst();
+
+        if(controlSessionSubscriptionOptional.isEmpty()) {
+            log.warn("❌ {}_ control session not present in subscriptions, userName: {}, event: {}", event.getWsCacheInput().getSessionId(),
+                    event.getWsCacheInput().getUsername(), event.getWsCacheInput());
+        } else {
+            ConsultationSessionIdVO consultationSessionIdVO =
+                    getConsultationIds(controlSessionSubscriptionOptional.get());
+            log.info("{}_ consultationSessionId DISCONNECT received: {}", event.getWsCacheInput().getSessionId(),
+                    consultationSessionIdVO);
+        }
     }
 
     @EventListener
@@ -53,13 +67,13 @@ public class ProtocolApplicationListener {
                 event.getWsCacheInput().getUsername(), event.getDestination(), event.getSubscriptionId());
     }
 
-    private static ConsultationSessionIdVO parseTopic(String topic) {
+    private static ConsultationSessionIdVO getConsultationIds(String subscription) {
         ConsultationSessionIdVO
                 consultationSessionIdVO = new ConsultationSessionIdVO();
-        String pattern = "/topic/consultation\\.([^.]+)\\.session\\.([^.]+)\\.control";
 
-        Pattern regex = Pattern.compile(pattern);
-        Matcher matcher = regex.matcher(topic);
+
+        Pattern regex = Pattern.compile(CONSULTATION_CONTROL_PATTERN);
+        Matcher matcher = regex.matcher(subscription);
 
         if (matcher.matches()) {
             consultationSessionIdVO.setConsultationId(matcher.group(1));

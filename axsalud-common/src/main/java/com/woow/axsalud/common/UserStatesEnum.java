@@ -4,6 +4,7 @@ public enum UserStatesEnum {
 
     ONLINE("ONLINE"),
     OFFLINE("OFFLINE"),
+    WAITING_FROM_DOCTOR_ABANDONED("WAITING_FROM_DOCTOR_ABANDONED"),
     UNAVAILABLE("UNAVAILABLE");
 
     String state;

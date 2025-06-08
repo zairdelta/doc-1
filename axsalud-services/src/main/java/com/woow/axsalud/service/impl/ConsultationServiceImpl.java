@@ -1,5 +1,7 @@
 package com.woow.axsalud.service.impl;
 
+import com.woow.axsalud.common.AXSaludUserRoles;
+import com.woow.axsalud.common.UserStatesEnum;
 import com.woow.axsalud.data.client.AxSaludWooUser;
 import com.woow.axsalud.data.consultation.*;
 import com.woow.axsalud.data.repository.*;
@@ -842,6 +844,82 @@ public class ConsultationServiceImpl implements ConsultationService {
             consultationSession.getLaboratoryPrescriptions().addAll(laboratoryPrescriptionsSet);
         }
         consultationSessionRepository.save(consultationSession);
+    }
+
+    @Override
+    public void consultationDisconnect(String sessionId, String consultationId,
+                                       String consultationSessionId, String userName, String role) {
+        if(ObjectUtils.isEmpty(consultationSessionId)) {
+            log.warn("{}_ consultationSessionId is empty, cannot determinate the consultation, userName:{}," +
+                    " consultationId: {}, consultationSessionId: {} ", sessionId, userName,
+                    consultationId, consultationSessionId);
+        } else {
+
+            UUID consultationSessionUUID = UUID.fromString(consultationSessionId);
+            ConsultationSession consultationSession =
+                    consultationSessionRepository.findByConsultationSessionId(consultationSessionUUID);
+
+            ConsultationSessionStatus status = consultationSession.getStatus();
+
+            if(ConsultationSessionStatus.FINISHED.equals(status)) {
+                log.info("{}_ consultationSessionID: {} for user:{}, terminated correctly",
+                        sessionId, consultationSession, userName);
+            } else if(ConsultationSessionStatus.WAITING_FOR_DOCTOR.equals(status)) {
+                log.info("{}_ consultationSessionID: {} for user:{}, consultation dropped from" +
+                                " waiting for a doctor",
+                        sessionId, consultationSession, userName);
+                consultationSessionRepository.updateStatus(consultationSessionUUID,
+                        ConsultationSessionStatus.WAITING_FROM_DOCTOR_ABANDONED);
+                updateUserStatus(sessionId, consultationSessionUUID, userName, role);
+
+
+            } else if(ConsultationSessionStatus.CONNECTING.equals(status)) {
+                log.info("{}_ consultationSessionID: {} for user:{}, consultation dropped from" +
+                                " CONNECTING state",
+                        sessionId, consultationSession, userName);
+                consultationSessionRepository.updateStatus(consultationSessionUUID,
+                        ConsultationSessionStatus.CONNECTING_ABANDONED);
+                updateUserStatus(sessionId, consultationSessionUUID, userName, role);
+
+
+            } else if(ConsultationSessionStatus.CONNECTED.equals(status)) {
+                log.info("{}_ consultationSessionID: {} for user:{}, consultation dropped from" +
+                                " CONNECTED state",
+                        sessionId, consultationSession, userName);
+                consultationSessionRepository.updateStatus(consultationSessionUUID,
+                        ConsultationSessionStatus.CONNECTED_ABANDONED);
+                updateUserStatus(sessionId, consultationSessionUUID, userName, role);
+            } else if(ConsultationSessionStatus.CONFIRMING_PARTIES.equals(status)) {
+                log.info("{}_ consultationSessionID: {} for user:{}, consultation dropped from" +
+                                " CONFIRMING_PARTIES state",
+                        sessionId, consultationSession, userName);
+                consultationSessionRepository.updateStatus(consultationSessionUUID,
+                        ConsultationSessionStatus.CONFIRMING_PARTIES_ABANDONED);
+                updateUserStatus(sessionId, consultationSessionUUID, userName, role);
+            } else {
+                log.info("{}_ consultationSessionID: {} for user:{}, consultation dropped from" +
+                                " status could not be processed state: {}",
+                        sessionId, consultationSession, userName, status);
+            }
+        }
+
+    }
+
+    private void updateUserStatus(String sessionId,
+                                  UUID consultationSessionUUID, String userName, String role) {
+        if(AXSaludUserRoles.DOCTOR.getRole().equalsIgnoreCase(role)) {
+            log.info("{}_ updating doctor state to dropped consultationSessionID:" +
+                            " {} for user:{}",
+                    sessionId, consultationSessionUUID, userName);
+            consultationSessionRepository.updateDoctorStatus(consultationSessionUUID,
+                    PartyConsultationStatus.DROPPED);
+        } else {
+            log.info("{}_ updating patient state to dropped consultationSessionID:" +
+                            " {} for user:{}",
+                    sessionId, consultationSessionUUID, userName);
+            consultationSessionRepository.updatePatientStatus(consultationSessionUUID,
+                    PartyConsultationStatus.DROPPED);
+        }
     }
 
 }
