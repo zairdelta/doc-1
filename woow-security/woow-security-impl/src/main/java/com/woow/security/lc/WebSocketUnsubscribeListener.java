@@ -25,12 +25,13 @@ public class WebSocketUnsubscribeListener {
         String subscriptionId = accessor.getSubscriptionId();
         String destination = accessor.getDestination();
 
-        log.debug("📤 {}_ STOMP UNSUBSCRIBE: sessionId={}, subscriptionId={}", sessionId, sessionId, subscriptionId);
+        log.debug("📤 {}_ STOMP UNSUBSCRIBE: sessionId={}, subscriptionId={}, destination={}",
+                sessionId, sessionId, subscriptionId, destination);
 
         if (subscriptionId != null && sessionId != null) {
             wsCache.removeSubscription(sessionId, subscriptionId);
             publisher.publishEvent(new StompUnsubscribeAppEvent(this,
-                    wsCache.getSession(sessionId), destination));
+                    wsCache.getSession(sessionId), destination, subscriptionId));
         }
     }
 }

@@ -5,11 +5,13 @@ import org.springframework.context.ApplicationEvent;
 public class StompUnsubscribeAppEvent extends ApplicationEvent {
     private final WSCacheInput wsCacheInput;
     private final String destination;
+    private final String subscriptionId;
 
-    public StompUnsubscribeAppEvent(Object source, WSCacheInput input, String destination) {
+    public StompUnsubscribeAppEvent(Object source, WSCacheInput input, String destination, String subscriptionId) {
         super(source);
         this.wsCacheInput = input;
         this.destination = destination;
+        this.subscriptionId = subscriptionId;
     }
 
     public WSCacheInput getWsCacheInput() {
@@ -19,4 +21,6 @@ public class StompUnsubscribeAppEvent extends ApplicationEvent {
     public String getDestination() {
         return destination;
     }
+
+    public String getSubscriptionId() {return subscriptionId;}
 }

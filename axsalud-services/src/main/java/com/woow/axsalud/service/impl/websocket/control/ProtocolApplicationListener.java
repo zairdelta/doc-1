@@ -43,8 +43,9 @@ public class ProtocolApplicationListener {
 
     @EventListener
     public void onUnsubscribe(StompUnsubscribeAppEvent event) {
-        log.info("➖ {}_ UNSUBSCRIBE: user={}, destination={}", event.getWsCacheInput().getSessionId(),
-                event.getWsCacheInput().getUsername(), event.getDestination());
+        log.info("➖ {}_ UNSUBSCRIBE: user={}, destination={}, subscriptionID=: {}",
+                event.getWsCacheInput().getSessionId(),
+                event.getWsCacheInput().getUsername(), event.getDestination(), event.getSubscriptionId());
     }
 
     private static ConsultationSessionIdVO parseTopic(String topic) {

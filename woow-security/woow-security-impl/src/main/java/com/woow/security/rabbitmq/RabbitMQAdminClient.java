@@ -3,11 +3,15 @@ package com.woow.security.rabbitmq;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import com.woow.security.api.ws.StompUnsubscribeAppEvent;
+import com.woow.security.api.ws.WSQueueNamesHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.core5.ssl.SSLContextBuilder;
 import org.apache.hc.core5.ssl.TrustStrategy;
+import org.springframework.context.event.EventListener;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -20,21 +24,24 @@ import java.util.List;
 public class RabbitMQAdminClient {
 
     private final RabbitMQStompBrokerProperties stompBrokerProperties;
+
+    private WSQueueNamesHandler wsQueueNamesHandler;
     private final RestTemplate restTemplate = new RestTemplate();
     private final String rabbitHost;
     private final String username;
     private final String password;
     private final String VHOST = "/";
 
-    public RabbitMQAdminClient(RabbitMQStompBrokerProperties stompBrokerProperties) {
+    public RabbitMQAdminClient(WSQueueNamesHandler wsQueueNamesHandler, RabbitMQStompBrokerProperties stompBrokerProperties) {
         this.stompBrokerProperties = stompBrokerProperties;
+        this.wsQueueNamesHandler = wsQueueNamesHandler;
         this.rabbitHost = "https://" + stompBrokerProperties.getRelayHost();
         this.username = stompBrokerProperties.getSystemLogin();
         this.password = stompBrokerProperties.getSystemPasscode();
     }
 
-    public void deleteQueue(String queueName) throws Exception {
-        log.debug("Deleting queue from RabbitMQ: {}", queueName);
+    public void deleteQueue(String sessionId, String queueName) throws Exception {
+        log.debug("{}_ Deleting queue from RabbitMQ: {}", sessionId, queueName);
         TrustStrategy acceptingTrustStrategy = (x509Certificates, s) -> true;
 
 
@@ -52,7 +59,7 @@ public class RabbitMQAdminClient {
         try (Connection connection = factory.newConnection();
              Channel channel = connection.createChannel()) {
             channel.queueDelete(queueName);
-            log.debug("Delete queue command send to: {}", stompBrokerProperties.getRelayHost());
+            log.debug("{}_ Delete queue command send to: {}", sessionId, stompBrokerProperties.getRelayHost());
         }
     }
 
@@ -151,5 +158,26 @@ public class RabbitMQAdminClient {
                 log.warn("⚠️ Failed to delete queue: {} — Status: {}", queueName, response.getStatusCode());
             }
         }
+
+    @EventListener
+    public void onUnsubscribe(StompUnsubscribeAppEvent event) {
+        log.info("➖ {}_ UNSUBSCRIBE Removing queue for: user={}, destination={}, subscriptionID:{}", event.getWsCacheInput().getSessionId(),
+                event.getWsCacheInput().getUsername(), event.getDestination(), event.getSubscriptionId());
+        try {
+            String queueName = wsQueueNamesHandler.parseQueueNameFrom(event.getWsCacheInput().getSessionId(),
+                    event.getSubscriptionId());
+            if(ObjectUtils.isEmpty(queueName)) {
+                log.info("➖ {}_ UNSUBSCRIBE Removing queue cannot be done for: user={}, destination={}, subscriptionID:{}, " +
+                                "queueName is empty", event.getWsCacheInput().getSessionId(),
+                        event.getWsCacheInput().getUsername(), event.getDestination(), event.getSubscriptionId());
+            } else {
+                this.deleteQueue(event.getWsCacheInput().getSessionId(), queueName);
+            }
+        } catch (Exception e) {
+            log.error("Error deleting queName: {}", event.getSubscriptionId() + "-queue");
+        }
+
+    }
+
     }
 
