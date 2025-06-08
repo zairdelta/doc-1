@@ -44,13 +44,6 @@ public class WebSocketDisconnectListener {
         } else {
             log.warn("⚠️ {}_ No cache entry found for session: {}", sessionId, sessionId);
         }
-
-        String queueName = userQueuePrefix + sessionId;
-        try {
-            rabbitMQAdminClient.deleteQueue(sessionId, queueName);
-            log.debug("🗑️ {}_ Deleted RabbitMQ queue: {}", sessionId, queueName);
-        } catch (Exception e) {
-            log.error("❌ {}_ Error deleting queue: {}, error: {}", sessionId, queueName, e.getMessage(), e);
-        }
+        
     }
 }
