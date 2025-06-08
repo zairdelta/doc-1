@@ -881,12 +881,18 @@ public class ConsultationServiceImpl implements ConsultationService {
                     log.info("{}_ consultationSessionID: {} for user:{}, consultation dropped from" +
                                     " waiting for a doctor, calling handled session abandoned, role logic added",
                             sessionId, consultationSession.getConsultationSessionId(), userName);
-                    ConsultationEventDTO consultationEventDTO = handledSessionAbandoned(sessionId, consultationSession,
-                            ConsultationSessionStatus.WAITING_FROM_DOCTOR_ABANDONED,
-                            userRole, userName);
-                    consultationEventDTO.setTransportSessionId(sessionId);
-                    appOutboundService.sendDoctorEventMessage(consultationEventDTO);
-                    sendConsultationEvent(sessionId, consultationEventDTO);
+                    ConsultationEventDTO consultationEventDTO = null;
+
+                    try {
+                        consultationEventDTO = handledSessionAbandoned(sessionId, consultationSession,
+                                ConsultationSessionStatus.WAITING_FROM_DOCTOR_ABANDONED,
+                                userRole, userName);
+                        consultationEventDTO.setTransportSessionId(sessionId);
+                        appOutboundService.sendDoctorEventMessage(consultationEventDTO);
+                        sendConsultationEvent(sessionId, consultationEventDTO);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 } else if (ConsultationSessionStatus.CONNECTING.equals(status)) {
                     log.info("{}_ consultationSessionID: {} for user:{}, consultation dropped from" +
                                     " CONNECTING state",
