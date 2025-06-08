@@ -3,6 +3,7 @@ package com.woow.axsalud.service.impl;
 import com.woow.axsalud.common.AXSaludUserRoles;
 import com.woow.axsalud.data.consultation.ConsultationSession;
 import com.woow.axsalud.data.consultation.ConsultationSessionStatus;
+import com.woow.axsalud.data.consultation.ConsultationStatus;
 import com.woow.axsalud.data.repository.AxSaludUserRepository;
 import com.woow.axsalud.data.repository.ConsultationMessageRepository;
 import com.woow.axsalud.data.repository.ConsultationSessionRepository;
@@ -83,7 +84,8 @@ public class ConsultationSessionSchedulerServiceImpl implements ConsultationSess
 
         consultationSessionsDoctorLost.stream()
                 .map(session -> consultationService.handledSessionAbandoned(NO_TRANSPORT_SESSION, session,
-                        ConsultationSessionStatus.ABANDONED_EXPIRED, AXSaludUserRoles.DOCTOR, session.getDoctor().getCoreUser().getUserName()))
+                        ConsultationSessionStatus.ABANDONED_EXPIRED, ConsultationStatus.ABANDONED, AXSaludUserRoles.DOCTOR,
+                        session.getDoctor().getCoreUser().getUserName()))
                 .map(event->consultationService.sendConsultationEvent(NO_TRANSPORT_SESSION, event))
                 .forEach(platformService::appSessionTerminated);
 
@@ -93,7 +95,7 @@ public class ConsultationSessionSchedulerServiceImpl implements ConsultationSess
 
         consultationSessionsPatientLost.stream()
                 .map(session -> consultationService.handledSessionAbandoned(NO_TRANSPORT_SESSION, session,
-                        ConsultationSessionStatus.ABANDONED_EXPIRED, AXSaludUserRoles.USER,
+                        ConsultationSessionStatus.ABANDONED_EXPIRED, ConsultationStatus.ABANDONED, AXSaludUserRoles.USER,
                         session.getConsultation().getPatient().getCoreUser().getUserName()))
                 .map(event -> consultationService.sendConsultationEvent(NO_TRANSPORT_SESSION, event))
                 .forEach(platformService::appSessionTerminated);
