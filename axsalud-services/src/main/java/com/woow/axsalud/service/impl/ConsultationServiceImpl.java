@@ -927,8 +927,8 @@ public class ConsultationServiceImpl implements ConsultationService {
                                         consultation.getSymptoms());
 
                         consultationDTO.setStatus(ConsultationStatus.WAITING_FOR_DOCTOR);
-                        consultation.setCurrentSessionIdIfExists(consultationSession.getConsultationSessionId().toString());
-                        consultationRepository.save(consultation);
+                     //   consultation.setCurrentSessionIdIfExists(consultationSession.getConsultationSessionId().toString());
+                     //   consultationRepository.save(consultation);
 
                         sendConsultationDTOToDoctorEvents(consultationDTO);
                     }
@@ -958,8 +958,8 @@ public class ConsultationServiceImpl implements ConsultationService {
                                         consultation.getSymptoms());
 
                         consultationDTO.setStatus(ConsultationStatus.WAITING_FOR_DOCTOR);
-                        consultation.setCurrentSessionIdIfExists(consultationSession.getConsultationSessionId().toString());
-                        consultationRepository.save(consultation);
+                     //   consultation.setCurrentSessionIdIfExists(consultationSession.getConsultationSessionId().toString());
+                      //  consultationRepository.save(consultation);
 
                         sendConsultationDTOToDoctorEvents(consultationDTO);
                     }
@@ -988,8 +988,8 @@ public class ConsultationServiceImpl implements ConsultationService {
                                         consultation.getSymptoms());
 
                         consultationDTO.setStatus(ConsultationStatus.WAITING_FOR_DOCTOR);
-                        consultation.setCurrentSessionIdIfExists(consultationSession.getConsultationSessionId().toString());
-                        consultationRepository.save(consultation);
+                       // consultation.setCurrentSessionIdIfExists(consultationSession.getConsultationSessionId().toString());
+                       // consultationRepository.save(consultation);
 
                         sendConsultationDTOToDoctorEvents(consultationDTO);
                     }
