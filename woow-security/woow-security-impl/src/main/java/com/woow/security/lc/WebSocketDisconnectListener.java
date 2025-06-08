@@ -37,6 +37,14 @@ public class WebSocketDisconnectListener {
         log.debug("🔌{}_ WebSocket session disconnected: {}", sessionId, sessionId);
 
         WSCacheInput removed = wsCache.getSession(sessionId);
+        log.info("{}_  cache_entry:{} : ", sessionId, removed);
+        log.info("{}_  Subscriptions: ", sessionId);
+        removed.getSubscriptions()
+                .forEach(log::info);
+        log.info("{}_  Subscriptions map: ", sessionId);
+
+        removed.getSubscriptionMap().values()
+                .forEach(log::info);
         if (removed != null) {
             wsCache.removeSession(sessionId);
             publisher.publishEvent(new StompDisconnectAppEvent(this, removed));
