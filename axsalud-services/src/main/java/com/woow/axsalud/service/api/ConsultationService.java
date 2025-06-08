@@ -58,7 +58,7 @@ public interface ConsultationService {
     ConsultationEventDTO<SessionAbandonedDTO>
     handledSessionAbandoned(final String transportSessionId, final ConsultationSession consultationSession,
                             ConsultationSessionStatus status,
-                            final AXSaludUserRoles role, String userName)
+                            final AXSaludUserRoles role, String userName);
 
     String sendConsultationEvent(final String transportSessionId, ConsultationEventDTO<SessionAbandonedDTO> consultationEventDTO);
 }
