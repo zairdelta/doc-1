@@ -406,7 +406,7 @@ public class ConsultationServiceImpl implements ConsultationService {
                     + consultationId, 402);
         }
 
-       if(consultation.getPatient().getState() == UserStatesEnum.OFFLINE) {
+       if(consultation.getPatient().getUserAvailability() == UserStatesEnum.OFFLINE) {
             throw new ConsultationServiceException("Patient is now offline," +
                     " consultation cannot be assigned to: " +
                     doctor + ", consultationId: "
