@@ -36,7 +36,7 @@ public class AxSaludWooUser {
     @JoinColumn(name = "patient_data_user_id", referencedColumnName = "id")
     private PatientData patientData;
     @Enumerated(EnumType.STRING)
-    private UserStatesEnum state = UserStatesEnum.OFFLINE;
+    private UserStatesEnum userAvailability = UserStatesEnum.OFFLINE;
     private long serviceProvider;
     private String hid;
     private String doctorWelcomeMessage;

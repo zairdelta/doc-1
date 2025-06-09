@@ -17,6 +17,6 @@ public interface AxSaludUserRepository extends JpaRepository<AxSaludWooUser, Lon
     Optional<AxSaludWooUser> findByCoreUser_UserId(long userId);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("UPDATE AxSaludWooUser u SET u.state = :newState WHERE u.coreUser.userName = :userName")
+    @Query("UPDATE AxSaludWooUser u SET u.userAvailability = :newState WHERE u.coreUser.userName = :userName")
     int updateUserStateByCoreUserId(@Param("userName") String userName, @Param("newState") UserStatesEnum newState);
 }
