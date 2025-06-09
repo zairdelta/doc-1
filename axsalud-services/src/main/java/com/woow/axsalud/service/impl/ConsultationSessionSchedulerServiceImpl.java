@@ -68,7 +68,7 @@ public class ConsultationSessionSchedulerServiceImpl implements ConsultationSess
         messagingTemplate.convertAndSend("/topic/doctor-events", Map.of("messageType", "ping"));
     }
 
-    @Scheduled(fixedRate = 60000)
+   // @Scheduled(fixedRate = 60000)
     @Override
     @Transactional
     public void sendSessionTerminated() {

@@ -3,6 +3,7 @@ package com.woow.security.rabbitmq;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import com.woow.security.api.ws.StompDisconnectAppEvent;
 import com.woow.security.api.ws.StompUnsubscribeAppEvent;
 import com.woow.security.api.ws.WSQueueNamesHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -176,6 +177,11 @@ public class RabbitMQAdminClient {
         } catch (Exception e) {
             log.error("Error deleting queName: {}", event.getSubscriptionId() + "-queue");
         }
+
+    }
+
+    @EventListener
+    public void onDisconnect(StompDisconnectAppEvent event) {
 
     }
 
