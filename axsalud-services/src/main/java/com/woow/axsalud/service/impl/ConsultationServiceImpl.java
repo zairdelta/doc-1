@@ -406,11 +406,12 @@ public class ConsultationServiceImpl implements ConsultationService {
                     + consultationId, 402);
         }
 
-       /* if(consultation.getPatient().getState() == UserStatesEnum.OFFLINE) {
-            throw new ConsultationServiceException("Patient is offline, consultation cannot be established: " +
-                    consultationSession.getDoctor().getCoreUser().getName() + ", consultationId: "
+       if(consultation.getPatient().getState() == UserStatesEnum.OFFLINE) {
+            throw new ConsultationServiceException("Patient is now offline," +
+                    " consultation cannot be assigned to: " +
+                    doctor + ", consultationId: "
                     + consultationId, 402);
-        }*/ // throwing exception
+        }
 
 
         consultationSession.setDoctor(axSaludWooUser);
