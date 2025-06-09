@@ -10,6 +10,7 @@ import com.woow.security.api.ws.StompUnsubscribeAppEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -30,6 +31,7 @@ public class ProtocolApplicationListener {
         this.consultationService = consultationService;
     }
     @EventListener
+    @Transactional
     public void onConnect(StompConnectAppEvent event) {
         log.info("✅ {}_ CONNECT: user={}, making user online", event.getWsCacheInput().getSessionId(),
                 event.getWsCacheInput().getUsername());
@@ -38,6 +40,7 @@ public class ProtocolApplicationListener {
     }
 
     @EventListener
+    @Transactional
     public void onDisconnect(StompDisconnectAppEvent event) {
         log.info("❌ {}_ DISCONNECT: user={} making user OFFLINE", event.getWsCacheInput().getSessionId(),
                 event.getWsCacheInput().getUsername());
