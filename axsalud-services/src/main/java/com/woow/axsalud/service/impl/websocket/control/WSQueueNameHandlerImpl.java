@@ -32,7 +32,7 @@ public class WSQueueNameHandlerImpl implements WSQueueNamesHandler {
             log.info("{}_ getting queueName from subscriptionId: {} contains control Session, result: {}",
                     sessionId, subscriptioinId, queueName);
         } else if(subscriptioinId.contains("user_queue_messages")) {
-            queueName = userQueuePrefix + sessionId;;
+            queueName = userQueuePrefix + sessionId;
         }
         return queueName;
     }

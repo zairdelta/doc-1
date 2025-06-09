@@ -21,6 +21,8 @@ import com.woow.security.api.ws.PlatformService;
 import com.woow.storage.api.StorageService;
 import com.woow.storage.api.StorageServiceException;
 import com.woow.storage.api.StorageServiceUploadResponseDTO;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.PessimisticLockException;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
@@ -355,7 +357,9 @@ public class ConsultationServiceImpl implements ConsultationService {
     }
 
     @Override
-    public ConsultationDTO assign(String doctor, String consultationId, String consultationSessionId) throws ConsultationServiceException {
+    public ConsultationDTO assign(String doctor, String consultationId, String consultationSessionId)
+            throws ConsultationServiceException {
+
         Consultation consultation =
                 consultationRepository.findByConsultationId(UUID.fromString(consultationId));
 
@@ -380,13 +384,34 @@ public class ConsultationServiceImpl implements ConsultationService {
         }
 
         AxSaludWooUser axSaludWooUser = axSaludWooUserOptional.get();
-        ConsultationSession consultationSession = consultationSessionRepository
-                .findByConsultationSessionId(UUID.fromString(consultationSessionId));
 
-        if(consultationSession == null) {
+        ConsultationSession consultationSession = null;
+
+        try {
+            consultationSession = consultationSessionRepository
+                    .findWithLock(UUID.fromString(consultationSessionId));
+        } catch (PessimisticLockException e) {
+            log.warn("Could not acquire lock for consultationSessionId: {}", consultationSessionId, e);
+            throw new ConsultationServiceException(
+                    "Consultation is being assigned to another doctor.", 409
+            );
+        } catch (NoResultException e) {
             throw new ConsultationServiceException("consultationSession: " + consultationSessionId + " does not exist, consultationId: "
                     + consultationId, 402);
         }
+
+        if(consultationSession.getStatus() != ConsultationSessionStatus.WAITING_FOR_DOCTOR) {
+            throw new ConsultationServiceException("Consultation was assigned already to doctor: " +
+                    consultationSession.getDoctor().getCoreUser().getName() + ", consultationId: "
+                    + consultationId, 402);
+        }
+
+        if(consultation.getPatient().getState() == UserStatesEnum.OFFLINE) {
+            throw new ConsultationServiceException("Patient is offline, consultation cannot be established: " +
+                    consultationSession.getDoctor().getCoreUser().getName() + ", consultationId: "
+                    + consultationId, 402);
+        }
+
 
         consultationSession.setDoctor(axSaludWooUser);
         consultationSession.setStartAt(LocalDateTime.now());

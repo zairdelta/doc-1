@@ -1,5 +1,6 @@
 package com.woow.axsalud.service.impl.websocket.control;
 
+import com.woow.axsalud.common.UserStatesEnum;
 import com.woow.axsalud.data.repository.AxSaludUserRepository;
 import com.woow.axsalud.service.api.ConsultationService;
 import com.woow.security.api.ws.StompConnectAppEvent;
@@ -30,14 +31,18 @@ public class ProtocolApplicationListener {
     }
     @EventListener
     public void onConnect(StompConnectAppEvent event) {
-        log.info("✅ {}_ CONNECT: user={}", event.getWsCacheInput().getSessionId(),
+        log.info("✅ {}_ CONNECT: user={}, making user online", event.getWsCacheInput().getSessionId(),
                 event.getWsCacheInput().getUsername());
+        axSaludUserRepository.updateUserStateByCoreUserId(event.getWsCacheInput().getUsername(),
+                UserStatesEnum.ONLINE);
     }
 
     @EventListener
     public void onDisconnect(StompDisconnectAppEvent event) {
-        log.info("❌ {}_ DISCONNECT: user={}", event.getWsCacheInput().getSessionId(),
+        log.info("❌ {}_ DISCONNECT: user={} making user OFFLINE", event.getWsCacheInput().getSessionId(),
                 event.getWsCacheInput().getUsername());
+        axSaludUserRepository.updateUserStateByCoreUserId(event.getWsCacheInput().getUsername(),
+                UserStatesEnum.OFFLINE);
 
         Optional<String> controlSessionSubscriptionOptional = event.getWsCacheInput()
                 .getSubscriptions()
@@ -57,7 +62,6 @@ public class ProtocolApplicationListener {
                     consultationSessionIdVO.getConsultationId(), consultationSessionIdVO.getConsultationSessionId(),
                     event.getWsCacheInput().getUsername(),
                     event.getWsCacheInput().getRoles().stream().findFirst().orElse(""));
-
         }
     }
 
