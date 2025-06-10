@@ -3,15 +3,13 @@ package com.woow.axsalud.service.impl.websocket.control;
 import com.woow.axsalud.common.UserStatesEnum;
 import com.woow.axsalud.data.repository.AxSaludUserRepository;
 import com.woow.axsalud.service.api.ConsultationService;
-import com.woow.security.api.ws.StompConnectAppEvent;
-import com.woow.security.api.ws.StompDisconnectAppEvent;
-import com.woow.security.api.ws.StompSubscribeAppEvent;
-import com.woow.security.api.ws.StompUnsubscribeAppEvent;
+import com.woow.security.api.ws.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -47,24 +45,14 @@ public class ProtocolApplicationListener {
         axSaludUserRepository.updateUserStateByCoreUserId(event.getWsCacheInput().getUsername(),
                 UserStatesEnum.OFFLINE);
 
-        Optional<String> controlSessionSubscriptionOptional = event.getWsCacheInput()
-                .getSubscriptions()
-                .stream()
-                .filter(s -> PATTERN_CONTROL_SESSION.matcher(s).matches())
-                .findFirst();
+        Optional<String> controlSessionSubscriptionOptional =
+                getControlSubscriptions(event.getWsCacheInput().getSubscriptions());
 
         if(controlSessionSubscriptionOptional.isEmpty()) {
             log.warn("❌ {}_ control session not present in subscriptions, userName: {}, event: {}", event.getWsCacheInput().getSessionId(),
                     event.getWsCacheInput().getUsername(), event.getWsCacheInput());
         } else {
-            ConsultationSessionIdVO consultationSessionIdVO =
-                    getConsultationIds(controlSessionSubscriptionOptional.get());
-            log.info("{}_ consultationSessionId DISCONNECT received: {}", event.getWsCacheInput().getSessionId(),
-                    consultationSessionIdVO);
-            consultationService.consultationDisconnect(event.getWsCacheInput().getSessionId(),
-                    consultationSessionIdVO.getConsultationId(), consultationSessionIdVO.getConsultationSessionId(),
-                    event.getWsCacheInput().getUsername(),
-                    event.getWsCacheInput().getRoles().stream().findFirst().orElse(""));
+            handledConsultationDisconnect(controlSessionSubscriptionOptional, event.getWsCacheInput());
         }
     }
 
@@ -81,12 +69,23 @@ public class ProtocolApplicationListener {
         log.info("➖ {}_ UNSUBSCRIBE: user={}, destination={}, subscriptionID=: {}",
                 event.getWsCacheInput().getSessionId(),
                 event.getWsCacheInput().getUsername(), event.getDestination(), event.getSubscriptionId());
+
+        Optional<String> controlSessionSubscriptionOptional =
+                getControlSubscriptions(event.getWsCacheInput().getSubscriptions());
+
+        if(controlSessionSubscriptionOptional.isEmpty()) {
+            log.warn("❌ {}_ control session not present in subscriptions, userName: {}, event: {}",
+                    event.getWsCacheInput().getSessionId(),
+                    event.getWsCacheInput().getUsername(), event.getWsCacheInput());
+        } else {
+            handledConsultationDisconnect(controlSessionSubscriptionOptional, event.getWsCacheInput());
+        }
+
     }
 
     private static ConsultationSessionIdVO getConsultationIds(String subscription) {
         ConsultationSessionIdVO
                 consultationSessionIdVO = new ConsultationSessionIdVO();
-
 
         Pattern regex = Pattern.compile(CONSULTATION_CONTROL_PATTERN);
         Matcher matcher = regex.matcher(subscription);
@@ -98,4 +97,33 @@ public class ProtocolApplicationListener {
 
         return consultationSessionIdVO;
     }
+
+    private Optional<String> getControlSubscriptions(List<String> subscriptions) {
+        //TODO to support multiple subscription we might need to find all that has control
+        Optional<String> controlSessionSubscriptionOptional =
+                subscriptions
+                .stream()
+                .filter(s -> PATTERN_CONTROL_SESSION.matcher(s).matches())
+                .findFirst();
+        return controlSessionSubscriptionOptional;
+    }
+
+    private void handledConsultationDisconnect(Optional<String> controlSessionSubscriptionOptional,
+                                               WSCacheInput cacheInput) {
+
+        if(controlSessionSubscriptionOptional.isEmpty()) {
+            log.info("{}_ no control subscriptions received: {}", cacheInput.getSessionId(),
+                    cacheInput);
+        } else {
+            ConsultationSessionIdVO consultationSessionIdVO =
+                    getConsultationIds(controlSessionSubscriptionOptional.get());
+            log.info("{}_ consultationSessionId DISCONNECT received: {}", cacheInput.getSessionId(),
+                    consultationSessionIdVO);
+            consultationService.consultationDisconnect(cacheInput.getSessionId(),
+                    consultationSessionIdVO.getConsultationId(), consultationSessionIdVO.getConsultationSessionId(),
+                    cacheInput.getUsername(),
+                    cacheInput.getRoles().stream().findFirst().orElse(""));
+        }
+    }
+
 }
