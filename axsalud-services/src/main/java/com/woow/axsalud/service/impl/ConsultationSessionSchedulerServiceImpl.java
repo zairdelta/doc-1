@@ -67,7 +67,7 @@ public class ConsultationSessionSchedulerServiceImpl implements ConsultationSess
     public void sendPing() {
 
         int numberOfDoctorsOnline =
-                axSaludUserRepository.countDoctorGivenAStatus(UserStatesEnum.ONLINE);
+                axSaludUserRepository.countOnlineDoctors(UserStatesEnum.ONLINE);
         if(numberOfDoctorsOnline > 0) {
             log.info("sending ping message to topic/doctor-events: {}", Map.of("messageType", "ping"));
             messagingTemplate.convertAndSend("/topic/doctor-events", Map.of("messageType", "ping"));
