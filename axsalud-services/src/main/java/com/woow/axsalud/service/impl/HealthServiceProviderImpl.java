@@ -11,6 +11,7 @@ import com.woow.axsalud.service.api.HealthServiceProvider;
 import com.woow.axsalud.service.api.dto.DoctorDataDTO;
 import com.woow.axsalud.service.api.dto.HealthServiceProviderDTO;
 import com.woow.axsalud.service.api.dto.HealthServiceProviderUpdateDTO;
+import com.woow.axsalud.service.api.dto.HealthServiceProviderViewDTO;
 import com.woow.core.data.repository.WoowUserRepository;
 import com.woow.core.data.user.WoowUser;
 import com.woow.core.service.api.UserDtoCreate;
@@ -129,7 +130,7 @@ public class HealthServiceProviderImpl implements HealthServiceProvider {
     }
 
     @Override
-    public HealthServiceProviderDTO get(String userName) throws WooUserServiceException {
+    public HealthServiceProviderViewDTO get(String userName) throws WooUserServiceException {
         log.info("Getting doctor details: {}", userName);
         WoowUser woowUser = woowUserRepository.findByUserName(userName);
         if(woowUser == null) {
@@ -143,16 +144,13 @@ public class HealthServiceProviderImpl implements HealthServiceProvider {
                 .orElseThrow(() -> new WooUserServiceException("ax_userName: " + userName +
                 ", does not exist", 404));
 
-        HealthServiceProviderDTO dto = new HealthServiceProviderDTO();
+        HealthServiceProviderViewDTO dto = new HealthServiceProviderViewDTO();
 
         dto.setDoctorData(DoctorDataDTO.from(axSaludWooUser.getDoctorData()));
         dto.setWelcomeMessage(axSaludWooUser.getDoctorWelcomeMessage());
-        dto.setDni(axSaludWooUser.getDni());
+        dto.setDni(axSaludWooUser.getDni());UserDtoCreate userDtoCreate = new UserDtoCreate();
+        modelMapper.map(woowUser, dto);
 
-        UserDtoCreate userDtoCreate = new UserDtoCreate();
-        modelMapper.map(woowUser, userDtoCreate);
-        userDtoCreate.setPassword("");
-        dto.setUserDtoCreate(userDtoCreate);
 
         return dto;
     }
