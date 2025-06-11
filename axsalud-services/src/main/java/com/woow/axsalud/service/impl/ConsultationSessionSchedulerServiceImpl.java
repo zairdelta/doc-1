@@ -71,8 +71,6 @@ public class ConsultationSessionSchedulerServiceImpl implements ConsultationSess
         if(numberOfDoctorsOnline > 0) {
             log.info("sending ping message to topic/doctor-events: {}", Map.of("messageType", "ping"));
             messagingTemplate.convertAndSend("/topic/doctor-events", Map.of("messageType", "ping"));
-        } else {
-            log.info("There are not Doctors Online at the moment");
         }
     }
 
