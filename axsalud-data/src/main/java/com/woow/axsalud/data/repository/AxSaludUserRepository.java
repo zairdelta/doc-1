@@ -16,6 +16,9 @@ public interface AxSaludUserRepository extends JpaRepository<AxSaludWooUser, Lon
     Optional<AxSaludWooUser> findByCoreUser(WoowUser coreUser);
     Optional<AxSaludWooUser> findByCoreUser_UserId(long userId);
 
+    @Query("SELECT COUNT(u) FROM AxSaludWooUser u WHERE u.userAvailability = :state AND u.userType = com.woow.axsalud.data.client.WoowUserType.DOCTOR")
+    int countDoctorGivenAStatus(@Param("state") UserStatesEnum state);
+
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE AxSaludWooUser u SET u.userAvailability = :newState WHERE u.coreUser.userName = :userName")
     int updateUserStateByCoreUserId(@Param("userName") String userName, @Param("newState") UserStatesEnum newState);

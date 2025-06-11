@@ -1,6 +1,7 @@
 package com.woow.axsalud.service.impl;
 
 import com.woow.axsalud.common.AXSaludUserRoles;
+import com.woow.axsalud.common.UserStatesEnum;
 import com.woow.axsalud.data.consultation.ConsultationSession;
 import com.woow.axsalud.data.consultation.ConsultationSessionStatus;
 import com.woow.axsalud.data.consultation.ConsultationStatus;
@@ -64,8 +65,15 @@ public class ConsultationSessionSchedulerServiceImpl implements ConsultationSess
     @Scheduled(fixedRate = 30000)
     @Override
     public void sendPing() {
-        log.info("sending ping message to topic/doctor-events: {}", Map.of("messageType", "ping"));
-        messagingTemplate.convertAndSend("/topic/doctor-events", Map.of("messageType", "ping"));
+
+        int numberOfDoctorsOnline =
+                axSaludUserRepository.countDoctorGivenAStatus(UserStatesEnum.ONLINE);
+        if(numberOfDoctorsOnline > 0) {
+            log.info("sending ping message to topic/doctor-events: {}", Map.of("messageType", "ping"));
+            messagingTemplate.convertAndSend("/topic/doctor-events", Map.of("messageType", "ping"));
+        } else {
+            log.info("There are not Doctors Online at the moment");
+        }
     }
 
    // @Scheduled(fixedRate = 60000)
