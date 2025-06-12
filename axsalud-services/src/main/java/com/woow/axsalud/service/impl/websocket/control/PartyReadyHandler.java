@@ -86,6 +86,9 @@ public class PartyReadyHandler implements ControlMessageHandler {
                 }
                 consultationSessionRepository.save(consultationSession);
                 log.info("{}_ ConsultationSession updated", message.getSessionId());
+            } else {
+                log.info("{}_ Getting invalid PARTY Ready message while session is in state: {}"
+                        , message.getSessionId(), consultationSession.getStatus());
             }
         }
     }
