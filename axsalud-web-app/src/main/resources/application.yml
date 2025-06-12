@@ -6,10 +6,10 @@ logging:
     org.springframework.web.socket.server.support: OFF
     org.apache.tomcat.websocket: OFF
     org.springframework.messaging: OFF
-    org.springframework.messaging.simp.stomp: OFF # TRACE
-    org.springframework.messaging.simp.stomp.StompBrokerRelayMessageHandler: OFF #TRACE
-    org.springframework.messaging.simp.stomp.StompSession: OFF # TRACE
-    org.springframework.messaging.simp.broker: OFF # DEBUG
+    org.springframework.messaging.simp.stomp: TRACE # TRACE
+    org.springframework.messaging.simp.stomp.StompBrokerRelayMessageHandler: TRACE #TRACE
+    org.springframework.messaging.simp.stomp.StompSession: TRACE # TRACE
+    org.springframework.messaging.simp.broker: TRACE # DEBUG
     org.springframework.security.web.FilterChainProxy: OFF #DEBUG
     org.springframework.security.web.authentication: OFF #DEBUG
     org.springframework.security.config: OFF #DEBUG
