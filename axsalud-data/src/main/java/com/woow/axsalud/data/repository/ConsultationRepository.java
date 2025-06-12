@@ -23,19 +23,21 @@ public interface ConsultationRepository extends JpaRepository<Consultation, Long
     List<Consultation> findByStatusOrderByCreatedAtAsc(ConsultationStatus status);
 
     @Query("""
-        SELECT 
-            c.id AS id,
-            c.consultationId AS consultationId,
-            s.consultationSessionId AS consultationSessionId,
-            CONCAT(d.coreUser.name, ' ', d.coreUser.lastName) AS doctorName,
-            c.symptoms AS symptoms,
-            c.status AS status,
-            c.createdAt AS createdAt
-        FROM Consultation c
-        LEFT JOIN c.sessions s
-        LEFT JOIN s.doctor d
-        WHERE c.patient.id = :patientId
-    """)
+    SELECT 
+        c.id AS id,
+        c.consultationId AS consultationId,
+        s.consultationSessionId AS consultationSessionId,
+        CONCAT(d.coreUser.name, ' ', d.coreUser.lastName) AS doctorName,
+        c.symptoms AS symptoms,
+        c.status AS status,
+        c.createdAt AS createdAt,
+        d.coreUser.imgURL AS doctorImgUrl,
+        c.patient.coreUser.imgURL AS patientImgUrl
+    FROM Consultation c
+    LEFT JOIN c.sessions s
+    LEFT JOIN s.doctor d
+    WHERE c.patient.id = :patientId
+""")
     Page<PatientConsultationSummary> findConsultationsByPatientId(Long patientId, Pageable pageable);
 
 
