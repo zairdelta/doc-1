@@ -2,10 +2,10 @@ logging:
   level:
     org.hibernate.SQL: OFF
     org.hibernate.type.descriptor.sql: OFF
-    org.springframework.web.socket: OFF
-    org.springframework.web.socket.server.support: OFF
-    org.apache.tomcat.websocket: OFF
-    org.springframework.messaging: OFF
+    org.springframework.web.socket: DEBUG
+    org.springframework.web.socket.server.support: DEBUG
+    org.apache.tomcat.websocket: DEBUG
+    org.springframework.messaging: DEBUG
     org.springframework.messaging.simp.stomp: TRACE # TRACE
     org.springframework.messaging.simp.stomp.StompBrokerRelayMessageHandler: TRACE #TRACE
     org.springframework.messaging.simp.stomp.StompSession: TRACE # TRACE
