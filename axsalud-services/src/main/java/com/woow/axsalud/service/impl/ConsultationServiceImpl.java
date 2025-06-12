@@ -805,6 +805,9 @@ public class ConsultationServiceImpl implements ConsultationService {
 
     }
 
+    // This method is public we need to add Security, consultation and consultationId is a number difficult to guess as it is uuid
+    // however some validation needs to be done that user knows consultationId and consultationSessionId
+    // at the moment we just use consultationSessionId
     @Override
     public ConsultationSessionViewDTO getConsultationSession(String userName, String consultationSessionId)
             throws ConsultationServiceException {
