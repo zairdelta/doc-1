@@ -832,10 +832,12 @@ public class ConsultationServiceImpl implements ConsultationService {
         DoctorViewDTO doctorViewDTO = new DoctorViewDTO();
         doctorViewDTO.setName(doctorWoowUser.getName());
         doctorViewDTO.setLastName(doctorWoowUser.getLastName());
+        doctorViewDTO.setImgURL(doctorWoowUser.getImgURL());
 
         PatientViewDTO patientViewDTO = new PatientViewDTO();
         patientViewDTO.setName(patientWoowUser.getName());
         patientViewDTO.setLastName(patientWoowUser.getLastName());
+        patientViewDTO.setImgURL(patientViewDTO.getImgURL());
         consultationSessionViewDTO.setDoctorViewDTO(doctorViewDTO);
         consultationSessionViewDTO.setPatientViewDTO(patientViewDTO);
         return consultationSessionViewDTO;
