@@ -89,17 +89,17 @@ google:
       secret: 6LeBD2ghAAAAAIwmqN_EjY0H0vUFcoEPH-mwc8IB
 stomp:
   broker:
-    relay-host: 0rbjt9.stackhero-network.com
-    relay-port: 63338
-    admin-port: 5909
-    client-login: admin
-    client-passcode: 9KLwnaP17gIdi8CoDetZIlHMgaaVxkqf
-    system-login: admin
-    system-passcode: 9KLwnaP17gIdi8CoDetZIlHMgaaVxkqf
-    max-connections: 10
-    pending-acquire-max-count: -1
-    pending-acquire-timeout-in-seconds: 30
-    connection-pool-name: rabbitmq-pool
+    relay-host: ${STOMP_BROKER_RELAY_HOST}
+    relay-port: ${STOMP_BROKER_RELAY_PORT}
+    admin-port: ${STOMP_BROKER_ADMIN_PORT}
+    client-login: ${STOMP_BROKER_CLIENT_LOGIN}
+    client-passcode: ${STOMP_BROKER_CLIENT_PASSCODE}
+    system-login: ${STOMP_BROKER_SYSTEM_LOGIN}
+    system-passcode: ${STOMP_BROKER_SYSTEM_PASSCODE}
+    max-connections: ${STOMP_BROKER_MAX_CONNECTIONS}
+    pending-acquire-max-count: ${STOMP_BROKER_PENDING_ACQUIRE_MAX_COUNT}
+    pending-acquire-timeout-in-seconds: ${STOMP_BROKER_PENDING_ACQUIRE_TIMEOUT_IN_SECONDS}
+    connection-pool-name: ${STOMP_BROKER_CONNECTION_POOL_NAME}
     heartbeat:
-      send-interval: 10000  # milliseconds
-      receive-interval: 60000
+      send-interval: ${STOMP_BROKER_HEARTBEAT_SEND_INTERVAL}
+      receive-interval: ${STOMP_BROKER_HEARTBEAT_RECEIVE_INTERVAL}
