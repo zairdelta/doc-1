@@ -22,8 +22,6 @@ public class WoowConstants {
 
         public final static String AUTHORIZATION_HEADER = "Authorization";
         public final static String XTenantID = "X-TenantID";
-        public final static String BINANCE_ROUTE = "test-topic1";
-        public final static String KUCOIN_ROUTE = "kucoinRouter";
-        public final static String BINANCE_US_ROUTE = "binance-us";
+        public final static String NO_TRANSPORT_SESSION = "NO_T_SESSION";
     }
 

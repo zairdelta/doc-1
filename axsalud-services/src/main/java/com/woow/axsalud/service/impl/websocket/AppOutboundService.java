@@ -67,12 +67,12 @@ public class AppOutboundService {
 
     }
 
-    public String sendSessionAbandonedConsultationControlEvent(String consultationId,
+    public String sendSessionAbandonedConsultationControlEvent(String transportSessionId, String consultationId,
                                              String consultationSessionId,
                                              ConsultationEventDTO<SessionAbandonedDTO> consultationEventDTO) {
         String controlComunicationTopic = "/topic/consultation." + consultationId +
                 ".session." + consultationSessionId + ".control";
-        log.debug("Sending sessionAbandonedDTO to topic: {} ", controlComunicationTopic);
+        log.debug("{}_ Sending sessionAbandonedDTO to topic: {} ", transportSessionId, controlComunicationTopic);
         messagingTemplate.convertAndSend(controlComunicationTopic, consultationEventDTO);
         log.debug("sessionAbandonedDTO sent to topic: {}, message: {} ", controlComunicationTopic, consultationEventDTO);
         return controlComunicationTopic;

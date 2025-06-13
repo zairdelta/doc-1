@@ -11,4 +11,6 @@ public interface PatientConsultationSummary {
     String getSymptoms();
     String getStatus();
     LocalDateTime getCreatedAt();
+    String getDoctorImgUrl();
+    String getPatientImgUrl();
 }
