@@ -22,8 +22,8 @@ public class AckMessageWsInterceptor implements ChannelInterceptor {
                     ? accessor.getNativeHeader("id").get(0)
                     : "unknown";
 
-            log.info("✅ ACK received: sessionId={}, subscriptionId={}, " +
-                    "messageId={}", sessionId, subscriptionId, messageId);
+            log.info("✅ {}_ ACK received: sessionId={}, subscriptionId={}, " +
+                    "messageId={}", sessionId, sessionId, subscriptionId, messageId);
 
         }
 
