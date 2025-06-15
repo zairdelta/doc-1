@@ -2,6 +2,7 @@ package com.woow.security;
 
 import com.woow.security.api.JwtTokenUtil;
 import com.woow.security.api.WebSocketUserPrincipal;
+import com.woow.security.interceptor.errorhandler.WoowStompErrorHandler;
 import com.woow.security.interceptor.inbound.*;
 import com.woow.security.interceptor.outbound.OutBoundIInterceptor;
 import com.woow.security.rabbitmq.RabbitMQStompBrokerProperties;
@@ -21,6 +22,7 @@ import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+import org.springframework.web.socket.messaging.StompSubProtocolErrorHandler;
 import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
 import reactor.core.Disposable;
 import reactor.core.publisher.Mono;
@@ -188,6 +190,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.enableSimpleBroker("/queue", "/topic");
     }
 */
+
+    @Bean
+    public StompSubProtocolErrorHandler stompSubProtocolErrorHandler() {
+        return new WoowStompErrorHandler();
+    }
 
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
