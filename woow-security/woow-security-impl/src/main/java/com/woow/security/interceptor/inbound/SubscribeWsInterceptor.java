@@ -16,10 +16,10 @@ public class SubscribeWsInterceptor implements ChannelInterceptor {
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor =
                 MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
-         log.debug("validating if SUBSCRIBE command was received");
+
         if (accessor != null && StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
-            accessor.setNativeHeader("durable", "true");
-            accessor.setNativeHeader("auto-delete", "false");
+          //  accessor.setNativeHeader("durable", "true");
+          //  accessor.setNativeHeader("auto-delete", "false");
           //  accessor.setNativeHeader("x-expires", "120000");
             log.debug("{}_ Injected headers for subscription: "
                     + accessor.toNativeHeaderMap(), accessor.getSessionId());
