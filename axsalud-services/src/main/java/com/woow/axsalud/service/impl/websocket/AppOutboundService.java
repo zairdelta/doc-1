@@ -20,6 +20,7 @@ public class AppOutboundService {
         this.messagingTemplate = messagingTemplate;
     }
 
+    /*
     public void sendQueueMessage(String receiver, ConsultationEventDTO consultationEventDTO) {
         log.info("{}_ Sending message to {}, receiver: {}, messageId: {}",
                 consultationEventDTO.getTransportSessionId(),
@@ -31,6 +32,28 @@ public class AppOutboundService {
                 QUEUE_MESSAGES_DESTINATION,
                 consultationEventDTO
         );
+    }*/
+
+    public void sendQueueMessage(String receiverEmail, ConsultationEventDTO consultationEventDTO) {
+        // Transform email to match x-queue-name format
+        String queueName = buildQueueNameFromEmail(receiverEmail);
+
+        String destination = "/queue/" + queueName;
+        log.info("{}_ Sending message to {}, receiver: {}, messageId: {}",
+                consultationEventDTO.getTransportSessionId(),
+                destination,
+                receiverEmail,
+                consultationEventDTO.getId());
+
+        messagingTemplate.convertAndSend(destination, consultationEventDTO);
+    }
+
+    private String buildQueueNameFromEmail(String email) {
+
+        return email
+                .replace("@", "-")
+                .replace(".", "-")
+                + "_user_queue_messages-queue";
     }
 
     public void sendErrorQueueMessage(String receiver, ConsultationEventDTO consultationEventDTO) {
