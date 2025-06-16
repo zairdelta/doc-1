@@ -13,9 +13,13 @@ public class RabbitMQClientTests {
     private static final Logger log = LoggerFactory.getLogger(RabbitMQClientTests.class);
     private final RestTemplate restTemplate = new RestTemplate();
 
-    private final String rabbitHost = "https://0rbjt9.stackhero-network.com";
+    //private final String rabbitHost = "https://0rbjt9.stackhero-network.com";
+
+    private final String rabbitHost = "https://rqanay.stackhero-network.com";
     private final String username = "admin";
-    private final String password = "9KLwnaP17gIdi8CoDetZIlHMgaaVxkqf";
+   // private final String password = "9KLwnaP17gIdi8CoDetZIlHMgaaVxkqf";
+
+    private final String password = "ebDn8IZ6qtSn7waNHbV1lKS8cHdlZG6j";
     private final String VHOST = "/";
 
     public static void main(String[] args) {

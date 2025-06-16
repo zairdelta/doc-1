@@ -15,19 +15,28 @@ public class StompLoggingWsInterceptor implements ChannelInterceptor {
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
-        StompHeaderAccessor accessor =
-                MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
+        StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
 
         if (accessor != null) {
-            String sessionId = accessor.getSessionId();
             StompCommand command = accessor.getCommand();
+            String sessionId = accessor.getSessionId() != null ? accessor.getSessionId() : "unknown-session";
+
             if (command != null) {
-                log.debug("🔍 {}_ STOMP [{}] headers for session [{}]:", sessionId, command, sessionId);
+                log.debug("🔍 {}_ STOMP [{}] headers:", sessionId, command);
                 accessor.toNativeHeaderMap().forEach((key, value) -> {
-                    log.debug("📌{}_ {}: {}", sessionId, key, value);
+                    log.debug("📌 {}_ {}: {}", sessionId, key, value);
                 });
+
+                if (StompCommand.ERROR.equals(command)) {
+                    Object rawPayload = message.getPayload();
+                    String payloadStr = rawPayload instanceof byte[]
+                            ? new String((byte[]) rawPayload)
+                            : String.valueOf(rawPayload);
+                    log.error("❗ {}_ STOMP ERROR payload: {}", sessionId, payloadStr);
+                }
             }
         }
+
         return message;
     }
 }
