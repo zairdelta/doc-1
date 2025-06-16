@@ -17,7 +17,7 @@ public class SendMessageWsInterceptor   implements ChannelInterceptor {
 
             if (accessor != null && (accessor.getCommand() == StompCommand.SEND
                     || accessor.getCommand() == StompCommand.MESSAGE)) {
-                log.info("{}_ INBOUND STOMP message to destination [{}], STOMP session [{}], payload: {}",
+                log.debug("{}_ INBOUND STOMP message to destination [{}], STOMP session [{}], payload: {}",
                         accessor.getSessionId(),
                         accessor.getDestination(),
                         accessor.getSessionId(),

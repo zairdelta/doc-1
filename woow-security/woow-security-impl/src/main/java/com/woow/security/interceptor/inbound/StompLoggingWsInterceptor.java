@@ -11,22 +11,23 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
-public class UnsubscribeWsInterceptor implements ChannelInterceptor {
+public class StompLoggingWsInterceptor implements ChannelInterceptor {
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor =
                 MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
 
-        if (accessor != null &&
-                StompCommand.UNSUBSCRIBE.equals(accessor.getCommand())) {
+        if (accessor != null) {
             String sessionId = accessor.getSessionId();
-            String subscriptionId = accessor.getSubscriptionId();
-            String user = accessor.getUser() != null ? accessor.getUser().getName() : "anonymous";
-
-            log.debug("📤 {}_ UNSUBSCRIBE received from user: {}, subscriptionId: {}", sessionId, user, subscriptionId);
+            StompCommand command = accessor.getCommand();
+            if (command != null) {
+                log.debug("🔍 {}_ STOMP [{}] headers for session [{}]:", sessionId, command, sessionId);
+                accessor.toNativeHeaderMap().forEach((key, value) -> {
+                    log.debug("📌{}_ {}: {}", sessionId, key, value);
+                });
+            }
         }
-
         return message;
     }
 }
