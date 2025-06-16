@@ -5,8 +5,13 @@ import com.woow.axsalud.service.api.messages.ConsultationEventDTO;
 import com.woow.axsalud.service.api.messages.control.ControlMessageDTO;
 import com.woow.axsalud.service.api.messages.control.SessionAbandonedDTO;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Component;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 @Slf4j
@@ -35,17 +40,20 @@ public class AppOutboundService {
     }*/
 
     public void sendQueueMessage(String receiverEmail, ConsultationEventDTO consultationEventDTO) {
-        // Transform email to match x-queue-name format
-        String queueName = buildQueueNameFromEmail(receiverEmail);
 
+        String queueName = buildQueueNameFromEmail(receiverEmail); // e.g. "dandoctor-example-com_user_queue_messages-queue"
         String destination = "/queue/" + queueName;
+
+        Map<String, Object> headers = new HashMap<>();
+        headers.put("x-message-ttl", 120000L); // TTL in milliseconds
+
         log.info("{}_ Sending message to {}, receiver: {}, messageId: {}",
                 consultationEventDTO.getTransportSessionId(),
                 destination,
                 receiverEmail,
                 consultationEventDTO.getId());
 
-        messagingTemplate.convertAndSend(destination, consultationEventDTO);
+        messagingTemplate.convertAndSend(destination, consultationEventDTO, headers);
     }
 
     private String buildQueueNameFromEmail(String email) {
