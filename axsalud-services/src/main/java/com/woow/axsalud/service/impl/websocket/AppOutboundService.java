@@ -63,8 +63,8 @@ public class AppOutboundService {
     private String buildQueueNameFromEmail(String email, String consultationSessionId) {
 
         return email
-                .replace("@", "-")
-                .replace(".", "-")
+                .replace("@", "_")
+                .replace(".", "_")
                 + "_" + consultationSessionId + "_user_queue_messages-queue";
     }
 
