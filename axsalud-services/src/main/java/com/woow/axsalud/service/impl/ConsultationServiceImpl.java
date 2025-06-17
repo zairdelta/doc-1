@@ -265,6 +265,11 @@ public class ConsultationServiceImpl implements ConsultationService {
     }
 
     @Override
+    public ConsultationDTO continueWithConsultationSession(String userName, String consultationSessionId)
+            throws WooUserServiceException {
+        return null;
+    }
+    @Override
     public ConsultationDTO continueWithConsultation(String userName, String consultationId)
             throws WooUserServiceException {
 
@@ -298,7 +303,7 @@ public class ConsultationServiceImpl implements ConsultationService {
         consultationDTO.setCurrentSessionIdIfExists(consultationSession.getConsultationSessionId().toString());
 
         log.info("Sending consultationDTO to topic/doctor-events: {}", consultationDTO);
-       /* messagingTemplate.convertAndSend("/topic/doctor-events", consultationDTO);*/
+
         appOutboundService.sendDoctorEventMessage(consultationDTO);
 
         return consultationDTO;

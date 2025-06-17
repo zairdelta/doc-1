@@ -22,6 +22,9 @@ public interface ConsultationService {
 
     ConsultationDTO continueWithConsultation(String userName, String consultationId)
             throws WooUserServiceException;
+
+    ConsultationDTO continueWithConsultationSession(String userName, String consultationSessionId)
+            throws WooUserServiceException;
     void validate(String consultationId, String consultationSessionId,
                   String receiver, String sender) throws ConsultationServiceException;
     ConsultationDTO assign(String doctor, String consultationId, String consultationSessionId) throws ConsultationServiceException;
