@@ -205,6 +205,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 disconnectWsInterceptor, sendMessageWsInterceptor, stompLoggingWsInterceptor,
                 subscribeWsInterceptor, unsubscribeWsInterceptor,
                 outBoundIInterceptor);
+
        /* registration.interceptors(connectWsInterceptor, disconnectWsInterceptor,
                 inboundMessageLoggingWsInterceptor, sendMessageWsInterceptor,
                  subscribeWsInterceptor,
