@@ -180,10 +180,5 @@ public class RabbitMQAdminClient {
 
     }
 
-    @EventListener
-    public void onDisconnect(StompDisconnectAppEvent event) {
-
-    }
-
 }
 

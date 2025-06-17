@@ -28,20 +28,6 @@ public class AppOutboundService {
         this.messagingTemplate = messagingTemplate;
     }
 
-    /*
-    public void sendQueueMessage(String receiver, ConsultationEventDTO consultationEventDTO) {
-        log.info("{}_ Sending message to {}, receiver: {}, messageId: {}",
-                consultationEventDTO.getTransportSessionId(),
-                QUEUE_MESSAGES_DESTINATION,
-                receiver,
-                consultationEventDTO.getId());
-        messagingTemplate.convertAndSendToUser(
-                receiver,
-                QUEUE_MESSAGES_DESTINATION,
-                consultationEventDTO
-        );
-    }*/
-
     public void sendQueueMessage(String receiverEmail, ConsultationEventDTO consultationEventDTO,
                                  String consultationSessionId) {
 
