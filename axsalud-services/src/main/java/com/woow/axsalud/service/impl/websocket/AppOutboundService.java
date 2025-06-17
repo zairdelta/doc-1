@@ -46,10 +46,10 @@ public class AppOutboundService {
                                  String consultationSessionId) {
 
         String queueName = buildQueueNameFromEmail(receiverEmail, consultationSessionId); // e.g. "dandoctor-example-com_user_queue_messages-queue"
-        String destination = "/queue/" + queueName;
-
+       // String destination = "/queue/" + queueName;
+        String destination = queueName;
         Map<String, Object> headers = new HashMap<>();
-        headers.put("x-message-ttl", X_MESSAGE_TTL); // TTL in milliseconds
+        headers.put("x-message-ttl", X_MESSAGE_TTL);
         headers.put("x-expires", X_EXPIRES);
         log.info("{}_ Sending message to {}, receiver: {}, messageId: {}",
                 consultationEventDTO.getTransportSessionId(),
