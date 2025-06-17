@@ -5,9 +5,8 @@ import com.woow.axsalud.service.api.messages.ConsultationEventDTO;
 import com.woow.axsalud.service.api.messages.control.ControlMessageDTO;
 import com.woow.axsalud.service.api.messages.control.SessionAbandonedDTO;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.messaging.MessageHeaders;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -16,6 +15,10 @@ import java.util.Map;
 @Component
 @Slf4j
 public class AppOutboundService {
+
+   // @Value {}
+    private long X_MESSAGE_TTL = 120000L;
+    private long X_EXPIRES = 60000L;
 
     private final static String QUEUE_MESSAGES_DESTINATION = "/queue/messages";
     private final static String QUEUE_ERRORS = "/queue/errors";
@@ -39,14 +42,15 @@ public class AppOutboundService {
         );
     }*/
 
-    public void sendQueueMessage(String receiverEmail, ConsultationEventDTO consultationEventDTO) {
+    public void sendQueueMessage(String receiverEmail, ConsultationEventDTO consultationEventDTO,
+                                 String consultationSessionId) {
 
-        String queueName = buildQueueNameFromEmail(receiverEmail); // e.g. "dandoctor-example-com_user_queue_messages-queue"
+        String queueName = buildQueueNameFromEmail(receiverEmail, consultationSessionId); // e.g. "dandoctor-example-com_user_queue_messages-queue"
         String destination = "/queue/" + queueName;
 
         Map<String, Object> headers = new HashMap<>();
-        headers.put("x-message-ttl", 120000L); // TTL in milliseconds
-
+        headers.put("x-message-ttl", X_MESSAGE_TTL); // TTL in milliseconds
+        headers.put("x-expires", X_EXPIRES);
         log.info("{}_ Sending message to {}, receiver: {}, messageId: {}",
                 consultationEventDTO.getTransportSessionId(),
                 destination,
@@ -56,12 +60,12 @@ public class AppOutboundService {
         messagingTemplate.convertAndSend(destination, consultationEventDTO, headers);
     }
 
-    private String buildQueueNameFromEmail(String email) {
+    private String buildQueueNameFromEmail(String email, String consultationSessionId) {
 
         return email
                 .replace("@", "-")
                 .replace(".", "-")
-                + "_user_queue_messages-queue";
+                + "_" + consultationSessionId + "_user_queue_messages-queue";
     }
 
     public void sendErrorQueueMessage(String receiver, ConsultationEventDTO consultationEventDTO) {

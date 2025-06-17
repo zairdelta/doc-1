@@ -118,7 +118,8 @@ public class ConsultationServiceImpl implements ConsultationService {
             consultationEventDTO.setPayload(consultationMessage);
             consultationEventDTO.setId(eventId);
 
-            appOutboundService.sendQueueMessage(consultationMessage.getReceiver(), consultationEventDTO);
+            appOutboundService.sendQueueMessage(consultationMessage.getReceiver(),
+                    consultationEventDTO, consultationMessage.getConsultationSessionId());
 
            /* messagingTemplate.convertAndSendToUser(
                     consultationMessage.getReceiver(),
@@ -151,7 +152,8 @@ public class ConsultationServiceImpl implements ConsultationService {
                 log.error("{}}_ There was an error processing errorMessage: {}", sessionId,
                         e.getMessage());
             }
-            appOutboundService.sendErrorQueueMessage(consultationMessage.getSender(), consultationEventDTO);
+            appOutboundService
+                    .sendErrorQueueMessage(consultationMessage.getSender(), consultationEventDTO);
            /* messagingTemplate.convertAndSendToUser(
                     consultationMessage.getSender(),
                     "/queue/errors",
@@ -788,7 +790,7 @@ public class ConsultationServiceImpl implements ConsultationService {
         consultationEventDTO.setPayload(endSessionMessageDTO);
         consultationEventDTO.setId(eventId);
 
-        appOutboundService.sendQueueMessage(receiver, consultationEventDTO);
+        appOutboundService.sendQueueMessage(receiver, consultationEventDTO, consultationSessionId);
 
         /*messagingTemplate.convertAndSendToUser(
                 receiver,
