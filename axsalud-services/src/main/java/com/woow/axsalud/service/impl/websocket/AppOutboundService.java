@@ -20,6 +20,7 @@ public class AppOutboundService {
     private long X_MESSAGE_TTL = 120000;
     private long X_EXPIRES = 3600000;
 
+
     private final static String QUEUE_MESSAGES_DESTINATION = "/queue/messages";
     private final static String QUEUE_ERRORS = "/queue/errors";
     private final static String DOCTOR_EVENTS_DESTINATION = "/topic/doctor-events";

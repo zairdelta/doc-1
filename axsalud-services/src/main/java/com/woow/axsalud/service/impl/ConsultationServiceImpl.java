@@ -121,12 +121,6 @@ public class ConsultationServiceImpl implements ConsultationService {
             appOutboundService.sendQueueMessage(consultationMessage.getReceiver(),
                     consultationEventDTO, consultationMessage.getConsultationSessionId());
 
-           /* messagingTemplate.convertAndSendToUser(
-                    consultationMessage.getReceiver(),
-                    "/queue/messages",
-                    consultationEventDTO
-            );*/
-
         } catch (ConsultationServiceException e) {
 
             log.error("{}_ Error Sending consultationMessage DTO: {}", sessionId, e.getMessage());
@@ -154,11 +148,6 @@ public class ConsultationServiceImpl implements ConsultationService {
             }
             appOutboundService
                     .sendErrorQueueMessage(consultationMessage.getSender(), consultationEventDTO);
-           /* messagingTemplate.convertAndSendToUser(
-                    consultationMessage.getSender(),
-                    "/queue/errors",
-                    consultationEventDTO
-            ); */
         }
 
     }
@@ -223,9 +212,6 @@ public class ConsultationServiceImpl implements ConsultationService {
         consultationEventDTO.setTimeProcessed(LocalDateTime.now());
         consultationEventDTO.setPayload(consultationDTO);
         consultationEventDTO.setId(0);
-
-        /*log.info("Sending consultationDTO to topic/doctor-events: {}", consultationEventDTO);
-        messagingTemplate.convertAndSend("/topic/doctor-events", consultationEventDTO);*/
         appOutboundService.sendDoctorEventMessage(consultationEventDTO);
     }
 
@@ -264,11 +250,6 @@ public class ConsultationServiceImpl implements ConsultationService {
         }
     }
 
-    @Override
-    public ConsultationDTO continueWithConsultationSession(String userName, String consultationSessionId)
-            throws WooUserServiceException {
-        return null;
-    }
     @Override
     public ConsultationDTO continueWithConsultation(String userName, String consultationId)
             throws WooUserServiceException {
@@ -471,12 +452,6 @@ public class ConsultationServiceImpl implements ConsultationService {
         //consultationEventDTO.setId(eventId);
         consultationEventDTO.setPayload(welcomeMessage);
 
-      /*  messagingTemplate.convertAndSendToUser(
-                consultationDTO.getPatient(),
-                "/queue/messages",
-                consultationEventDTO
-        );
-*/
         consultationRepository.save(consultation);
 
         consultationEventDTO.setMessageType(ConsultationMessgeTypeEnum.CONSULTATION_ASSIGNED);
@@ -491,15 +466,7 @@ public class ConsultationServiceImpl implements ConsultationService {
         controlMessageDTO.setPatient(consultationSession.getConsultation()
                 .getPatient().getCoreUser().getUserName());
 
-        /*
-        String controlComunicationTopic = "/topic/consultation." + consultationSession.getConsultation().getConsultationId() +
-                ".session." + consultationSession.getConsultationSessionId() + ".control";
-        log.debug("Sending controleMessage to topic: {} ", controlComunicationTopic);
-        messagingTemplate.convertAndSend(controlComunicationTopic, controlMessageDTO);
-        */
-
         appOutboundService.sendConsultationControlEvent(consultationId, consultationSessionId, controlMessageDTO);
-        //log.debug("ControlMessage sent to topic: {}, message: {} ", controlComunicationTopic, controlMessageDTO);
 
         return consultationDTO;
     }
@@ -796,14 +763,6 @@ public class ConsultationServiceImpl implements ConsultationService {
         consultationEventDTO.setId(eventId);
 
         appOutboundService.sendQueueMessage(receiver, consultationEventDTO, consultationSessionId);
-
-        /*messagingTemplate.convertAndSendToUser(
-                receiver,
-                "/queue/messages",
-                consultationEventDTO
-        );*/
-
-        //messagingTemplate.convertAndSend("/topic/doctor-events", consultationEventDTO);
         appOutboundService.sendDoctorEventMessage(consultationEventDTO);
         String controlComunicationTopic = "/topic/consultation." + consultationSession.getConsultation().getConsultationId() +
                 ".session." + consultationSession.getConsultationSessionId() + ".control";
@@ -971,9 +930,6 @@ public class ConsultationServiceImpl implements ConsultationService {
                                         consultation.getSymptoms());
 
                         consultationDTO.setStatus(ConsultationStatus.WAITING_FOR_DOCTOR);
-                     //   consultation.setCurrentSessionIdIfExists(consultationSession.getConsultationSessionId().toString());
-                     //   consultationRepository.save(consultation);
-
                         sendConsultationDTOToDoctorEvents(sessionId, consultationDTO);
                     }
                     //todo move the consultation back to WAITING FOR DOCTOR in case doctor was the one dropping the connection
@@ -1002,8 +958,6 @@ public class ConsultationServiceImpl implements ConsultationService {
                                         consultation.getSymptoms());
 
                         consultationDTO.setStatus(ConsultationStatus.WAITING_FOR_DOCTOR);
-                     //   consultation.setCurrentSessionIdIfExists(consultationSession.getConsultationSessionId().toString());
-                      //  consultationRepository.save(consultation);
 
                         sendConsultationDTOToDoctorEvents(sessionId, consultationDTO);
                     }
@@ -1032,9 +986,6 @@ public class ConsultationServiceImpl implements ConsultationService {
                                         consultation.getSymptoms());
 
                         consultationDTO.setStatus(ConsultationStatus.WAITING_FOR_DOCTOR);
-                       // consultation.setCurrentSessionIdIfExists(consultationSession.getConsultationSessionId().toString());
-                       // consultationRepository.save(consultation);
-
                         sendConsultationDTOToDoctorEvents(sessionId, consultationDTO);
                     }
 
@@ -1106,12 +1057,40 @@ public class ConsultationServiceImpl implements ConsultationService {
     @Override
     public String sendConsultationEvent(final String transportSessionId, ConsultationEventDTO<SessionAbandonedDTO> consultationEventDTO) {
         SessionAbandonedDTO sessionAbandonedDTO = consultationEventDTO.getPayload();
-        /*String controlCommunicationTopic = "/topic/consultation." + sessionAbandonedDTO.getConsultationId() +
-                ".session." + sessionAbandonedDTO.getConsultationSessionId() + ".control";*/
         log.info("{}_ Sending end session", transportSessionId);
         return appOutboundService.sendSessionAbandonedConsultationControlEvent(transportSessionId,  sessionAbandonedDTO.getConsultationId(),
                 sessionAbandonedDTO.getConsultationSessionId(), consultationEventDTO);
-        // messagingTemplate.convertAndSend(controlCommunicationTopic, consultationEventDTO);
+
+    }
+
+    @Override
+    public void updateConsultationAndConsultationSessionStatus(String userName, String consultationSessionId, ConsultationSessionStatus consultationSessionStatus) {
+
+        log.info("updating consultationSessionId: {} for patient: {}, was aborted by the user",
+                consultationSessionId, userName);
+        ConsultationSession consultationSession =
+                consultationSessionRepository
+                        .findByConsultationSessionId(UUID.fromString(consultationSessionId));
+
+        if(consultationSession.getConsultation()
+                .getPatient().getCoreUser().getUserName().equalsIgnoreCase(userName)) {
+
+        }
+
+        if(consultationSession != null ) {
+
+            if(consultationSession.getConsultation()
+                    .getPatient().getCoreUser().getUserName().equalsIgnoreCase(userName)) {
+                consultationSessionRepository
+                        .updateStatus(UUID.fromString(consultationSessionId), consultationSessionStatus);
+            } else {
+                log.error("User sending request to update consultation session, " +
+                        "is not the owner of consultationSession, userName Request:{}, " +
+                        "owner of consultationSession: {} ", userName, consultationSession.getConsultation()
+                        .getPatient().getCoreUser().getUserName());
+            }
+        }
+
 
     }
 

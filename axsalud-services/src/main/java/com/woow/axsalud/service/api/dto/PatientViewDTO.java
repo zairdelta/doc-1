@@ -7,4 +7,5 @@ import lombok.Data;
 public class PatientViewDTO extends AxSaludUserViewDTO {
     private String userType;
     private PatientDataDTO patientDataDTO;
+    private LatestConsultationSessionDTO latestConsultationSessionDTO;
 }
