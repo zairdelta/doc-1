@@ -97,10 +97,10 @@ public class WoowVideoCallsServiceImpl implements WoowVideoCallsService {
                 doctorUserName,
                 "/queue/messages",
                 consultationEventDTO);*/
-        appOutboundService.sendQueueMessage(doctorUserName, consultationEventDTO);
+        appOutboundService.sendQueueMessage(doctorUserName, consultationEventDTO, consultationSessionId);
 
         log.info("Sending video Call Start event to patient: {}", patientUserName);
-        appOutboundService.sendQueueMessage(patientUserName, consultationEventDTO);
+        appOutboundService.sendQueueMessage(patientUserName, consultationEventDTO, consultationSessionId);
         /*messagingTemplate.convertAndSendToUser(
                 patientUserName,
                 "/queue/messages",

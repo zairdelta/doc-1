@@ -52,6 +52,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     private SendMessageWsInterceptor sendMessageWsInterceptor;
     private SubscribeWsInterceptor subscribeWsInterceptor;
     private UnsubscribeWsInterceptor unsubscribeWsInterceptor;
+
+    private StompLoggingWsInterceptor stompLoggingWsInterceptor;
     private final OutBoundIInterceptor outBoundIInterceptor;
     private RabbitMQStompBrokerProperties rabbitMQStompBrokerProperties;
 
@@ -64,6 +66,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                            AckMessageWsInterceptor ackMessageWsInterceptor,
                            OutBoundIInterceptor outBoundIInterceptor,
                            JwtTokenUtil jwtTokenUtil,
+                           StompLoggingWsInterceptor stompLoggingWsInterceptor,
                            RabbitMQStompBrokerProperties rabbitMQStompBrokerProperties) {
         this.connectWsInterceptor = connectWsInterceptor;
         this.disconnectWsInterceptor = disconnectWsInterceptor;
@@ -75,8 +78,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         this.jwtTokenUtil = jwtTokenUtil;
         this.ackMessageWsInterceptor = ackMessageWsInterceptor;
         this.rabbitMQStompBrokerProperties = rabbitMQStompBrokerProperties;
+        this.stompLoggingWsInterceptor = stompLoggingWsInterceptor;
     }
-
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
@@ -199,9 +202,13 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
         registration.interceptors(connectWsInterceptor, ackMessageWsInterceptor,
+                disconnectWsInterceptor, sendMessageWsInterceptor, stompLoggingWsInterceptor,
+                subscribeWsInterceptor, unsubscribeWsInterceptor,
                 outBoundIInterceptor);
+
        /* registration.interceptors(connectWsInterceptor, disconnectWsInterceptor,
-                inboundMessageLoggingWsInterceptor, sendMessageWsInterceptor, subscribeWsInterceptor,
+                inboundMessageLoggingWsInterceptor, sendMessageWsInterceptor,
+                 subscribeWsInterceptor,
                 unsubscribeWsInterceptor);*/
     }
 

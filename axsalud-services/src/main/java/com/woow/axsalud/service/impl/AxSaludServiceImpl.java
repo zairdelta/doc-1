@@ -54,6 +54,7 @@ public class AxSaludServiceImpl implements AxSaludService {
     private DoctorPrescriptionRepository doctorPrescriptionRepository;
     private LaboratoryPrescriptionsRepository laboratoryPrescriptionsRepository;
     private ConsultationRepository consultationRepository;
+    private ConsultationSessionRepository consultationSessionRepository;
     private ServiceProviderClient serviceProviderClient;
     private StorageService storageService;
 
@@ -67,7 +68,8 @@ public class AxSaludServiceImpl implements AxSaludService {
                               final DoctorPrescriptionRepository doctorPrescriptionRepository,
                               final LaboratoryPrescriptionsRepository laboratoryPrescriptionsRepository,
                               final ConsultationRepository consultationRepository,
-                              final StorageService storageService) {
+                              final StorageService storageService,
+                              final ConsultationSessionRepository consultationSessionRepository) {
         this.axSaludUserRepository = axSaludUserRepository;
         this.modelMapper = modelMapper;
         this.wooWUserService = wooWUserService;
@@ -79,6 +81,7 @@ public class AxSaludServiceImpl implements AxSaludService {
         this.laboratoryPrescriptionsRepository = laboratoryPrescriptionsRepository;
         this.consultationRepository = consultationRepository;
         this.storageService = storageService;
+        this.consultationSessionRepository = consultationSessionRepository;
     }
     @Override
     public String save(AxSaludUserDTO axSaludUserDTO)
@@ -124,9 +127,15 @@ public class AxSaludServiceImpl implements AxSaludService {
             throw new WooUserServiceException("User Not found, HID: " + userName, 404);
         }
 
+        ConsultationSession consultationSession =
+                consultationSessionRepository.findLatestByPatientUsername(userName);
+
         AxSaludWooUser axSaludWooUser = axSaludWooUserOptional.get();
 
         PatientViewDTO patientViewDTO = new PatientViewDTO();
+
+        patientViewDTO.setLatestConsultationSessionDTO(
+                LatestConsultationSessionDTO.from(consultationSession));
 
         modelMapper.map(woowUser, patientViewDTO);
         modelMapper.map(axSaludWooUser, patientViewDTO);

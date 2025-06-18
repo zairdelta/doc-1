@@ -57,4 +57,14 @@ public interface ConsultationSessionRepository extends JpaRepository<Consultatio
     @Modifying(clearAutomatically = true)
     @Query("UPDATE ConsultationSession c SET c.doctorStatus = :status WHERE c.consultationSessionId = :sessionId")
     int updateDoctorStatus(@Param("sessionId") UUID sessionId, @Param("status") PartyConsultationStatus status);
+
+    @Query("""
+    SELECT c 
+    FROM ConsultationSession c 
+    WHERE c.consultation.patient.coreUser.userName = :username 
+    ORDER BY c.createdAt DESC
+    LIMIT 1
+""")
+    ConsultationSession findLatestByPatientUsername(@Param("username") String username);
+
 }

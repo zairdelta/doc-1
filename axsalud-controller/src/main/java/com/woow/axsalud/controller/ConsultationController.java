@@ -1,6 +1,7 @@
 package com.woow.axsalud.controller;
 
 import com.woow.axsalud.controller.exception.WooBoHttpError;
+import com.woow.axsalud.data.consultation.ConsultationSessionStatus;
 import com.woow.axsalud.data.consultation.ConsultationStatus;
 import com.woow.axsalud.data.consultation.LaboratoryPrescription;
 import com.woow.axsalud.service.api.ConsultationService;
@@ -64,6 +65,18 @@ public class ConsultationController {
         }
     }
 
+    @PutMapping("/{consultationId}/sessionId/{consultationSessionId}/aborted")
+    public ResponseEntity
+    consultationAborted(@PathVariable String consultationId,
+                 @PathVariable String consultationSessionId,
+                 @AuthenticationPrincipal UserDetails userDetails) {
+
+            consultationService.updateConsultationAndConsultationSessionStatus(userDetails.getUsername(),
+                    consultationSessionId, ConsultationSessionStatus.ABANDONED);
+            return ResponseEntity.ok().build();
+
+    }
+
     @PutMapping("/{consultationId}/sessionId/{consultationSessionId}/doctor")
     public ResponseEntity<ConsultationDTO>
     assignDoctor(@PathVariable String consultationId,
@@ -78,6 +91,23 @@ public class ConsultationController {
             return ResponseEntity.ok(consultationDTO);
 
         } catch (ConsultationServiceException e) {
+            return WooBoHttpError.of(e).toResponseEntity();
+        }
+    }
+
+    @PutMapping("/{consultationId}/continue")
+    public ResponseEntity<ConsultationDTO>
+    continueWithConsultationSessionId(@PathVariable String consultationId,
+                 @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+
+            String userName = userDetails.getUsername();
+            ConsultationDTO consultationDTO =
+                    consultationService.continueWithConsultation(userName, consultationId);
+
+            return ResponseEntity.ok(consultationDTO);
+
+        }  catch (WooUserServiceException e) {
             return WooBoHttpError.of(e).toResponseEntity();
         }
     }
