@@ -21,6 +21,6 @@ public class LocalServiceProviderUserEntity {
     private String name;
     private String lastName;
     private long serviceProviderId;
-    private int isUserValid;
+    private int userValid;
     private LocalDateTime createdAt;
 }

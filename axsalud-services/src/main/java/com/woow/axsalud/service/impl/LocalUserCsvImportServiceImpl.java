@@ -62,7 +62,7 @@ public class LocalUserCsvImportServiceImpl implements LocalUserCsvImportService 
                 entity.setName(dto.getName());
                 entity.setLastName(dto.getLastName());
                 entity.setCreatedAt(LocalDateTime.now());
-                entity.setIsUserValid(0);
+                entity.setUserValid(0);
                 entity.setUserId(0);
                 entity.setServiceProviderId(serviceProvider.getId());
 
