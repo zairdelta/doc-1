@@ -2,6 +2,7 @@ package com.woow.axsalud.service.api.dto;
 
 import com.woow.axsalud.data.consultation.ConsultationSession;
 import com.woow.axsalud.data.consultation.ConsultationSessionStatus;
+import com.woow.axsalud.data.consultation.PartyConsultationStatus;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -19,7 +20,13 @@ public class LatestConsultationSessionDTO {
         LatestConsultationSessionDTO latestConsultationSessionDTO = new LatestConsultationSessionDTO();
         if(consultationSession != null) {
             latestConsultationSessionDTO.setConsultationSessionId(consultationSession.getConsultationSessionId().toString());
-            latestConsultationSessionDTO.setStatus(consultationSession.getStatus());
+
+            if(   consultationSession.getPatientStatus() == PartyConsultationStatus.DROPPED) {
+                latestConsultationSessionDTO.setStatus(ConsultationSessionStatus.ABANDONED);
+            } else {
+                latestConsultationSessionDTO.setStatus(consultationSession.getStatus());
+            }
+
             latestConsultationSessionDTO.setCreatedAt(consultationSession.getCreatedAt());
             latestConsultationSessionDTO.setFinishedAt(consultationSession.getFinishedAt());
             latestConsultationSessionDTO.setConsultationId(consultationSession.getConsultation().getConsultationId().toString());

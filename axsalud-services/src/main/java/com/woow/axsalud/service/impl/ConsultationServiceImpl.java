@@ -1063,7 +1063,8 @@ public class ConsultationServiceImpl implements ConsultationService {
     }
 
     @Override
-    public void updateConsultationAndConsultationSessionStatus(String userName, String consultationSessionId, ConsultationSessionStatus consultationSessionStatus) {
+    public void updateConsultationAndConsultationSessionStatus(String userName,
+                                                               String consultationSessionId, ConsultationSessionStatus consultationSessionStatus) {
 
         log.info("updating consultationSessionId: {} for patient: {}, was aborted by the user",
                 consultationSessionId, userName);
@@ -1080,6 +1081,7 @@ public class ConsultationServiceImpl implements ConsultationService {
 
             if(consultationSession.getConsultation()
                     .getPatient().getCoreUser().getUserName().equalsIgnoreCase(userName)) {
+                consultationSession.setPatientStatus(PartyConsultationStatus.READY);
                 consultationSessionRepository
                         .updateStatus(UUID.fromString(consultationSessionId), consultationSessionStatus);
             } else {
