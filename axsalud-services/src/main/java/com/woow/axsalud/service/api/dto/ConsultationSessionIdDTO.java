@@ -29,10 +29,9 @@ public class ConsultationSessionIdDTO {
 
     public static ConsultationSessionIdDTO from(final ConsultationSession consultationSession) {
         ConsultationSessionIdDTO consultationSessionIdDTO = new ConsultationSessionIdDTO();
-        consultationSessionIdDTO.setConsultationSessionId(consultationSessionIdDTO.consultationSessionId);
+        consultationSessionIdDTO.setConsultationSessionId(consultationSession.getConsultationSessionId().toString());
         consultationSessionIdDTO.setStartAt(consultationSession.getStartAt());
-        consultationSessionIdDTO.setId(consultationSessionIdDTO.getId());
-        consultationSessionIdDTO.setDiagnosis(consultationSessionIdDTO.getDiagnosis());
+        consultationSessionIdDTO.setId(consultationSession.getId());
         consultationSessionIdDTO.setFinishedAt(consultationSession.getFinishedAt());
         consultationSessionIdDTO.setStatus(consultationSession.getStatus());
 
