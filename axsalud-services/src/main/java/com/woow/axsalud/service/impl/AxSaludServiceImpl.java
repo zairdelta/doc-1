@@ -20,6 +20,7 @@ import com.woow.core.service.api.UserDtoCreate;
 import com.woow.core.service.api.WooWUserService;
 import com.woow.core.service.api.exception.WooUserServiceException;
 import com.woow.serviceprovider.api.ServiceProviderClient;
+import com.woow.serviceprovider.api.ServiceProviderClientException;
 import com.woow.serviceprovider.api.ServiceProviderFactory;
 import com.woow.serviceprovider.api.ServiceProviderRequestDTO;
 import com.woow.storage.api.StorageService;
@@ -111,7 +112,16 @@ public class AxSaludServiceImpl implements AxSaludService {
         serviceProviderRequestDTO.setServiceName(serviceProvider.getName());
         serviceProviderRequestDTO.setUrl(serviceProvider.getEndpoint());
         serviceProviderRequestDTO.setApiKey(serviceProvider.getApiKey());
-        serviceProviderClient.isHIDValid(serviceProviderRequestDTO, axSaludUserDTO.getHid())
+        try {
+            serviceProviderClient
+                    .isHIDValid(serviceProviderRequestDTO, axSaludUserDTO.getHid());
+        } catch (ServiceProviderClientException e) {
+            log.error("Error while validating hid: {}, serviceName: {}, userName: {}",
+                    axSaludUserDTO.getHid(), axSaludUserDTO.getUserDtoCreate().getServiceProvider(),
+                    axSaludUserDTO.getUserDtoCreate().getEmail());
+
+            throw new WooUserServiceException("invalid HID:" + axSaludUserDTO.getHid(), 406);
+        }
         axSaludWooUser.setServiceProvider(serviceProvider.getId());
         axSaludWooUser.setHid(axSaludUserDTO.getHid());
         axSaludWooUser.setDni(axSaludUserDTO.getDni());
