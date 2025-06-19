@@ -8,9 +8,9 @@ public class CsvUserDTO {
     @CsvBindByName(column = "hid", required = true)
     private String hid;
 
-    @CsvBindByName(column = "name", required = true)
+    @CsvBindByName(column = "nombre", required = true)
     private String name;
 
-    @CsvBindByName(column = "last_name", required = true)
+    @CsvBindByName(column = "apellido", required = true)
     private String lastName;
 }
