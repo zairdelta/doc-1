@@ -19,6 +19,9 @@ public class AppOutboundService {
     private long X_MESSAGE_TTL = 120000;
     private long X_EXPIRES = 1000 * 10 * 60;
 
+    private long X_MESSAGE_TTL_DOCTOR = 120000;
+    private long X_EXPIRES_DOCTOR = 1000 * 60 * 300;
+
 
     private final static String QUEUE_MESSAGES_DESTINATION = "/queue/messages";
     private final static String QUEUE_ERRORS = "/queue/errors";
@@ -34,14 +37,15 @@ public class AppOutboundService {
         String queueName = buildQueueNameFromEmail(receiverEmail, consultationSessionId); // e.g. "dandoctor-example-com_user_queue_messages-queue"
         String destination = "/queue/" + queueName;
 
-        Map<String, Object> headers = new HashMap<>();
-        headers.put("x-message-ttl", X_MESSAGE_TTL);
-        headers.put("x-expires", X_EXPIRES);
         log.info("{}_ Sending message to {}, receiver: {}, messageId: {}",
                 consultationEventDTO.getTransportSessionId(),
                 destination,
                 receiverEmail,
                 consultationEventDTO.getId());
+
+        Map<String, Object> headers = new HashMap<>();
+        headers.put("x-message-ttl", X_MESSAGE_TTL);
+        headers.put("x-expires", X_EXPIRES);
 
         messagingTemplate.convertAndSend(destination, consultationEventDTO, headers);
     }
@@ -69,12 +73,18 @@ public class AppOutboundService {
     public void sendDoctorEventMessage(ConsultationEventDTO consultationEventDTO) {
         log.info("{}_ Sending consultationEventDTO to topic/doctor-events: {}",
                 consultationEventDTO.getTransportSessionId(), consultationEventDTO);
-        messagingTemplate.convertAndSend(DOCTOR_EVENTS_DESTINATION, consultationEventDTO);
+        Map<String, Object> headers = new HashMap<>();
+        headers.put("x-message-ttl", X_MESSAGE_TTL_DOCTOR);
+        headers.put("x-expires", X_EXPIRES_DOCTOR);
+        messagingTemplate.convertAndSend(DOCTOR_EVENTS_DESTINATION, consultationEventDTO, headers);
     }
 
     public void sendDoctorEventMessage(ConsultationDTO consultationDTO) {
         log.info("Sending consultationDTO to topic/doctor-events: {}", consultationDTO);
-        messagingTemplate.convertAndSend(DOCTOR_EVENTS_DESTINATION, consultationDTO);
+        Map<String, Object> headers = new HashMap<>();
+        headers.put("x-message-ttl", X_MESSAGE_TTL_DOCTOR);
+        headers.put("x-expires", X_EXPIRES_DOCTOR);
+        messagingTemplate.convertAndSend(DOCTOR_EVENTS_DESTINATION, consultationDTO, headers);
     }
 
     public void sendConsultationControlEvent(String consultationId,
@@ -83,7 +93,10 @@ public class AppOutboundService {
         String controlComunicationTopic = "/topic/consultation." + consultationId +
                 ".session." + consultationSessionId + ".control";
         log.debug("Sending controleMessage to topic: {} ", controlComunicationTopic);
-        messagingTemplate.convertAndSend(controlComunicationTopic, controlMessageDTO);
+        Map<String, Object> headers = new HashMap<>();
+        headers.put("x-message-ttl", X_MESSAGE_TTL);
+        headers.put("x-expires", X_EXPIRES);
+        messagingTemplate.convertAndSend(controlComunicationTopic, controlMessageDTO, headers);
         log.debug("ControlMessage sent to topic: {}, message: {} ", controlComunicationTopic, controlMessageDTO);
 
     }
@@ -94,7 +107,10 @@ public class AppOutboundService {
         String controlComunicationTopic = "/topic/consultation." + consultationId +
                 ".session." + consultationSessionId + ".control";
         log.debug("{}_ Sending sessionAbandonedDTO to topic: {} ", transportSessionId, controlComunicationTopic);
-        messagingTemplate.convertAndSend(controlComunicationTopic, consultationEventDTO);
+        Map<String, Object> headers = new HashMap<>();
+        headers.put("x-message-ttl", X_MESSAGE_TTL);
+        headers.put("x-expires", X_EXPIRES);
+        messagingTemplate.convertAndSend(controlComunicationTopic, consultationEventDTO, headers);
         log.debug("sessionAbandonedDTO sent to topic: {}, message: {} ", controlComunicationTopic, consultationEventDTO);
         return controlComunicationTopic;
     }
