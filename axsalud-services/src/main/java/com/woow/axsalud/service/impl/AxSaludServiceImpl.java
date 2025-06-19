@@ -21,6 +21,7 @@ import com.woow.core.service.api.WooWUserService;
 import com.woow.core.service.api.exception.WooUserServiceException;
 import com.woow.serviceprovider.api.ServiceProviderClient;
 import com.woow.serviceprovider.api.ServiceProviderFactory;
+import com.woow.serviceprovider.api.ServiceProviderRequestDTO;
 import com.woow.storage.api.StorageService;
 import com.woow.storage.api.StorageServiceException;
 import com.woow.storage.api.StorageServiceUploadResponseDTO;
@@ -103,6 +104,14 @@ public class AxSaludServiceImpl implements AxSaludService {
         ServiceProvider serviceProvider = serviceProviderService.
                 validateServiceprovider(userDtoCreate.getServiceProvider());
 
+        ServiceProviderClient serviceProviderClient =
+                serviceProviderFactory.get(serviceProvider.getEndpoint());
+
+        ServiceProviderRequestDTO serviceProviderRequestDTO = new ServiceProviderRequestDTO();
+        serviceProviderRequestDTO.setServiceName(serviceProvider.getName());
+        serviceProviderRequestDTO.setUrl(serviceProvider.getEndpoint());
+        serviceProviderRequestDTO.setApiKey(serviceProvider.getName());
+        serviceProviderClient.isHIDValid(serviceProviderRequestDTO, axSaludUserDTO.getHid())
         axSaludWooUser.setServiceProvider(serviceProvider.getId());
         axSaludWooUser.setHid(axSaludUserDTO.getHid());
         axSaludWooUser.setDni(axSaludUserDTO.getDni());

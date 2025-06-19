@@ -25,13 +25,13 @@ public class ServiceProviderFactory {
         this.defaultService = defaultService;
     }
 
-    public ServiceProviderClient get(String serviceName) {
-        log.info("Getting service provider for: {}", serviceName);
-        if (serviceName == null || serviceName.trim().equalsIgnoreCase("LOCAL")) {
+    public ServiceProviderClient get(String entpoint) {
+        log.info("Getting service provider for: {}", entpoint);
+        if (entpoint == null || entpoint.trim().equalsIgnoreCase("LOCAL")) {
             return localService;
         }
 
-        if (serviceName.toLowerCase().startsWith("http")) {
+        if (entpoint.toLowerCase().startsWith("http")) {
             return remoteService;
         }
         return defaultService;
