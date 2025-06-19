@@ -278,7 +278,7 @@ public class ConsultationServiceImpl implements ConsultationService {
         consultation.getSessions().add(consultationSession);
         consultation.setCurrentSessionIdIfExists(consultationSession.getConsultationSessionId().toString());
         consultation.setStatus(ConsultationStatus.WAITING_FOR_DOCTOR);
-        consultationRepository.save(consultation);
+        consultation = consultationRepository.save(consultation);
 
         ConsultationDTO consultationDTO = createConsultationDTO(consultation, consultationSession,
                 consultation.getSymptoms());
