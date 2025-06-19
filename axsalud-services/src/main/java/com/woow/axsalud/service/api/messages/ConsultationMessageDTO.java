@@ -31,6 +31,8 @@ public class ConsultationMessageDTO {
                 ConsultationMessgeTypeEnum.fromString(consultationMessageEntity.getMessageType()));
         consultationMessageDTO.setContent(consultationMessageEntity.getContent());
         consultationMessageDTO.setSender(consultationMessageEntity.getSentBy().getCoreUser().getUserName());
+        consultationMessageDTO.setReceiver(consultationMessageEntity.getConsultationSession().getConsultation().getPatient().getCoreUser().getUserName());
+
 
         consultationEventDTO.setPayload(consultationMessageDTO);
         return consultationEventDTO;
