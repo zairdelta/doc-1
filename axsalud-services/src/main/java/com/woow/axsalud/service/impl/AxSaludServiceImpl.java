@@ -20,6 +20,7 @@ import com.woow.core.service.api.UserDtoCreate;
 import com.woow.core.service.api.WooWUserService;
 import com.woow.core.service.api.exception.WooUserServiceException;
 import com.woow.serviceprovider.api.ServiceProviderClient;
+import com.woow.serviceprovider.api.ServiceProviderFactory;
 import com.woow.storage.api.StorageService;
 import com.woow.storage.api.StorageServiceException;
 import com.woow.storage.api.StorageServiceUploadResponseDTO;
@@ -55,7 +56,7 @@ public class AxSaludServiceImpl implements AxSaludService {
     private LaboratoryPrescriptionsRepository laboratoryPrescriptionsRepository;
     private ConsultationRepository consultationRepository;
     private ConsultationSessionRepository consultationSessionRepository;
-    private ServiceProviderClient serviceProviderClient;
+    private ServiceProviderFactory serviceProviderFactory;
     private StorageService storageService;
 
     public AxSaludServiceImpl(final AxSaludUserRepository axSaludUserRepository,
@@ -63,7 +64,7 @@ public class AxSaludServiceImpl implements AxSaludService {
                               final WooWUserService wooWUserService,
                               final WoowUserRepository woowUserRepository,
                               final ServiceProviderService serviceProviderService,
-                              final ServiceProviderClient serviceProviderClient,
+                              final ServiceProviderFactory serviceProviderFactory,
                               final PatientDataRepository patientDataRepository,
                               final DoctorPrescriptionRepository doctorPrescriptionRepository,
                               final LaboratoryPrescriptionsRepository laboratoryPrescriptionsRepository,
@@ -75,7 +76,7 @@ public class AxSaludServiceImpl implements AxSaludService {
         this.wooWUserService = wooWUserService;
         this.woowUserRepository = woowUserRepository;
         this.serviceProviderService = serviceProviderService;
-        this.serviceProviderClient = serviceProviderClient;
+        this.serviceProviderFactory = serviceProviderFactory;
         this.patientDataRepository = patientDataRepository;
         this.doctorPrescriptionRepository = doctorPrescriptionRepository;
         this.laboratoryPrescriptionsRepository = laboratoryPrescriptionsRepository;
