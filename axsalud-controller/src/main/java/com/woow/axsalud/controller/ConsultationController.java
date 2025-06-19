@@ -72,7 +72,7 @@ public class ConsultationController {
                  @AuthenticationPrincipal UserDetails userDetails) {
 
             consultationService.updateConsultationAndConsultationSessionStatus(userDetails.getUsername(),
-                    consultationSessionId, ConsultationSessionStatus.ABANDONED);
+                    consultationSessionId, ConsultationSessionStatus.ABANDONED_BY_USER_EVENT);
             return ResponseEntity.ok().build();
 
     }
