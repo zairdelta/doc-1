@@ -12,6 +12,7 @@ public class LatestConsultationSessionDTO {
     private LocalDateTime finishedAt;
     private ConsultationSessionStatus status;
     private String consultationSessionId;
+    private String consultationId;
 
     public static LatestConsultationSessionDTO from(ConsultationSession consultationSession) {
 
@@ -21,6 +22,7 @@ public class LatestConsultationSessionDTO {
             latestConsultationSessionDTO.setStatus(consultationSession.getStatus());
             latestConsultationSessionDTO.setCreatedAt(consultationSession.getCreatedAt());
             latestConsultationSessionDTO.setFinishedAt(consultationSession.getFinishedAt());
+            latestConsultationSessionDTO.setConsultationId(consultationSession.getConsultation().getConsultationId().toString());
         }
         return latestConsultationSessionDTO;
     }
