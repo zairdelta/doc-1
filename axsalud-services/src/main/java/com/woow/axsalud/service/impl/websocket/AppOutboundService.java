@@ -17,7 +17,7 @@ public class AppOutboundService {
 
    // @Value {}
     private long X_MESSAGE_TTL = 120000;
-    private long X_EXPIRES = 3600000;
+    private long X_EXPIRES = 1000 * 10 * 60;
 
 
     private final static String QUEUE_MESSAGES_DESTINATION = "/queue/messages";
