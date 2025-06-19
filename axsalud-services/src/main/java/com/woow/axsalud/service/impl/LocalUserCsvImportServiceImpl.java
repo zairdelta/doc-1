@@ -55,7 +55,7 @@ public class LocalUserCsvImportServiceImpl implements LocalUserCsvImportService 
             LocalServiceProviderUserEntity localServiceProviderUserEntity =
                     repository.findByServiceProviderIdAndHid(serviceProviderId, dto.getHid());
 
-            if(localServiceProviderUserEntity != null) {
+            if(localServiceProviderUserEntity == null) {
                 LocalServiceProviderUserEntity
                         entity = new LocalServiceProviderUserEntity();
                 entity.setHid(dto.getHid());
