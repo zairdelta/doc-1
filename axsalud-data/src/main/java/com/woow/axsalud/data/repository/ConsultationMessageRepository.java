@@ -31,5 +31,16 @@ public interface ConsultationMessageRepository extends JpaRepository<Consultatio
     Page<ConsultationMessageEntity> findMessagesByConsultationSessionId(@Param("sessionId") UUID sessionId,
                                                                         Pageable pageable);
 
+    @Query("""
+SELECT m
+FROM ConsultationMessageEntity m
+WHERE m.consultationSession.consultation.consultationId = :consultationId
+ORDER BY m.consultationSession.createdAt DESC, m.timestamp ASC
+""")
+    Page<ConsultationMessageEntity> findMessagesByConsultationIdOrdered(
+            @Param("consultationId") UUID consultationId,
+            Pageable pageable
+    );
+
 
 }

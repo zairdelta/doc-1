@@ -614,16 +614,14 @@ public class ConsultationServiceImpl implements ConsultationService {
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public ConsultationMessagesPagingDTO
-    getAllMessageByUserNameUsingPaginationPagination(String userName,
-                                                     int pageNumber,
-                                                     int totalElementsPerPage)
+    public ConsultationMessagesPagingDTO getAllMessageByConsultationIdWithPagination
+            (String userName, String consultationId, int pageNumber, int totalElementsPerPage)
             throws ConsultationServiceException {
-        log.info("getting messages by userName: {}", userName);
+
+        log.info("getting messages by userName: {} and consultationID: {}", userName, consultationId);
         Pageable pageable = PageRequest.of(pageNumber, totalElementsPerPage);
         Page<ConsultationMessageEntity> page = consultationMessageRepository
-                .findMessagesByPatientUserNameOrdered(userName, pageable);
+                .findMessagesByConsultationIdOrdered(UUID.fromString(consultationId), pageable);
 
         List<ConsultationMessageEntity> messages = page.getContent();
         long totalElements = page.getTotalElements();

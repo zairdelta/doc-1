@@ -140,13 +140,15 @@ public class ConsultationController {
         }
     }
 
-    @GetMapping("/consultationMessages")
-    public ResponseEntity<ConsultationMessagesPagingDTO> getConsultationAllUserConsultationMessages(
+    @GetMapping("{consultationId}/messages")
+    public ResponseEntity<ConsultationMessagesPagingDTO>
+    getConsultationAllUserConsultationMessages(
             @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable String consultationId,
             @RequestParam int pageNumber, @RequestParam int elementsPerPage) {
         try {
             return ResponseEntity.ok().body(consultationService
-                    .getAllMessageByUserNameUsingPaginationPagination(userDetails.getUsername(),
+                    .getAllMessageByConsultationIdWithPagination(userDetails.getUsername(), consultationId,
                             pageNumber, elementsPerPage));
         } catch (ConsultationServiceException e) {
             return WooBoHttpError.of(e).toResponseEntity();

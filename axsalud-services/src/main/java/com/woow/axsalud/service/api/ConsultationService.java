@@ -33,8 +33,8 @@ public interface ConsultationService {
     FileResponseDTO downloadDocument(String userName, String consultationSessionId, long fileId) throws ConsultationServiceException;
     ConsultationDTO getbyConsultationId(String userName, String consultationId);
     List<ConsultationDTO> getConsultationsByStatus(ConsultationStatus status);
-    ConsultationMessagesPagingDTO getAllMessageByUserNameUsingPaginationPagination
-            (String userName, int pageNumber, int totalElementsPerPage) throws ConsultationServiceException;
+    ConsultationMessagesPagingDTO getAllMessageByConsultationIdWithPagination
+            (String userName, String consultationId, int pageNumber, int totalElementsPerPage) throws ConsultationServiceException;
 
     public ConsultationMessagesPagingDTO
     getAllMessageBySessionIdUsingPaginationPagination(String sessionId, int pageNumber, int totalElementsPerPage)
