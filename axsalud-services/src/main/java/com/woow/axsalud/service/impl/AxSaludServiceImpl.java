@@ -19,10 +19,7 @@ import com.woow.core.data.user.WoowUser;
 import com.woow.core.service.api.UserDtoCreate;
 import com.woow.core.service.api.WooWUserService;
 import com.woow.core.service.api.exception.WooUserServiceException;
-import com.woow.serviceprovider.api.ServiceProviderClient;
-import com.woow.serviceprovider.api.ServiceProviderClientException;
-import com.woow.serviceprovider.api.ServiceProviderFactory;
-import com.woow.serviceprovider.api.ServiceProviderRequestDTO;
+import com.woow.serviceprovider.api.*;
 import com.woow.storage.api.StorageService;
 import com.woow.storage.api.StorageServiceException;
 import com.woow.storage.api.StorageServiceUploadResponseDTO;
@@ -113,8 +110,13 @@ public class AxSaludServiceImpl implements AxSaludService {
         serviceProviderRequestDTO.setUrl(serviceProvider.getEndpoint());
         serviceProviderRequestDTO.setApiKey(serviceProvider.getApiKey());
         try {
-            serviceProviderClient
+            TelemedicineResponse telemedicineResponse = serviceProviderClient
                     .isHIDValid(serviceProviderRequestDTO, axSaludUserDTO.getHid());
+
+            if(telemedicineResponse.getCode() != 200) {
+                throw new WooUserServiceException("invalid DNI:" + axSaludUserDTO.getHid(), 405);
+            }
+
         } catch (ServiceProviderClientException e) {
             log.error("Error while validating hid: {}, serviceName: {}, userName: {}",
                     axSaludUserDTO.getHid(), axSaludUserDTO.getUserDtoCreate().getServiceProvider(),
