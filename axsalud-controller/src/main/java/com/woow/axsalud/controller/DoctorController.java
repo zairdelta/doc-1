@@ -67,6 +67,21 @@ public class DoctorController {
         }
     }
 
+    @GetMapping("{consultationId}/messages")
+    public ResponseEntity<ConsultationMessagesPagingDTO>
+    getConsultationAllUserConsultationMessages(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable String consultationId,
+            @RequestParam int pageNumber, @RequestParam int elementsPerPage) {
+        try {
+            return ResponseEntity.ok().body(consultationService
+                    .getAllMessageByConsultationIdWithPagination(userDetails.getUsername(), consultationId,
+                            pageNumber, elementsPerPage));
+        } catch (ConsultationServiceException e) {
+            return WooBoHttpError.of(e).toResponseEntity();
+        }
+    }
+
     @GetMapping("/patient/{userName}/history")
     @Operation(summary = "Get Patient's History, list of sessionId",
             description = "Retrieve all consultation sessions Ids .")
