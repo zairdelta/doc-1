@@ -35,11 +35,13 @@ public class ConsultationSessionIdDTO {
         consultationSessionIdDTO.setFinishedAt(consultationSession.getFinishedAt());
         consultationSessionIdDTO.setStatus(consultationSession.getStatus());
 
+        /* message will need to be called in a different request as it is a heavy query
         consultationSessionIdDTO.setMessages(consultationSession.getMessages()
                 .stream()
                 .filter(Objects::nonNull)
                 .map(ConsultationMessageDTO::from)
                 .collect(Collectors.toList()));
+        */
 
         consultationSessionIdDTO.setConsultationDocumentDTOS(consultationSession.getDocuments()
                 .stream()
