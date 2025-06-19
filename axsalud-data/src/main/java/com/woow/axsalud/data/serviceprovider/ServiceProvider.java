@@ -19,4 +19,5 @@ public class ServiceProvider {
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDate serviceExpiration;
     private String endpoint;
+    private String apiKey;
 }

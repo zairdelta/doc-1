@@ -110,7 +110,7 @@ public class AxSaludServiceImpl implements AxSaludService {
         ServiceProviderRequestDTO serviceProviderRequestDTO = new ServiceProviderRequestDTO();
         serviceProviderRequestDTO.setServiceName(serviceProvider.getName());
         serviceProviderRequestDTO.setUrl(serviceProvider.getEndpoint());
-        serviceProviderRequestDTO.setApiKey(serviceProvider.getName());
+        serviceProviderRequestDTO.setApiKey(serviceProvider.getApiKey());
         serviceProviderClient.isHIDValid(serviceProviderRequestDTO, axSaludUserDTO.getHid())
         axSaludWooUser.setServiceProvider(serviceProvider.getId());
         axSaludWooUser.setHid(axSaludUserDTO.getHid());
