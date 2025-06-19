@@ -127,8 +127,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         }
 
         ConnectionProvider connectionProvider = ConnectionProvider.builder(rabbitMQStompBrokerProperties.getConnectionPoolName())
-              //  .maxIdleTime(Duration.ofSeconds(360)) by default -1 connections do not expire due idleness by default
-              //  .maxLifeTime(Duration.ofSeconds(360)) by default -1 connections can live indefinitely unless closed manually or by error
+                .maxIdleTime(Duration.ofMinutes(30))
+                .maxLifeTime(Duration.ofMinutes(90))
                 .maxConnections(rabbitMQStompBrokerProperties.getMaxConnections())
                 .pendingAcquireMaxCount(rabbitMQStompBrokerProperties.getPendingAcquireMaxCount())
                 .pendingAcquireTimeout(Duration.ofSeconds(rabbitMQStompBrokerProperties.getPendingAcquireTimeoutInSeconds()))
