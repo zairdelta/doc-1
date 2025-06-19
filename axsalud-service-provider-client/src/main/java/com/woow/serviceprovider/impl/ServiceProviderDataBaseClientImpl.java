@@ -46,7 +46,8 @@ public class ServiceProviderDataBaseClientImpl implements ServiceProviderClient 
                 localServiceProviderUserRepository.findByServiceProviderIdAndHid(serviceProvider.getId(), hid);
 
         TelemedicineResponse telemedicineResponse = new TelemedicineResponse();
-        if(localServiceProviderUserEntity != null) {
+        if(localServiceProviderUserEntity != null &&
+                localServiceProviderUserEntity.getUserValid() == 1) {
             telemedicineResponse.setCode(200);
         } else {
             telemedicineResponse.setCode(404);
