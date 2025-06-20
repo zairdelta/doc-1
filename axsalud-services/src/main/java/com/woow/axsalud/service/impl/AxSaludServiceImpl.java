@@ -31,6 +31,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
@@ -86,6 +87,19 @@ public class AxSaludServiceImpl implements AxSaludService {
     @Override
     public String save(AxSaludUserDTO axSaludUserDTO)
             throws WooUserServiceException {
+
+        if(ObjectUtils.isEmpty(axSaludUserDTO.getHid())) {
+            throw new WooUserServiceException("DNI es mandatorio " + axSaludUserDTO.getHid(), 402);
+        }
+
+        Optional<AxSaludWooUser> axSaludWooUserOptional =
+                axSaludUserRepository.findByHid(axSaludUserDTO.getHid());
+
+        if(!axSaludWooUserOptional.isEmpty()) {
+            throw new WooUserServiceException("DNI ya esta asignado a un usuario, DNI: "
+                    + axSaludUserDTO.getHid(), 402);
+        }
+
         UserDtoCreate userDtoCreate = new UserDtoCreate();
         modelMapper.map(axSaludUserDTO.getUserDtoCreate(), userDtoCreate);
         userDtoCreate.setUserName(axSaludUserDTO.getUserDtoCreate().getEmail());

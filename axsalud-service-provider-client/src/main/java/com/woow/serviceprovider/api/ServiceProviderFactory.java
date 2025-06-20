@@ -28,12 +28,16 @@ public class ServiceProviderFactory {
     public ServiceProviderClient get(String entpoint) {
         log.info("Getting service provider for: {}", entpoint);
         if (entpoint == null || entpoint.trim().equalsIgnoreCase("LOCAL")) {
+            log.info("Service provider Local: {}", localService);
             return localService;
         }
 
         if (entpoint.toLowerCase().startsWith("http")) {
+            log.info("Service provider remote: {}", remoteService);
             return remoteService;
         }
+
+        log.info("Service provider default: {}", defaultService);
         return defaultService;
     }
 }

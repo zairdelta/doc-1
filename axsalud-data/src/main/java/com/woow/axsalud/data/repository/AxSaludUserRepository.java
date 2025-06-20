@@ -16,6 +16,8 @@ public interface AxSaludUserRepository extends JpaRepository<AxSaludWooUser, Lon
     Optional<AxSaludWooUser> findByCoreUser(WoowUser coreUser);
     Optional<AxSaludWooUser> findByCoreUser_UserId(long userId);
 
+    Optional<AxSaludWooUser> findByHid(String hid);
+
     @Query("""
     SELECT COUNT(u)
     FROM AxSaludWooUser u
