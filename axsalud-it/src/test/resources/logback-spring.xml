@@ -13,7 +13,9 @@
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>
-                %clr(%d{HH:mm:ss.SSS}){faint} %highlight(%-5level){FATAL=red blink, ERROR=red, WARN=yellow, INFO=green, DEBUG=blue, TRACE=cyan} %clr([%thread]){faint} %clr(%logger{36}){cyan} - %msg%n
+                %highlight(
+                %d{HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n
+                ){FATAL=red blink, ERROR=red, WARN=yellow, INFO=green, DEBUG=blue, TRACE=cyan}
             </pattern>
         </encoder>
     </appender>
