@@ -336,13 +336,14 @@ public class ConsultationServiceImpl implements ConsultationService {
 
     private void validateConsultationSessionParties(String userName, ConsultationSession consultationSession)
             throws ConsultationServiceException {
-
+/*
         Consultation consultation = consultationSession.getConsultation();
         if(!(userName.equalsIgnoreCase(consultation.getPatient().getCoreUser().getUserName()) ||
                 userName.equalsIgnoreCase(consultationSession.getDoctor().getCoreUser().getUserName()))) {
             throw new ConsultationServiceException("Receiver cannot access consultation:  " + consultation.getConsultationId()
                     + consultationSession.getStatus(), 405);
         }
+ */
     }
 
     @Override
