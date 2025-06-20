@@ -31,7 +31,7 @@ public class LocalUserCsvImportServiceImpl implements LocalUserCsvImportService 
 
     @Transactional
     @Async
-    public void importFromCsv(MultipartFile file, String serviceProviderName) throws Exception {
+    public void importFromCsv(List<CsvUserDTO> users, String serviceProviderName) throws Exception {
 
         ServiceProvider serviceProvider =
                 serviceProviderRepository.findByName(serviceProviderName);
@@ -41,14 +41,6 @@ public class LocalUserCsvImportServiceImpl implements LocalUserCsvImportService 
         }
 
         long serviceProviderId = serviceProvider.getId();
-
-        List<CsvUserDTO> users = new CsvToBeanBuilder<CsvUserDTO>(
-                new InputStreamReader(file.getInputStream()))
-                .withType(CsvUserDTO.class)
-                .withIgnoreLeadingWhiteSpace(true)
-                .withThrowExceptions(true)
-                .build()
-                .parse();
 
         for (CsvUserDTO dto : users) {
 
