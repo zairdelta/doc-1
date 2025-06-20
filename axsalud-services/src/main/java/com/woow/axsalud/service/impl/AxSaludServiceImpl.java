@@ -92,8 +92,11 @@ public class AxSaludServiceImpl implements AxSaludService {
             throw new WooUserServiceException("DNI es mandatorio " + axSaludUserDTO.getHid(), 402);
         }
 
-        Optional<AxSaludWooUser> axSaludWooUserOptional =
+       List<AxSaludWooUser> axSaludWooUserOptional =
                 axSaludUserRepository.findByHid(axSaludUserDTO.getHid());
+
+        axSaludWooUserOptional.stream()
+                .forEach(axSaludWooUser -> log.info("User: {}", axSaludWooUser.getCoreUser().getUserName()));
 
         if(!axSaludWooUserOptional.isEmpty()) {
             throw new WooUserServiceException("DNI ya esta asignado a un usuario, DNI: "

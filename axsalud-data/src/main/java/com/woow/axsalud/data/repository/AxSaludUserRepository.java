@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -16,7 +17,7 @@ public interface AxSaludUserRepository extends JpaRepository<AxSaludWooUser, Lon
     Optional<AxSaludWooUser> findByCoreUser(WoowUser coreUser);
     Optional<AxSaludWooUser> findByCoreUser_UserId(long userId);
 
-    Optional<AxSaludWooUser> findByHid(String hid);
+    List<AxSaludWooUser> findByHid(String hid);
 
     @Query("""
     SELECT COUNT(u)
