@@ -106,15 +106,6 @@ public class AxSaludServiceImpl implements AxSaludService {
         UserDtoCreate userDtoCreate = new UserDtoCreate();
         modelMapper.map(axSaludUserDTO.getUserDtoCreate(), userDtoCreate);
         userDtoCreate.setUserName(axSaludUserDTO.getUserDtoCreate().getEmail());
-        wooWUserService.save(userDtoCreate);
-
-        WoowUser woowUser = woowUserRepository
-                .findByUserName(userDtoCreate.getUserName());
-        woowUser.setUserActive(true);
-        wooWUserService.addRoleToUser(woowUser.getUserId(), AXSaludUserRoles.USER.getRole());
-        AxSaludWooUser axSaludWooUser = new AxSaludWooUser();
-        axSaludWooUser.setCoreUser(woowUser);
-        axSaludWooUser.setUserType(WoowUserType.PATIENT);
 
         ServiceProvider serviceProvider = serviceProviderService.
                 validateServiceprovider(userDtoCreate.getServiceProvider());
@@ -141,6 +132,18 @@ public class AxSaludServiceImpl implements AxSaludService {
 
             throw new WooUserServiceException("invalid HID:" + axSaludUserDTO.getHid(), 406);
         }
+
+        wooWUserService.save(userDtoCreate);
+
+        WoowUser woowUser = woowUserRepository
+                .findByUserName(userDtoCreate.getUserName());
+        woowUser.setUserActive(true);
+        wooWUserService.addRoleToUser(woowUser.getUserId(), AXSaludUserRoles.USER.getRole());
+        AxSaludWooUser axSaludWooUser = new AxSaludWooUser();
+        axSaludWooUser.setCoreUser(woowUser);
+        axSaludWooUser.setUserType(WoowUserType.PATIENT);
+
+
         axSaludWooUser.setServiceProvider(serviceProvider.getId());
         axSaludWooUser.setHid(axSaludUserDTO.getHid());
         axSaludWooUser.setDni(axSaludUserDTO.getDni());
