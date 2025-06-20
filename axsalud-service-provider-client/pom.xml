@@ -40,6 +40,10 @@
             <version>1.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>com.woow.axsalud</groupId>
+            <artifactId>axsalud-data</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

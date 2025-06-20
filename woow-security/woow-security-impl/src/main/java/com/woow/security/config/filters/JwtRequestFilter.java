@@ -55,6 +55,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
 
         String clientIp = getClientIP(request);
+        log.info("Getting request from ip: {}", clientIp);
 
         if(MALICIOUS_IP.equalsIgnoreCase(clientIp)) {
             log.warn("ip is malicious: {}, clientID: {}", MALICIOUS_IP.equalsIgnoreCase(clientIp), clientIp);

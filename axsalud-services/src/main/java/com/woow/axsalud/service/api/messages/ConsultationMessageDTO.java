@@ -30,7 +30,14 @@ public class ConsultationMessageDTO {
         consultationEventDTO.setMessageType(
                 ConsultationMessgeTypeEnum.fromString(consultationMessageEntity.getMessageType()));
         consultationMessageDTO.setContent(consultationMessageEntity.getContent());
+        String sender = consultationMessageEntity.getSentBy().getCoreUser().getUserName();
+        String receiver = sender.equalsIgnoreCase(consultationMessageEntity
+                .getConsultationSession().getConsultation().getPatient().getCoreUser().getUserName()) ?
+                consultationMessageEntity.getConsultationSession().getDoctor().getCoreUser().getUserName() :
+                consultationMessageEntity
+                        .getConsultationSession().getConsultation().getPatient().getCoreUser().getUserName();
         consultationMessageDTO.setSender(consultationMessageEntity.getSentBy().getCoreUser().getUserName());
+        consultationMessageDTO.setReceiver(receiver);
 
         consultationEventDTO.setPayload(consultationMessageDTO);
         return consultationEventDTO;

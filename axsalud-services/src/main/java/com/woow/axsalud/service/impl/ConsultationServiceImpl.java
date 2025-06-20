@@ -277,10 +277,11 @@ public class ConsultationServiceImpl implements ConsultationService {
 
         consultation.getSessions().add(consultationSession);
         consultation.setCurrentSessionIdIfExists(consultationSession.getConsultationSessionId().toString());
+        consultation.setStatus(ConsultationStatus.WAITING_FOR_DOCTOR);
+        consultation = consultationRepository.save(consultation);
 
-        consultationRepository.save(consultation);
-
-        ConsultationDTO consultationDTO = modelMapper.map(consultation, ConsultationDTO.class);
+        ConsultationDTO consultationDTO = createConsultationDTO(consultation, consultationSession,
+                consultation.getSymptoms());
         consultationDTO.setCurrentSessionIdIfExists(consultationSession.getConsultationSessionId().toString());
 
         log.info("Sending consultationDTO to topic/doctor-events: {}", consultationDTO);
@@ -613,16 +614,14 @@ public class ConsultationServiceImpl implements ConsultationService {
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public ConsultationMessagesPagingDTO
-    getAllMessageByUserNameUsingPaginationPagination(String userName,
-                                                     int pageNumber,
-                                                     int totalElementsPerPage)
+    public ConsultationMessagesPagingDTO getAllMessageByConsultationIdWithPagination
+            (String userName, String consultationId, int pageNumber, int totalElementsPerPage)
             throws ConsultationServiceException {
-        log.info("getting messages by userName: {}", userName);
+
+        log.info("getting messages by userName: {} and consultationID: {}", userName, consultationId);
         Pageable pageable = PageRequest.of(pageNumber, totalElementsPerPage);
         Page<ConsultationMessageEntity> page = consultationMessageRepository
-                .findMessagesByPatientUserNameOrdered(userName, pageable);
+                .findMessagesByConsultationIdOrdered(UUID.fromString(consultationId), pageable);
 
         List<ConsultationMessageEntity> messages = page.getContent();
         long totalElements = page.getTotalElements();
@@ -1064,7 +1063,8 @@ public class ConsultationServiceImpl implements ConsultationService {
     }
 
     @Override
-    public void updateConsultationAndConsultationSessionStatus(String userName, String consultationSessionId, ConsultationSessionStatus consultationSessionStatus) {
+    public void updateConsultationAndConsultationSessionStatus(String userName,
+                                                               String consultationSessionId, ConsultationSessionStatus consultationSessionStatus) {
 
         log.info("updating consultationSessionId: {} for patient: {}, was aborted by the user",
                 consultationSessionId, userName);
@@ -1081,6 +1081,7 @@ public class ConsultationServiceImpl implements ConsultationService {
 
             if(consultationSession.getConsultation()
                     .getPatient().getCoreUser().getUserName().equalsIgnoreCase(userName)) {
+                consultationSession.setPatientStatus(PartyConsultationStatus.READY);
                 consultationSessionRepository
                         .updateStatus(UUID.fromString(consultationSessionId), consultationSessionStatus);
             } else {

@@ -53,19 +53,6 @@ public class DoctorController {
         return ResponseEntity.ok().body(doctorCommentsDTOS);
     }
 
-    @GetMapping("/patient/{userName}/consultationMessages")
-    public ResponseEntity<ConsultationMessagesPagingDTO> getConsultationMessagesByUserName(
-            @PathVariable String userName,
-            @RequestParam int pageNumber, @RequestParam int elementsPerPage) {
-        try {
-            return ResponseEntity.ok().body(consultationService
-                    .getAllMessageByUserNameUsingPaginationPagination(userName,
-                            pageNumber, elementsPerPage));
-        } catch (ConsultationServiceException e) {
-            return WooBoHttpError.of(e).toResponseEntity();
-        }
-    }
-
     @GetMapping("/patient/consultation/{consultationId}/sessionId/{consultationSessionId}/consultationMessages")
     public ResponseEntity<ConsultationMessagesPagingDTO> getConsultationMessagesBySessionIdAndUserName(
             @PathVariable String consultationId, @PathVariable String consultationSessionId,
@@ -74,6 +61,21 @@ public class DoctorController {
             log.info("getting consultation messages on behalf of doctor");
             return ResponseEntity.ok().body(consultationService
                     .getAllMessagesGivenConsultationIdAndSessionId(consultationId, consultationSessionId,
+                            pageNumber, elementsPerPage));
+        } catch (ConsultationServiceException e) {
+            return WooBoHttpError.of(e).toResponseEntity();
+        }
+    }
+
+    @GetMapping("{consultationId}/messages")
+    public ResponseEntity<ConsultationMessagesPagingDTO>
+    getConsultationAllUserConsultationMessages(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable String consultationId,
+            @RequestParam int pageNumber, @RequestParam int elementsPerPage) {
+        try {
+            return ResponseEntity.ok().body(consultationService
+                    .getAllMessageByConsultationIdWithPagination(userDetails.getUsername(), consultationId,
                             pageNumber, elementsPerPage));
         } catch (ConsultationServiceException e) {
             return WooBoHttpError.of(e).toResponseEntity();

@@ -19,7 +19,7 @@ import com.woow.core.data.user.WoowUser;
 import com.woow.core.service.api.UserDtoCreate;
 import com.woow.core.service.api.WooWUserService;
 import com.woow.core.service.api.exception.WooUserServiceException;
-import com.woow.serviceprovider.api.ServiceProviderClient;
+import com.woow.serviceprovider.api.*;
 import com.woow.storage.api.StorageService;
 import com.woow.storage.api.StorageServiceException;
 import com.woow.storage.api.StorageServiceUploadResponseDTO;
@@ -31,6 +31,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
@@ -55,7 +56,7 @@ public class AxSaludServiceImpl implements AxSaludService {
     private LaboratoryPrescriptionsRepository laboratoryPrescriptionsRepository;
     private ConsultationRepository consultationRepository;
     private ConsultationSessionRepository consultationSessionRepository;
-    private ServiceProviderClient serviceProviderClient;
+    private ServiceProviderFactory serviceProviderFactory;
     private StorageService storageService;
 
     public AxSaludServiceImpl(final AxSaludUserRepository axSaludUserRepository,
@@ -63,7 +64,7 @@ public class AxSaludServiceImpl implements AxSaludService {
                               final WooWUserService wooWUserService,
                               final WoowUserRepository woowUserRepository,
                               final ServiceProviderService serviceProviderService,
-                              final ServiceProviderClient serviceProviderClient,
+                              final ServiceProviderFactory serviceProviderFactory,
                               final PatientDataRepository patientDataRepository,
                               final DoctorPrescriptionRepository doctorPrescriptionRepository,
                               final LaboratoryPrescriptionsRepository laboratoryPrescriptionsRepository,
@@ -75,7 +76,7 @@ public class AxSaludServiceImpl implements AxSaludService {
         this.wooWUserService = wooWUserService;
         this.woowUserRepository = woowUserRepository;
         this.serviceProviderService = serviceProviderService;
-        this.serviceProviderClient = serviceProviderClient;
+        this.serviceProviderFactory = serviceProviderFactory;
         this.patientDataRepository = patientDataRepository;
         this.doctorPrescriptionRepository = doctorPrescriptionRepository;
         this.laboratoryPrescriptionsRepository = laboratoryPrescriptionsRepository;
@@ -86,9 +87,52 @@ public class AxSaludServiceImpl implements AxSaludService {
     @Override
     public String save(AxSaludUserDTO axSaludUserDTO)
             throws WooUserServiceException {
+
+        if(ObjectUtils.isEmpty(axSaludUserDTO.getHid())) {
+            throw new WooUserServiceException("DNI es mandatorio " + axSaludUserDTO.getHid(), 402);
+        }
+
+       List<AxSaludWooUser> axSaludWooUserOptional =
+                axSaludUserRepository.findByHid(axSaludUserDTO.getHid());
+
+        axSaludWooUserOptional.stream()
+                .forEach(axSaludWooUser -> log.info("User: {}", axSaludWooUser.getCoreUser().getUserName()));
+
+        if(!axSaludWooUserOptional.isEmpty()) {
+            throw new WooUserServiceException("DNI ya esta asignado a un usuario, DNI: "
+                    + axSaludUserDTO.getHid(), 402);
+        }
+
         UserDtoCreate userDtoCreate = new UserDtoCreate();
         modelMapper.map(axSaludUserDTO.getUserDtoCreate(), userDtoCreate);
         userDtoCreate.setUserName(axSaludUserDTO.getUserDtoCreate().getEmail());
+
+        ServiceProvider serviceProvider = serviceProviderService.
+                validateServiceprovider(userDtoCreate.getServiceProvider());
+
+        ServiceProviderClient serviceProviderClient =
+                serviceProviderFactory.get(serviceProvider.getEndpoint());
+
+        ServiceProviderRequestDTO serviceProviderRequestDTO = new ServiceProviderRequestDTO();
+        serviceProviderRequestDTO.setServiceName(serviceProvider.getName());
+        serviceProviderRequestDTO.setUrl(serviceProvider.getEndpoint());
+        serviceProviderRequestDTO.setApiKey(serviceProvider.getApiKey());
+        try {
+            TelemedicineResponse telemedicineResponse = serviceProviderClient
+                    .isHIDValid(serviceProviderRequestDTO, axSaludUserDTO.getHid());
+
+            if(telemedicineResponse.getCode() != 200) {
+                throw new WooUserServiceException("invalid DNI:" + axSaludUserDTO.getHid(), 405);
+            }
+
+        } catch (ServiceProviderClientException e) {
+            log.error("Error while validating hid: {}, serviceName: {}, userName: {}",
+                    axSaludUserDTO.getHid(), axSaludUserDTO.getUserDtoCreate().getServiceProvider(),
+                    axSaludUserDTO.getUserDtoCreate().getEmail());
+
+            throw new WooUserServiceException("invalid HID:" + axSaludUserDTO.getHid(), 406);
+        }
+
         wooWUserService.save(userDtoCreate);
 
         WoowUser woowUser = woowUserRepository
@@ -99,8 +143,6 @@ public class AxSaludServiceImpl implements AxSaludService {
         axSaludWooUser.setCoreUser(woowUser);
         axSaludWooUser.setUserType(WoowUserType.PATIENT);
 
-        ServiceProvider serviceProvider = serviceProviderService.
-                validateServiceprovider(userDtoCreate.getServiceProvider());
 
         axSaludWooUser.setServiceProvider(serviceProvider.getId());
         axSaludWooUser.setHid(axSaludUserDTO.getHid());

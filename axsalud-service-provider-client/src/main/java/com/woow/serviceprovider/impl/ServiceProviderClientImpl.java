@@ -10,7 +10,7 @@ import org.springframework.web.client.RestTemplate;
 import java.net.URI;
 import java.util.List;
 
-@Service
+@Service("REMOTE")
 @Slf4j
 public class ServiceProviderClientImpl implements ServiceProviderClient {
     @Override

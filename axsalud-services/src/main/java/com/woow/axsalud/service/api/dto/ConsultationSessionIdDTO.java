@@ -29,18 +29,19 @@ public class ConsultationSessionIdDTO {
 
     public static ConsultationSessionIdDTO from(final ConsultationSession consultationSession) {
         ConsultationSessionIdDTO consultationSessionIdDTO = new ConsultationSessionIdDTO();
-        consultationSessionIdDTO.setConsultationSessionId(consultationSessionIdDTO.consultationSessionId);
+        consultationSessionIdDTO.setConsultationSessionId(consultationSession.getConsultationSessionId().toString());
         consultationSessionIdDTO.setStartAt(consultationSession.getStartAt());
-        consultationSessionIdDTO.setId(consultationSessionIdDTO.getId());
-        consultationSessionIdDTO.setDiagnosis(consultationSessionIdDTO.getDiagnosis());
+        consultationSessionIdDTO.setId(consultationSession.getId());
         consultationSessionIdDTO.setFinishedAt(consultationSession.getFinishedAt());
         consultationSessionIdDTO.setStatus(consultationSession.getStatus());
 
+        /* message will need to be called in a different request as it is a heavy query
         consultationSessionIdDTO.setMessages(consultationSession.getMessages()
                 .stream()
                 .filter(Objects::nonNull)
                 .map(ConsultationMessageDTO::from)
                 .collect(Collectors.toList()));
+        */
 
         consultationSessionIdDTO.setConsultationDocumentDTOS(consultationSession.getDocuments()
                 .stream()
