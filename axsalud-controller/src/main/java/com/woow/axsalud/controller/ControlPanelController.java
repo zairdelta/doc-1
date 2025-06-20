@@ -35,7 +35,7 @@ public class ControlPanelController {
                     .withThrowExceptions(true)
                     .build()
                     .parse();
-            importService.importFromCsv(file, serviceProviderName);
+            importService.importFromCsv(users, serviceProviderName);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             e.printStackTrace();
